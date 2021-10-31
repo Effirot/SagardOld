@@ -103,7 +103,7 @@ public class PlayerController : MonoBehaviour
             case 2:
                 planned(); PlanerActive(); break;
             case 3:
-                stepped(Actived); Debug.Log("Запуск хода"); break;
+                stepped(); break;
         }
     }
 
@@ -135,25 +135,21 @@ public class PlayerController : MonoBehaviour
         rb.constraints = RigidbodyConstraints.None;
         Coll.enabled = true;
     }
-    void stepped(bool a)
+    void stepped()
     {
-        if (a)
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        if (transform.position != Planer.transform.position)
         {
-            rb.constraints = RigidbodyConstraints.FreezeAll;
-            if (transform.position != Planer.transform.position) {
-                transform.position = Vector3.MoveTowards(transform.position, Planer.transform.position, 0.06f);
-                Parameters.Walk();
-                SteppedEnd = false;
+            transform.position = Vector3.MoveTowards(transform.position, Planer.transform.position, 0.06f);
 
+            SteppedEnd = false;
 
-            }
-            else {
-                SteppedEnd = true;
-                
-                
-            }
+            //Parameters.Walk();
         }
-        else Parameters.recreation(); PlanerPassive();
+        else
+        {
+            SteppedEnd = true;
+        }
     }
 
 
@@ -163,7 +159,7 @@ public class PlayerController : MonoBehaviour
 
     void PlanerPassive()
     {
-        if ((Convert.ToInt32(transform.position.x) == Convert.ToInt32(Planer.transform.position.x)) && (Convert.ToInt32(transform.position.y) == Convert.ToInt32(Planer.transform.position.z)) || (Vector3.Distance(transform.position, Planer.transform.position) > Parameters.WalkDistance + 0.5 && !push))
+        if (((Convert.ToInt32(transform.position.x) == Convert.ToInt32(Planer.transform.position.x)) && (Convert.ToInt32(transform.position.y) == Convert.ToInt32(Planer.transform.position.y))) || ((Vector3.Distance(transform.position, Planer.transform.position) > Parameters.WalkDistance + 0.5 && !push)))
         {
             Planer.transform.localPosition = transform.position;
 
