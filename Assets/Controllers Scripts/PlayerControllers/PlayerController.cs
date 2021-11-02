@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private MeshCollider Coll;
     private PlayerParameterList Parameters;
-    private bool push = false, push2 = false, Actived = false;
+    private bool push = false, push2 = false;
 
     private float dist;
 
@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
 
     public int active = 0;
     public float upDistance = 0.3f, UpSpeed = 0.01f, RotationSpeed = 0.01f, MinTime = 0.5f;
-    public bool SteppedEnd = false;
+    public bool SteppedEnd = false, Stepped = false;
 
     //Planer object
     private GameObject Planer;
@@ -82,7 +82,7 @@ public class PlayerController : MonoBehaviour
 
                 if (Input.GetKeyDown(KeyCode.Mouse0) && push) push2 = !push2;
 
-                if (push2) { UpPos = new Vector3(Convert.ToInt32(transform.position.x), upDistance, Convert.ToInt32(transform.position.z)); active = 1; }
+                if (push2) { UpPos = VectorInInt(transform.position, upDistance); active = 1; }
                 else active = 0;
             }
 
@@ -103,7 +103,8 @@ public class PlayerController : MonoBehaviour
             case 2:
                 planned(); PlanerActive(); break;
             case 3:
-                stepped(); break;
+                Completor();
+                break;
         }
     }
 
@@ -135,20 +136,20 @@ public class PlayerController : MonoBehaviour
         rb.constraints = RigidbodyConstraints.None;
         Coll.enabled = true;
     }
-    void stepped()
+
+    private void Completor()
     {
         rb.constraints = RigidbodyConstraints.FreezeAll;
-        if (transform.position != Planer.transform.position)
+
+        transform.position = Vector3.MoveTowards(transform.position, VectorInInt(Planer.transform.position, Planer.transform.position.y), 0.1f);
+
+        if (VectorInInt(transform.position, transform.position.y) == VectorInInt(Planer.transform.position, Planer.transform.position.y))
         {
-            transform.position = Vector3.MoveTowards(transform.position, Planer.transform.position, 0.06f);
-
-            SteppedEnd = false;
-
-            //Parameters.Walk();
+            SteppedEnd = true;
         }
         else
         {
-            SteppedEnd = true;
+            SteppedEnd = false;
         }
     }
 
@@ -159,13 +160,13 @@ public class PlayerController : MonoBehaviour
 
     void PlanerPassive()
     {
-        if (((Convert.ToInt32(transform.position.x) == Convert.ToInt32(Planer.transform.position.x)) && (Convert.ToInt32(transform.position.y) == Convert.ToInt32(Planer.transform.position.y))) || ((Vector3.Distance(transform.position, Planer.transform.position) > Parameters.WalkDistance + 0.5 && !push)))
+        if (((Convert.ToInt32(transform.position.x) == Convert.ToInt32(Planer.transform.position.x)) && (Convert.ToInt32(transform.position.z) == Convert.ToInt32(Planer.transform.position.z))) || ((Vector3.Distance(transform.position, Planer.transform.position) > Parameters.WalkDistance + 0.5 && !push)))
         {
             Planer.transform.localPosition = transform.position;
 
             Planer.GetComponent<Renderer>().enabled = false;
             
-            Actived = false;
+            Stepped = false;
         }
 
         else
@@ -173,7 +174,7 @@ public class PlayerController : MonoBehaviour
             Planer.transform.eulerAngles += new Vector3(0, RotationSpeed, 0);
             Planer.transform.position = Vector3.MoveTowards(Planer.transform.position, new Vector3(Planer.transform.position.x, upDistance / 4, Planer.transform.position.z), 0.1f);
 
-            Actived = true;
+            Stepped = true;
         }
     }
     void PlanerActive()
@@ -189,5 +190,12 @@ public class PlayerController : MonoBehaviour
             else Planer.GetComponent<Renderer>().material.color = new Color(255, 255, 255);
         }
         //else
+    }
+
+
+    // Конвертер
+    Vector3 VectorInInt(Vector3 Vector, float Y)
+    {
+        return new Vector3(Convert.ToInt32(Vector.x), Convert.ToInt32(Y), Convert.ToInt32(Vector.z));
     }
 }
