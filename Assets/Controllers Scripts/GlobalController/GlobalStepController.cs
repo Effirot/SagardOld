@@ -5,11 +5,10 @@ using System;
 
 public class GlobalStepController : MonoBehaviour
 {
-    public bool StepActive = false;
-
-    GameObject[] Figures;
-
-
+    bool StepActive = false;
+    bool SteppedEnd = false;
+    float Timer = 0;
+    public bool[] ActionEnder;
     // Start is called before the first frame update
     void Start()
     {
@@ -19,33 +18,27 @@ public class GlobalStepController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !StepActive) 
+        if (Input.GetKeyDown(KeyCode.Space)) StepActive = true;
+        if (StepActive)
         {
 
-            Figures = GameObject.FindGameObjectsWithTag("Figure");
-            
-            Debug.Log("Выполнене хода, c " + Figures.Length + " объектами");
-            foreach (GameObject fig in Figures)
-                if (fig.GetComponent<PlayerController>().Stepped)
-                {
-                    fig.GetComponent<PlayerController>().active = 3;
-                }
+            Debug.Log("Выполнене хода" + Timer);
+            GameObject[] Figures = GameObject.FindGameObjectsWithTag("Figure");
 
-            
-            StartCoroutine(StepTest());
+            foreach (GameObject fig in Figures) fig.GetComponent<PlayerController>().active = 3;
 
 
 
+            if (SteppedEnd)
+            {
+                foreach (GameObject fig in Figures) fig.GetComponent<PlayerController>().active = 0;
+                StepActive = false;
+            }
+            else
+            {
+                foreach (GameObject fig in Figures) if(fig.GetComponent<PlayerController>().SteppedEnd) fig.GetComponent<PlayerController>().active = 0;
+            }
         }
-    }
-
-    private IEnumerator StepTest()
-    {
-        yield return new WaitForSeconds(0.9f);
-
-        foreach (GameObject fig in Figures) fig.GetComponent<PlayerController>().active = 0;
-        StepActive = false;
-
-        yield break;
+        else Timer = 0;
     }
 }
