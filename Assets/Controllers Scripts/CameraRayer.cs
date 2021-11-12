@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class CameraRayer : MonoBehaviour
 {
-    public Transform PosCursor;
-
+    Vector3 Pos;
+    public float y = 2;
     // Start is called before the first frame update
     void Start()
     {
@@ -18,14 +18,13 @@ public class CameraRayer : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-
         
 
         if (Physics.Raycast(ray, out hit) && hit.collider.gameObject.tag == "Map")
         {
-            PosCursor.position = Vector3.MoveTowards(PosCursor.position, new Vector3(Convert.ToInt32(hit.point.x), 0, Convert.ToInt32(hit.point.z)), 0.1f);            
-
-            Debug.DrawRay(transform.position, hit.point, Color.red);
+            Pos = new Vector3(hit.point.x, hit.collider.transform.position.y, hit.point.z);            
         }
+
+        transform.position = Vector3.MoveTowards(transform.position, new Vector3(Convert.ToInt32(Pos.x), Pos.y + y, Convert.ToInt32(Pos.z)), 0.1f);
     }
 }

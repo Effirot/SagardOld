@@ -9,7 +9,6 @@ public class GlobalStepController : MonoBehaviour
 
     GameObject[] Figures;
 
-
     // Start is called before the first frame update
     void Start()
     {
@@ -26,24 +25,25 @@ public class GlobalStepController : MonoBehaviour
             
             Debug.Log("Выполнене хода, c " + Figures.Length + " объектами");
             foreach (GameObject fig in Figures)
-                if (fig.GetComponent<PlayerController>().Stepped)
+                if (fig.GetComponent<PlayerController>().Stepped == 1)
                 {
                     fig.GetComponent<PlayerController>().active = 3;
                 }
 
-            
             StartCoroutine(StepTest());
-
-
-
         }
     }
 
     private IEnumerator StepTest()
     {
+        StepActive = true;
         yield return new WaitForSeconds(0.9f);
 
-        foreach (GameObject fig in Figures) fig.GetComponent<PlayerController>().active = 0;
+        foreach (GameObject fig in Figures)
+        {
+            fig.GetComponent<PlayerController>().active = 0;
+            fig.GetComponent<Rigidbody>().AddForce(new Vector3(0, -3, 0));
+        }
         StepActive = false;
 
         yield break;

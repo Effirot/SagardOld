@@ -13,15 +13,18 @@ public class PlayerController : MonoBehaviour
     private PlayerParameterList Parameters;
     private bool push = false, push2 = false;
 
-    private float dist;
+    private float dist, LastCursorY;
+
+
+
 
 
 
     private Transform Cursore;
 
-    public int active = 0;
-    public float upDistance = 0.3f, UpSpeed = 0.01f, RotationSpeed = 0.01f, MinTime = 0.5f;
-    public bool SteppedEnd = false, Stepped = false;
+    public int active = 0, Stepped = 0;
+    public float upDistance = 0.4f, UpSpeed = 0.01f, RotationSpeed = 0.01f, MinTime = 0.5f;
+    public bool SteppedEnd = false;
 
     //Planer object
     private GameObject Planer;
@@ -57,15 +60,15 @@ public class PlayerController : MonoBehaviour
             Destroy(Planer.GetComponent<MeshCollider>());
             Destroy(Planer.GetComponent<Rigidbody>());
 
-            Planer.name = name + "Planer";
+            Planer.name = name + " Planer";
             Planer.tag = "Cursore";
             Planer.transform.localScale = transform.localScale * 0.9f;
         }
     }
 
-    void Update()
+    void LateUpdate()
     {
-        if (active != 3) {
+        if (!GameObject.Find("GlobalMapController").GetComponent<GlobalStepController>().StepActive) {
             if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
             {
                 RaycastHit hit;
@@ -76,9 +79,10 @@ public class PlayerController : MonoBehaviour
             }
             if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)) push = false;
 
-            if (Input.GetKey(KeyCode.Mouse1) && push) { active = 2; }
+            if (Input.GetKey(KeyCode.Mouse1) && push) { active = 2; LastCursorY = Cursore.position.y; }
             else
             {
+                
 
                 if (Input.GetKeyDown(KeyCode.Mouse0) && push) push2 = !push2;
 
@@ -92,35 +96,46 @@ public class PlayerController : MonoBehaviour
 
 
         // ----------------------------------------Главный переключатель режимов------------------------------------//
-        
+
 
         switch (active)
         {
-            case 0:
-                sleep(); PlanerPassive(); break;
+            default:
+                sleep(); PlanerPassive(false);
+                break;
             case 1:
-                clicked(); PlanerPassive(); break;
+                clicked(); PlanerPassive(true);
+                break;
             case 2:
-                planned(); PlanerActive(); break;
+                planned(); PlanerActive();
+                break;
             case 3:
-                Completor();
+                Walker();
+                break;
+            case 4:
+
                 break;
         }
     }
 
 
     // Методы движения объетов
-    void clicked()
+    private void clicked()
     {
+        Parameters.AbilitieComplete();
+
         dist = Vector3.Distance(transform.position, UpPos);
 
         rb.constraints = RigidbodyConstraints.FreezeAll;
         Coll.enabled = true;
 
         transform.position = Vector3.MoveTowards(transform.position, UpPos + new Vector3(0, Mathf.Sin(Time.fixedTime) / 10, 0), UpSpeed + dist / 30);
-        transform.eulerAngles += new Vector3(0, RotationSpeed, 0);
+
+
+
     }
-    void planned()
+
+    private void planned()
     {
 
         rb.constraints = RigidbodyConstraints.FreezeAll;
@@ -128,20 +143,19 @@ public class PlayerController : MonoBehaviour
 
         transform.position = Vector3.MoveTowards(transform.position, new Vector3(Convert.ToInt32(transform.position.x), 0.1f, Convert.ToInt32(transform.position.z)), 0.1f);
         transform.eulerAngles += new Vector3(0, RotationSpeed * 2, 0);
-
     }
 
-    void sleep()
+    private void sleep()
     {
         rb.constraints = RigidbodyConstraints.None;
         Coll.enabled = true;
     }
 
-    private void Completor()
+    private void Walker()
     {
         rb.constraints = RigidbodyConstraints.FreezeAll;
 
-        transform.position = Vector3.MoveTowards(transform.position, VectorInInt(Planer.transform.position, Planer.transform.position.y), 0.1f);
+        transform.position = Vector3.MoveTowards(transform.position, Planer.transform.position, 0.1f);
 
         if (VectorInInt(transform.position, transform.position.y) == VectorInInt(Planer.transform.position, Planer.transform.position.y))
         {
@@ -158,27 +172,29 @@ public class PlayerController : MonoBehaviour
 
     //Параметры планёра
 
-    void PlanerPassive()
+    void PlanerPassive(bool forcibly)
     {
-        if (((Convert.ToInt32(transform.position.x) == Convert.ToInt32(Planer.transform.position.x)) && (Convert.ToInt32(transform.position.z) == Convert.ToInt32(Planer.transform.position.z))) || ((Vector3.Distance(transform.position, Planer.transform.position) > Parameters.WalkDistance + 0.5 && !push)))
+        if (((Convert.ToInt32(transform.position.x) == Convert.ToInt32(Planer.transform.position.x)) && (Convert.ToInt32(transform.position.z) == Convert.ToInt32(Planer.transform.position.z))) || (Vector3.Distance(transform.position, Planer.transform.position) > Parameters.WalkDistance + 0.5 && !push) || (forcibly))
         {
             Planer.transform.localPosition = transform.position;
 
             Planer.GetComponent<Renderer>().enabled = false;
-            
-            Stepped = false;
+
+            Stepped = 0;
         }
 
         else
         {
             Planer.transform.eulerAngles += new Vector3(0, RotationSpeed, 0);
-            Planer.transform.position = Vector3.MoveTowards(Planer.transform.position, new Vector3(Planer.transform.position.x, upDistance / 4, Planer.transform.position.z), 0.1f);
+            Planer.transform.position = Vector3.MoveTowards(Planer.transform.position, new Vector3(Planer.transform.position.x, upDistance / 4 + LastCursorY, Planer.transform.position.z), 0.1f);
 
-            Stepped = true;
+            Stepped = 1;
         }
     }
     void PlanerActive()
     {
+        push2 = false;
+
         if (Parameters.Stamina > 0)
         {
             Planer.GetComponent<Renderer>().enabled = true;
@@ -198,4 +214,7 @@ public class PlayerController : MonoBehaviour
     {
         return new Vector3(Convert.ToInt32(Vector.x), Convert.ToInt32(Y), Convert.ToInt32(Vector.z));
     }
+
+
+
 }

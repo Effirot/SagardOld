@@ -19,8 +19,7 @@ public class MapGenerator : MonoBehaviour
     //
     // 
 
-    public int Players = 1, startedPoles = 20, polesMultiply = 6;
-    private int Poles;
+    public int Players = 1, startedPoles = 20, polesMultiply = 6, Poles;
 
     // Start is called before the first frame update
     void Start()
@@ -29,21 +28,32 @@ public class MapGenerator : MonoBehaviour
 
         Poles = Convert.ToInt32(startedPoles + (polesMultiply + UnityEngine.Random.Range(1, 3)) * (Players));
         Debug.Log("Назначено "+ Poles + " поля, в генерации: " + PoleGeneratorType);
+
+
+        switch (PoleGeneratorType)
+        {
+            default:
+                Desert(new int[3] { 4, 1, 1 });
+                break;
+
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        switch (PoleGeneratorType)
-        {
-            default:
-                break;
-            case "Desert": 
-                break;
 
-
-
-
-        }
     }
+
+
+    void Desert(int[] RatyoPoleType)
+    {
+
+
+
+    }
+
+
+
+
 }
