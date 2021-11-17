@@ -19,6 +19,7 @@ public class PlayerParameterList : MonoBehaviour
 
     public string[] AvailableAbilities;
     public int[,] AttackMatrix;
+    public int Range;
     //0 - NoDamage, 1 - 1 Damage, 2 - 2 Damage ...//
 
 
@@ -53,17 +54,17 @@ public class PlayerParameterList : MonoBehaviour
         {
             default:
                 ParametersAppointment(
-                new int[5] //Дальность передвижения, Максимум стамины, Максимум здоровья, Защита, Стамина за атаку
+                new int[5] //Walk Distance, Max Stamina, Max HP, Armour, Attack Stamina
                     { 3, 3, 4, 1, 1 }, 
-                new string[] //Доступные способности
+                new string[] //Available Abilities
                     { "Close attack" });
 
-                AttackMatrix = new int[5, 5] {
-                    {0, 0, 0, 0, 0 },
-                    {0, 0, 0, 0, 0 },
-                    {(0), 2, 1, 0, 0 },
-                    { 0, 0, 0, 0, 0 },
-                    { 0, 0, 0, 0, 0 }
+                AttackMatrix = new int[5, 6] {
+                    {0, 0, 0, 0, 0, 0 },
+                    {0, 0, 0, 0, 0, 0 },
+                    {0, (0), 2, 1, 0, 0 },
+                    {0, 0, 0, 0, 0, 0 },
+                    {0, 0, 0, 0, 0, 0 }
                 };
 
                 break;

@@ -24,7 +24,7 @@ public class PlayerController : MonoBehaviour
 
     public int active = 0, Stepped = 0;
     public float upDistance = 0.4f, UpSpeed = 0.01f, RotationSpeed = 0.01f, MinTime = 0.5f;
-    public bool SteppedEnd = false;
+    public bool[] ActionOptions = new bool[2] {false, false};
 
     //Planer object
     private GameObject Planer;
@@ -44,14 +44,14 @@ public class PlayerController : MonoBehaviour
         Parameters = GetComponent<PlayerParameterList>();
 
         {
-            // Стабилизация
+            // Started stabilization
             transform.position = new Vector3(Convert.ToInt32(transform.position.x), Convert.ToInt32(transform.position.y), Convert.ToInt32(transform.position.z));
 
 
         }
 
         {
-            // Планировщик
+            // Planner
             Planer = Instantiate(gameObject, transform.position, transform.rotation);
 
             Destroy(Planer.GetComponent<PlayerController>());
@@ -95,7 +95,7 @@ public class PlayerController : MonoBehaviour
 
 
 
-        // ----------------------------------------Главный переключатель режимов------------------------------------//
+        // ----------------------------------------The first Player Switcher------------------------------------//
 
 
         switch (active)
@@ -110,16 +110,16 @@ public class PlayerController : MonoBehaviour
                 planned(); PlanerActive();
                 break;
             case 3:
-                Walker();
+                Walking();
                 break;
             case 4:
-
+                Action();
                 break;
         }
     }
 
 
-    // Методы движения объетов
+    // Voids
     private void clicked()
     {
         Parameters.AbilitieComplete();
@@ -151,26 +151,34 @@ public class PlayerController : MonoBehaviour
         Coll.enabled = true;
     }
 
-    private void Walker()
+    private void Walking()
     {
         rb.constraints = RigidbodyConstraints.FreezeAll;
 
         transform.position = Vector3.MoveTowards(transform.position, Planer.transform.position, 0.1f);
 
-        if (VectorInInt(transform.position, transform.position.y) == VectorInInt(Planer.transform.position, Planer.transform.position.y))
-        {
-            SteppedEnd = true;
-        }
-        else
-        {
-            SteppedEnd = false;
-        }
+
+
+        //if (VectorInInt(transform.position, transform.position.y) == VectorInInt(Planer.transform.position, Planer.transform.position.y))
+        //{
+            
+        //}
+        //else
+        //{
+            
+        //}
+    }
+
+    private void Action()
+    {
+        
     }
 
 
 
 
-    //Параметры планёра
+
+    //Planner Controlling
 
     void PlanerPassive(bool forcibly)
     {
@@ -180,7 +188,7 @@ public class PlayerController : MonoBehaviour
 
             Planer.GetComponent<Renderer>().enabled = false;
 
-            Stepped = 0;
+            ActionOptions[0] = false;
         }
 
         else
@@ -188,7 +196,7 @@ public class PlayerController : MonoBehaviour
             Planer.transform.eulerAngles += new Vector3(0, RotationSpeed, 0);
             Planer.transform.position = Vector3.MoveTowards(Planer.transform.position, new Vector3(Planer.transform.position.x, upDistance / 4 + LastCursorY, Planer.transform.position.z), 0.1f);
 
-            Stepped = 1;
+            ActionOptions[0] = true;
         }
     }
     void PlanerActive()
@@ -209,7 +217,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    // Конвертер
+    // Math
     Vector3 VectorInInt(Vector3 Vector, float Y)
     {
         return new Vector3(Convert.ToInt32(Vector.x), Convert.ToInt32(Y), Convert.ToInt32(Vector.z));

@@ -6,9 +6,8 @@ using System;
 public class GlobalStepController : MonoBehaviour
 {
     public bool StepActive = false;
-
+    int StepEndNum = 0;
     GameObject[] Figures;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -20,32 +19,49 @@ public class GlobalStepController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) && !StepActive) 
         {
+            StartCoroutine(Walker());
 
-            Figures = GameObject.FindGameObjectsWithTag("Figure");
+            Debug.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, c " + Figures.Length + " пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
             
-            Debug.Log("Выполнене хода, c " + Figures.Length + " объектами");
-            foreach (GameObject fig in Figures)
-                if (fig.GetComponent<PlayerController>().Stepped == 1)
-                {
-                    fig.GetComponent<PlayerController>().active = 3;
-                }
 
-            StartCoroutine(StepTest());
         }
     }
 
+
+    private IEnumerator Walker()
+    {
+        Figures = GameObject.FindGameObjectsWithTag("Figure");
+
+        StepActive = true; 
+        StepEndNum = 0;
+
+        int sum = 0;
+
+        foreach (GameObject fig in Figures) {
+            if(fig.GetComponent<PlayerController>().ActionOptions[0]) fig.GetComponent<PlayerController>().active = 3;
+
+            yield return new WaitForSeconds(0.05f);
+            sum++;
+        
+        }
+        yield return new WaitForSeconds(sum * 0.05f + 0.3f);
+
+        sum = 0;
+
+        foreach (GameObject fig in Figures) {
+            if(fig.GetComponent<PlayerController>().ActionOptions[1]) fig.GetComponent<PlayerController>().active = 4;
+            sum++;
+        }
+
+
+        
+        yield return new WaitForSeconds(sum * 0.05f + 0.3f);
+        StepActive = false;
+    }
+
+
     private IEnumerator StepTest()
     {
-        StepActive = true;
-        yield return new WaitForSeconds(0.9f);
-
-        foreach (GameObject fig in Figures)
-        {
-            fig.GetComponent<PlayerController>().active = 0;
-            fig.GetComponent<Rigidbody>().AddForce(new Vector3(0, -3, 0));
-        }
-        StepActive = false;
-
-        yield break;
+        while (true) { }
     }
 }
