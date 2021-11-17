@@ -18,9 +18,11 @@ public class PlayerParameterList : MonoBehaviour
 
 
     public string[] AvailableAbilities;
-    public int[,] AttackMatrix;
-    public int Range;
+    public int[,] AttackMatrix; // For close attacks
     //0 - NoDamage, 1 - 1 Damage, 2 - 2 Damage ...//
+
+    public int AttackRange; //For range attack
+    
 
 
     private void ParametersAppointment(int[] Parameters, string[] Abilities)
@@ -38,9 +40,7 @@ public class PlayerParameterList : MonoBehaviour
     }
     public void RangeAttack(string Ability)
     {
-        string[] Bufer = Ability.Split(',');
-
-        int Range = Convert.ToInt32(Bufer[1]), Damage = Convert.ToInt32(Bufer[2]); 
+        
 
 
     }

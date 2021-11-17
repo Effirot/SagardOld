@@ -20,10 +20,6 @@ public class GlobalStepController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && !StepActive) 
         {
             StartCoroutine(Walker());
-
-            Debug.Log("��������� ����, c " + Figures.Length + " ���������");
-            
-
         }
     }
 
@@ -38,9 +34,10 @@ public class GlobalStepController : MonoBehaviour
         int sum = 0;
 
         foreach (GameObject fig in Figures) {
-            if(fig.GetComponent<PlayerController>().ActionOptions[0]) fig.GetComponent<PlayerController>().active = 3;
-
-            yield return new WaitForSeconds(0.05f);
+            if(fig.GetComponent<PlayerController>().ActionOptions[0]) { 
+                fig.GetComponent<PlayerController>().active = 3;
+                yield return new WaitForSeconds(0.05f);
+            }
             sum++;
         
         }
@@ -49,12 +46,14 @@ public class GlobalStepController : MonoBehaviour
         sum = 0;
 
         foreach (GameObject fig in Figures) {
-            if(fig.GetComponent<PlayerController>().ActionOptions[1]) fig.GetComponent<PlayerController>().active = 4;
+            if(fig.GetComponent<PlayerController>().ActionOptions[1]) {
+                fig.GetComponent<PlayerController>().active = 4;
+                yield return new WaitForSeconds(0.05f);
+            }
             sum++;
+
         }
 
-
-        
         yield return new WaitForSeconds(sum * 0.05f + 0.3f);
         StepActive = false;
     }
