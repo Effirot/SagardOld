@@ -106,15 +106,19 @@ public class PlayerParameterList : MonoBehaviour
 
     public void AbilitieComplete()
     {
-        Quaternion TargetRot;
+        
 
         switch (AvailableAbilities[0])
         {
             case "Close attack":
+                Quaternion TargetRot = new Quaternion(0, 0, 0, 0);
+
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
                 {
                     TargetRot = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(hit.transform.position - transform.position), 1);
                 }
+
+                transform.eulerAngles = new Vector3(0, TargetRot.eulerAngles.y / 90 + 45, 0);
 
 
 
