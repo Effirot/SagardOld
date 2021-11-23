@@ -106,12 +106,17 @@ public class PlayerParameterList : MonoBehaviour
 
     public void AbilitieComplete()
     {
+        Quaternion TargetRot;
+
         switch (AvailableAbilities[0])
         {
             case "Close attack":
+                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+                {
+                    TargetRot = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(hit.transform.position - transform.position), 1);
+                }
 
-                //transform.eulerAngles =  Vector3.MoveTowards(transform.eulerAngles, new Vector3(0, RotateIn4() * 90, 0), 0.9f);
-                transform.eulerAngles = new Vector3(0, RotateIn4() * -90 - 90, 0);
+
 
                 break;
             case "Range attack":
@@ -127,6 +132,6 @@ public class PlayerParameterList : MonoBehaviour
     {
         float a = Vector3.Angle(new Vector3(transform.position.x, 0, transform.position.z + 200), new Vector3(Cursore.position.x, 0, Cursore.position.z));
         float b = Vector3.Angle(new Vector3(transform.position.x + 200, 0, transform.position.z), new Vector3(Cursore.position.x, 0, Cursore.position.z));
-        return Convert.ToInt32(a + 45) / 90 + 1 + ((b >= 45) ? 0 : 2);
+        return Convert.ToInt32(a + 45) / 90 + 1 + ((b > 45) ? 0 : 2);
     }
 }
