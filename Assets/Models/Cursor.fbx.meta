@@ -3,11 +3,16 @@ guid: 7d89cde9ed246804b8d1b07e918d0282
 ModelImporter:
   serializedVersion: 20200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Cursor
+    second: {fileID: 2100000, guid: 466a59dcc4e18914581c90ad199427fa, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
-    materialSearch: 1
+    materialSearch: 0
     materialLocation: 1
   animations:
     legacyGenerateAnimations: 4

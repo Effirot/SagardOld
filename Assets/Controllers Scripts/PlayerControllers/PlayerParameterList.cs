@@ -5,47 +5,53 @@ using System;
 
 public class PlayerParameterList : MonoBehaviour
 {
+    
+    private GameObject Cursore;
+    private LineRenderer LnRend;
+    private PlayerController Controller;
+    private Skills Skills;
 
-    private Transform Cursore;
+
+    public bool IsDead = false;
 
 
     public string ClassTAG;
 
-    public int WalkDistance, MaxStamina, MaxHP, MaxSanity, Armour;
-    public int AttackStamina;
-
+    public int MaxStamina, MaxHP, MaxSanity;
     public int Stamina, HP, Sanity;
 
 
     public string[] AvailableAbilities;
-    public int[,] AttackMatrix; // For close attacks
-    //0 - NoDamage, 1 - 1 Damage, 2 - 2 Damage ...//
 
-    public int AttackRange; //For range attack
+    public int WalkDistance, Armour, AttackStamina;
+
+
+
+
+
+    
     
 
+    void Start()
+    {
+        Cursore = GameObject.Find("3DCursore");
+        LnRend = GetComponent<LineRenderer>();
+
+        Controller = GetComponent<PlayerController>();
+        Skills = GetComponent<Skills>();
+
+        Updator();
+    }
 
     private void ParametersAppointment(int[] Parameters, string[] Abilities)
     {
-        WalkDistance = Parameters[0]; MaxStamina = Parameters[1]; MaxHP = Parameters[2]; Armour = Parameters[3];
-        AttackStamina = Parameters[4];
+        WalkDistance = Parameters[0]; MaxStamina = Parameters[1]; MaxHP = Parameters[2]; MaxSanity = Parameters[3]; Armour = Parameters[4];
+        AttackStamina = Parameters[5];
+
+        Stamina = Parameters[1]; HP = Parameters[2]; MaxSanity = Parameters[3];
 
         AvailableAbilities = Abilities;
     }
-    public void CloseAttack()
-    {
-
-
-
-    }
-    public void RangeAttack(string Ability)
-    {
-        
-
-
-    }
-
-
 
 
     public void Updator()
@@ -54,19 +60,10 @@ public class PlayerParameterList : MonoBehaviour
         {
             default:
                 ParametersAppointment(
-                new int[5] //Walk Distance, Max Stamina, Max HP, Armour, Attack Stamina
-                    { 3, 3, 4, 1, 1 }, 
+                new int[6] //Walk Distance, Max Stamina, Max HP, Max Sanity, Armour, Attack Stamina
+                    { 3, 3, 4, 5, 1, 1 }, 
                 new string[] //Available Abilities
-                    { "Close attack" });
-
-                AttackMatrix = new int[5, 6] {
-                    {0, 0, 0, 0, 0, 0 },
-                    {0, 0, 0, 0, 0, 0 },
-                    {0, (0), 2, 1, 0, 0 },
-                    {0, 0, 0, 0, 0, 0 },
-                    {0, 0, 0, 0, 0, 0 }
-                };
-
+                    { "Range attack" });
                 break;
             case "Warior":
 
@@ -81,61 +78,18 @@ public class PlayerParameterList : MonoBehaviour
     }
 
 
-
-
-
-
-
-    void Start()
-    {
-        Cursore = GameObject.Find("3DCursore").transform;
-
-        Updator();
-
-    }
-
-    public void recreation()
+    public void Rest()
     {
         Stamina = MaxStamina;
     }
+
+    
     public void Walk()
     {
 
     }
 
 
-    public void AbilitieComplete()
-    {
-        
-
-        switch (AvailableAbilities[0])
-        {
-            case "Close attack":
-                Quaternion TargetRot = new Quaternion(0, 0, 0, 0);
-
-                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
-                {
-                    TargetRot = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(hit.transform.position - transform.position), 1);
-                }
-
-                transform.eulerAngles = new Vector3(0, TargetRot.eulerAngles.y / 90 + 45, 0);
 
 
-
-                break;
-            case "Range attack":
-
-                break;
-
-
-        }
-
-    }
-
-    private int RotateIn4()
-    {
-        float a = Vector3.Angle(new Vector3(transform.position.x, 0, transform.position.z + 200), new Vector3(Cursore.position.x, 0, Cursore.position.z));
-        float b = Vector3.Angle(new Vector3(transform.position.x + 200, 0, transform.position.z), new Vector3(Cursore.position.x, 0, Cursore.position.z));
-        return Convert.ToInt32(a + 45) / 90 + 1 + ((b > 45) ? 0 : 2);
-    }
 }

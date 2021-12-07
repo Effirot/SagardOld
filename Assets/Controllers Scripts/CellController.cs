@@ -1,35 +1,47 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Linq;
 
 public class CellController : MonoBehaviour
 {
     public int Upped = 0;
     float StartPosY;
 
-    GameObject[] PolesAround;
+    public List<int> DamageOn = new List<int> {};
+    public List<string> DamageTypeOn = new List<string> {};
+    public List<string> DebuffOn = new List<string> {};
+    public List<string> WhoAttackOn = new List<string> {};
 
 
-    // Start is called before the first frame update
+
+
+
+    
+
+
     void Start()
     {
-        transform.position += new Vector3(0, Random.Range(-0.02f, 0.02f), 0);
         StartPosY = transform.position.y;
-
-        StartCoroutine(UpUpdate());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
         
     }
 
-    IEnumerator UpUpdate()
+    void Update()
     {
-        while(true){
-            transform.position = new Vector3(transform.position.x, StartPosY + Upped * 0.16f, transform.position.z);
-            yield return new WaitForSeconds(0.03f);
-        }
+        transform.position = new Vector3(transform.position.x, StartPosY + Upped * 0.2f, transform.position.z);
+
+        if(DamageOn.Sum() > 0){GetComponent<Renderer>().material.color = Color.red;}
+        else{GetComponent<Renderer>().material.color = Color.white;}
+    }
+
+
+    public void Founded(GameObject Who, int Damage, string Type = "Phys", string Debuff = "")
+    {
+        GetComponent<Renderer>().material.color = Color.red;
+    }
+    public void Losted (GameObject Who, int Damage, string Type = "Phys", string Debuff = "")
+    {
+
     }
 }

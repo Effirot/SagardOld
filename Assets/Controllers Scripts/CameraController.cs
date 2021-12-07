@@ -15,6 +15,6 @@ public class CameraController : MonoBehaviour
     void Update()
     {
 
-        transform.localPosition += new Vector3(Input.GetAxis("Horizontal") * Time.deltaTime * CameraSPDX, 0, Input.GetAxis("Vertical") * Time.deltaTime * CameraSPDZ);
+        transform.localPosition -= new Vector3(Input.GetAxis("Horizontal") * Time.deltaTime * CameraSPDX, 0, Input.GetAxis("Vertical") * Time.deltaTime * CameraSPDZ);
     }
 }
