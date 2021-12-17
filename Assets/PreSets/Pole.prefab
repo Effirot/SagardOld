@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1868323576692340383}
   - component: {fileID: 3333303578486176058}
   - component: {fileID: 695439696995814896}
-  - component: {fileID: 2190762736182576902}
+  - component: {fileID: 238120389434791769}
   m_Layer: 0
   m_Name: Pole
   m_TagString: Map
@@ -26,9 +26,10 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1343848161605299237}
-  m_LocalRotation: {x: 0.000000021855694, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 28, y: 0, z: 28}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -52,6 +53,7 @@ MeshRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -82,7 +84,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &2190762736182576902
+--- !u!114 &238120389434791769
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -91,7 +93,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 1343848161605299237}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 414052113b42c4b42a30f9a589178d4f, type: 3}
+  m_Script: {fileID: 11500000, guid: ea0a170de51b61145942e55107d7bbac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panel: {fileID: 8216594037306675899, guid: 237259d2183628c4f9f454f6c8e08223, type: 3}
+  cellGenerator: 
+  Cell: {fileID: 8216594037306675899, guid: 237259d2183628c4f9f454f6c8e08223, type: 3}

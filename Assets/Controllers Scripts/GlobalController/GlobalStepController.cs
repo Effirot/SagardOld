@@ -6,13 +6,6 @@ using System;
 public class GlobalStepController : MonoBehaviour
 {
     public bool StepActive = false;
-    int StepEndNum = 0;
-    GameObject[] Figures;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()
@@ -26,52 +19,51 @@ public class GlobalStepController : MonoBehaviour
 
     private IEnumerator Walker()
     {
-        Figures = GameObject.FindGameObjectsWithTag("Figure");
+        GameObject[] Figures = GameObject.FindGameObjectsWithTag("Figure");
 
         StepActive = true; 
-        StepEndNum = 0;
 
-        int Sum = 0;
+        bool Sum = false;
 
         //Walk
         foreach (GameObject fig in Figures) {
             if(fig.GetComponent<PlayerController>().ActionOptions[0]) { 
                 fig.GetComponent<PlayerController>().active = 3;
                 yield return new WaitForSeconds(0.05f);
-                Sum++;
+                Sum = true;
             }
         }
-        yield return new WaitForSeconds(Sum > 0 ? 0.3f : 0);
-        Sum = 0;
+        yield return new WaitForSeconds(Sum ? 0.3f : 0);
+        Sum = false;
         //Attack
         foreach (GameObject fig in Figures) {
             if(fig.GetComponent<PlayerController>().ActionOptions[1]) {
                 fig.GetComponent<PlayerController>().active = 4;
                 yield return new WaitForSeconds(0.05f);
-                Sum++;
+                Sum = true;
             }
         }
-        yield return new WaitForSeconds(Sum > 0 ? 0.3f : 0);
-        Sum = 0;
+        yield return new WaitForSeconds(Sum ? 0.3f : 0);
+        Sum = false;
         //Death
         foreach (GameObject fig in Figures) {
             if(fig.GetComponent<PlayerParameterList>().HP <= 0) {
                 fig.GetComponent<PlayerController>().active = 5;
                 yield return new WaitForSeconds(0.05f);
-                Sum++;
+                Sum = true;
             }
         }
-        yield return new WaitForSeconds(Sum > 0 ? 0.3f : 0);
-        Sum = 0;
-        //Rest
+        yield return new WaitForSeconds(Sum ? 0.3f : 0);
+        Sum = false;
+        //Rest\Level Ups
         foreach (GameObject fig in Figures) {
             if(!fig.GetComponent<PlayerController>().ActionOptions[0] && !fig.GetComponent<PlayerController>().ActionOptions[1]) {
                 fig.GetComponent<PlayerParameterList>().Rest();
                 yield return new WaitForSeconds(0.05f);
-                Sum++;
+                Sum = true;
             }
         }
-        yield return new WaitForSeconds(Sum > 0 ? 0.3f : 0);
+        yield return new WaitForSeconds(Sum ? 0.3f : 0);
         
         
         StepActive = false;

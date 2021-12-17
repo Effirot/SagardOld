@@ -5,25 +5,40 @@ using System;
 
 public class PlayerParameterList : MonoBehaviour
 {
-    
-    private GameObject Cursore;
-    private LineRenderer LnRend;
     private PlayerController Controller;
     private Skills Skills;
 
 
+
+
+
+    [Header("Is figure alive?")]
     public bool IsDead = false;
 
-
+    [Header("Class of figure")]
     public string ClassTAG;
+    
+    [Header("Max Parameters")] 
+    [Range(0, 100)] public int MaxStamina;
+    [Range(0, 100)] public int MaxHP;
+    [Range(0, 100)] public int MaxSanity;
 
-    public int MaxStamina, MaxHP, MaxSanity;
-    public int Stamina, HP, Sanity;
+    [Header("Current Parameters")]
+    public int Stamina;
+    public int HP;
+    public int Sanity;
+    [Header("Armore")]
+    public int ArmoreClose;
+    public int ArmoreBalistic;
+    public int SanityShield;
+    [Header("Other")]
+    [Range(0, 100)] public int WalkDistance;
 
-
+    [Header("Skills")]
     public string[] AvailableAbilities;
 
-    public int WalkDistance, Armour, AttackStamina;
+
+    
 
 
 
@@ -34,49 +49,16 @@ public class PlayerParameterList : MonoBehaviour
 
     void Start()
     {
-        Cursore = GameObject.Find("3DCursore");
-        LnRend = GetComponent<LineRenderer>();
+        {
+            Stamina = MaxStamina;
+            HP = MaxHP;
+            Sanity = MaxSanity;
+        }
+
 
         Controller = GetComponent<PlayerController>();
         Skills = GetComponent<Skills>();
-
-        Updator();
     }
-
-    private void ParametersAppointment(int[] Parameters, string[] Abilities)
-    {
-        WalkDistance = Parameters[0]; MaxStamina = Parameters[1]; MaxHP = Parameters[2]; MaxSanity = Parameters[3]; Armour = Parameters[4];
-        AttackStamina = Parameters[5];
-
-        Stamina = Parameters[1]; HP = Parameters[2]; MaxSanity = Parameters[3];
-
-        AvailableAbilities = Abilities;
-    }
-
-
-    public void Updator()
-    {
-        switch (ClassTAG)
-        {
-            default:
-                ParametersAppointment(
-                new int[6] //Walk Distance, Max Stamina, Max HP, Max Sanity, Armour, Attack Stamina
-                    { 3, 3, 4, 5, 1, 1 }, 
-                new string[] //Available Abilities
-                    { "Range attack" });
-                break;
-            case "Warior":
-
-
-                break;
-
-            case "Archer":
-
-
-                break;
-        }
-    }
-
 
     public void Rest()
     {

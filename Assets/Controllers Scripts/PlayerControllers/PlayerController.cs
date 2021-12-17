@@ -15,14 +15,18 @@ public class PlayerController : MonoBehaviour
     private Skills Skills;
     private bool push = false, push2 = false;
 
-    private float LastCursorY, upDistance = 0.4f, UpSpeed = 0.01f, RotationSpeed = 0.01f, MinTime = 0.5f;
+    private float LastCursorY, upDistance = 1f, UpSpeed = 0.01f, RotationSpeed = 0.01f;
 
 
     private Transform Cursore;
 
     public int active = 0, Stepped = 0;
+    
+    [NonSerialized]
     public float YUpPos;
-    public bool[] ActionOptions = new bool[2] {false, false};
+
+
+    public bool[] ActionOptions = new bool[3] {false, false, false};
 
     //Planer object
     private GameObject Planer;
@@ -31,6 +35,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+
         Skills = GetComponent<Skills>();
 
         Cursore = GameObject.Find("3DCursore").transform;
@@ -43,9 +48,7 @@ public class PlayerController : MonoBehaviour
 
         {
             // Started stabilization
-            transform.position = new Vector3(Convert.ToInt32(transform.position.x), Convert.ToInt32(transform.position.y), Convert.ToInt32(transform.position.z));
-
-
+            transform.position = VectorInInt(transform.position, 7);
         }
 
         {
@@ -67,13 +70,17 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if(Physics.Raycast(transform.position, Vector3.down, out RaycastHit upDistHit))
+        {
+            YUpPos = upDistHit.point.y + upDistance;
+        }
+
         if (!GameObject.Find("GlobalMapController").GetComponent<GlobalStepController>().StepActive) {
             if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
             {
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit) & hit.transform.gameObject == gameObject)
                 {
                     push = true;
-                    YUpPos = transform.position.y + upDistance;
                 }
             }
             if (Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1)) push = false;
@@ -102,7 +109,9 @@ public class PlayerController : MonoBehaviour
 
 
         // ----------------------------------------The first Player Switcher------------------------------------//      
-        switch (active)
+        
+            
+            switch (active)
             {
                 default:
                     sleep(); PlannerPosition(false);
@@ -111,8 +120,8 @@ public class PlayerController : MonoBehaviour
                     clicked(); PlannerPosition(false, true);
                 break;
                 case 2:
-                    WalkPlane(); PlannerPosition(true); 
-                break;
+                    WalkPlane(); PlannerPosition(true);
+                break;                
                 case 3:
                     Walking();
                 break;
