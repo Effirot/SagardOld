@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+
 public class Skills : MonoBehaviour
 {
 
@@ -11,6 +12,8 @@ public class Skills : MonoBehaviour
     private LineRenderer LnRend;
     private PlayerParameterList Parameters;
 
+
+    private GameObject MapController;
 
 
 
@@ -29,6 +32,8 @@ public class Skills : MonoBehaviour
 
         Controller = GetComponent<PlayerController>();
         Parameters = GetComponent<PlayerParameterList>();
+
+        MapController = GameObject.Find("MapController");
     }
     
     
@@ -52,8 +57,8 @@ public class Skills : MonoBehaviour
             case "Range attack":
             int Range = 5;
             int Damage = 3;
-            string Debuff = "";
-            string DamageType = "";
+            string Debuff = "None";
+            string DamageType = "Phys";
 
             if (!((Reset || Controller.ActionOptions[1] || Changing))) {LnRend.enabled = false;}
             else {LnRend.enabled = true; }
@@ -61,7 +66,7 @@ public class Skills : MonoBehaviour
 
             ParabolePaint(transform.position, ToPoint, OKRange(Range), 1f, 3);
             ACtionDeselecting(OKRange(Range));
-            ToPointWithoutWay(VectorInInt(ToPoint, 10), OKRange(Range), Damage, AbilitieName, Debuff, DamageType);             
+            ToPointWithOUTWay(VectorInInt(ToPoint, 10), OKRange(Range), Damage, Debuff, DamageType);             
             break;
         }
     }
@@ -69,13 +74,19 @@ public class Skills : MonoBehaviour
 
 
     public GameObject obj = null;
-    void ToPointWithoutWay(Vector3 EndPoint, bool WhereOk, int Damage, string SkillName, string Debuff, string DamageType)
+    void ToPointWithOUTWay(Vector3 EndPoint, bool WhereOk, int Damage, string Debuff, string DamageType)
     {
         //----------------------------------------------------------------For Ballistic Attacks----------------------------------------------------------------         
         
         if(Physics.Raycast(EndPoint, Vector3.down * 1000, out RaycastHit hit, LayerMask.GetMask("Founded")) && hit.collider.gameObject.tag == "Map" && WhereOk)
         {
+            GameObject Cell = hit.collider.gameObject;
+            MapGenerator Gen = MapController.GetComponent<MapGenerator>();
+
             
+            
+            
+            //Gen.Attacks.Add(new Attack() {WhoAttack = gameObject, WhereAttack = Cell, Damage = Damage, Debuff = Debuff, DamageType = DamageType});
         }
     }
 

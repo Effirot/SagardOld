@@ -5,12 +5,12 @@ using System;
 
 public class GlobalStepController : MonoBehaviour
 {
-    public bool StepActive = false;
+    public static bool Planning = true;
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !StepActive) 
+        if (Input.GetKeyDown(KeyCode.Space) && Planning) 
         {
             StartCoroutine(Walker());
         }
@@ -21,7 +21,7 @@ public class GlobalStepController : MonoBehaviour
     {
         GameObject[] Figures = GameObject.FindGameObjectsWithTag("Figure");
 
-        StepActive = true; 
+        Planning = false; 
 
         bool Sum = false;
 
@@ -66,12 +66,6 @@ public class GlobalStepController : MonoBehaviour
         yield return new WaitForSeconds(Sum ? 0.3f : 0);
         
         
-        StepActive = false;
-    }
-
-
-    private IEnumerator StepTest()
-    {
-        while (true) { }
+        Planning = false;
     }
 }

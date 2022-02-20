@@ -7,20 +7,21 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {    
-    private Rigidbody rb;
-    RigidbodyConstraints Constraints;
+    private Rigidbody rb; RigidbodyConstraints Constraints; private MeshCollider Coll;
+    
 
-    private MeshCollider Coll;
-    private PlayerParameterList Parameters;
-    private Skills Skills;
-    private bool push = false, push2 = false;
+
+    private PlayerParameterList Parameters; private Skills Skills;
+
+
+    private bool push = false, Changer = false;
 
     private float LastCursorY, upDistance = 1f, UpSpeed = 0.01f, RotationSpeed = 0.01f;
 
 
     private Transform Cursore;
 
-    public int active = 0, Stepped = 0;
+    public int active = 0;
     
     [NonSerialized]
     public float YUpPos;
@@ -30,21 +31,23 @@ public class PlayerController : MonoBehaviour
 
     //Planer object
     private GameObject Planer;
+    private GameObject GlobalController;
 
 
 
     void Start()
     {
-
         Skills = GetComponent<Skills>();
+        Parameters = GetComponent<PlayerParameterList>();
 
         Cursore = GameObject.Find("3DCursore").transform;
 
         rb = GetComponent<Rigidbody>();
+        Coll = GetComponent<MeshCollider>();
         Constraints = rb.constraints;
 
-        Coll = GetComponent<MeshCollider>();
-        Parameters = GetComponent<PlayerParameterList>();
+
+
 
         {
             // Started stabilization
@@ -53,18 +56,16 @@ public class PlayerController : MonoBehaviour
 
         {
             // Planner
-            Planer = Instantiate(gameObject, transform.position, transform.rotation);
+            Renderer FigureRend = GetComponent<Renderer>();
 
-            Destroy(Planer.GetComponent<PlayerController>());
+            Planer = new GameObject("Planner(" + name + ")", typeof(MeshFilter), typeof(MeshRenderer), typeof(LineRenderer));
+            Planer.GetComponent<MeshFilter>().mesh = GetComponent<MeshFilter>().mesh;
+            Planer.GetComponent<Renderer>().material = GetComponent<Renderer>().material;
+            
+            Planer.tag = "Planer";
+            Planer.transform.localScale = transform.localScale * 0.9f;     
 
-
-            Destroy(Planer.GetComponent<MeshCollider>());
-            Destroy(Planer.GetComponent<Rigidbody>());
-
-            Planer.name = name + " Planer";
-            Planer.tag = "Cursore";
-            Planer.transform.localScale = transform.localScale * 0.9f;
-
+            Planer.transform.position = transform.position; 
         }
     }
 
@@ -75,7 +76,7 @@ public class PlayerController : MonoBehaviour
             YUpPos = upDistHit.point.y + upDistance;
         }
 
-        if (!GameObject.Find("GlobalMapController").GetComponent<GlobalStepController>().StepActive) {
+        if (!GlobalStepController.Planning) {
             if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(1))
             {
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit) & hit.transform.gameObject == gameObject)
@@ -90,13 +91,13 @@ public class PlayerController : MonoBehaviour
             {
                 
 
-                if (Input.GetKeyDown(KeyCode.Mouse0) && push) push2 = !push2;
+                if (Input.GetKeyDown(KeyCode.Mouse0) && push) Changer = !Changer;
 
-                if (push2) { active = 1; }
+                if (Changer) { active = 1; }
                 else active = 0;
             }
 
-            if ((Input.GetKeyDown(KeyCode.Mouse1) || Input.GetKeyDown(KeyCode.Mouse0)) && !push) push2 = false;
+            if ((Input.GetKeyDown(KeyCode.Mouse1) || Input.GetKeyDown(KeyCode.Mouse0)) && !push) Changer = false;
         }
 
 
@@ -144,7 +145,7 @@ public class PlayerController : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeAll;
         Coll.enabled = true;
 
-        transform.position = Vector3.MoveTowards(transform.position, VectorInInt(transform.position, YUpPos + Mathf.Sin(Time.fixedTime) / 10), UpSpeed / 30);
+        transform.position = Vector3.MoveTowards(transform.position, VectorInInt(transform.position, YUpPos + Mathf.Sin(Time.fixedTime) * 0.0000001f), UpSpeed / 30);
     }
 
     private void WalkPlane()
@@ -202,16 +203,21 @@ public class PlayerController : MonoBehaviour
         int Distance = Parameters.Stamina > 0 ? Parameters.WalkDistance : 1;
 
         bool OnThisObject = VectorInInt(transform.position, 0) == VectorInInt(Planer.transform.position, 0);
-        bool InMaxDistance = Vector3.Distance(transform.position, Planer.transform.position) > Distance + 0.5;   
+        bool InMaxDistance = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(Planer.transform.position.x, 0, Planer.transform.position.z)) > Distance + 0.5;   
         
-        bool Conditions = Forcibility || OnThisObject || InMaxDistance;
+        bool OnAnotherPlaner = true;
+        foreach (GameObject Planers in GameObject.FindGameObjectsWithTag("Planer"))
+        {
+            if (VectorInInt(Planers.transform.position) == VectorInInt(Planer.transform.position)) OnAnotherPlaner = false;
+        }
+
+        bool Conditions = Forcibility || OnThisObject || InMaxDistance || OnAnotherPlaner;
 
         if (Conditions)
         {
             if (!IsActive)
             { 
                 Planer.transform.position = transform.position;
-
                 Planer.GetComponent<Renderer>().enabled = false;
 
                 ActionOptions[0] = false;
@@ -220,7 +226,9 @@ public class PlayerController : MonoBehaviour
             {
                 Planer.GetComponent<Renderer>().enabled = true;
 
-                Planer.transform.localPosition = Vector3.MoveTowards(Planer.transform.localPosition, Cursore.position, 0.1f);
+                float distance = Vector3.Distance(Planer.transform.localPosition, Cursore.position);
+
+                Planer.transform.localPosition = VectorInInt(Cursore.position, Cursore.position.y);
                 Planer.transform.eulerAngles += new Vector3(0, RotationSpeed * 2, 0);
 
                 ActionOptions[0] = false;
@@ -243,7 +251,7 @@ public class PlayerController : MonoBehaviour
             {
                 Planer.GetComponent<Renderer>().enabled = true;
 
-                Planer.transform.localPosition = Vector3.MoveTowards(Planer.transform.localPosition, Cursore.position, 0.1f);
+                Planer.transform.localPosition = VectorInInt(Cursore.position, Cursore.position.y);
                 Planer.transform.eulerAngles += new Vector3(0, RotationSpeed * 2, 0);
 
                 ActionOptions[0] = true;
@@ -253,12 +261,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
-
-
-
     // Math
-    Vector3 VectorInInt(Vector3 Vector, float Y)
+    Vector3 VectorInInt(Vector3 Vector, float Y = 0)
     {
         return new Vector3(Convert.ToInt32(Vector.x), Y, Convert.ToInt32(Vector.z));
     }

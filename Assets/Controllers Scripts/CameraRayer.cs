@@ -15,12 +15,14 @@ public class CameraRayer : MonoBehaviour
     {
 
 
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Founded")) && hit.collider.gameObject.tag == "Map")
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, LayerMask.GetMask("Founded")) && hit.collider.gameObject.tag == "Map")
         {
-            Pos = new Vector3(hit.point.x, hit.collider.transform.position.y, hit.point.z);
+            Pos = hit.collider.transform.position;
             SelectedCell = hit.collider.gameObject;
         }
-        transform.position = Vector3.MoveTowards(transform.position, new Vector3(Convert.ToInt32(Pos.x), Pos.y + y, Convert.ToInt32(Pos.z)), 0.1f);
+
+        float Distance = Vector3.Distance(transform.position, Pos) / 10;
+        transform.position = Vector3.MoveTowards(transform.position, new Vector3(Convert.ToInt32(Pos.x), Pos.y + y, Convert.ToInt32(Pos.z)), 0.1f + Distance);
 
     }
 }

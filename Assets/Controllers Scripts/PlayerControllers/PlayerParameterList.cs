@@ -39,11 +39,6 @@ public class PlayerParameterList : MonoBehaviour
 
 
     
-
-
-
-
-
     
     
 
@@ -70,8 +65,4 @@ public class PlayerParameterList : MonoBehaviour
     {
 
     }
-
-
-
-
 }
