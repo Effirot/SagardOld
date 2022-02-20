@@ -9,9 +9,6 @@ public class Controller : MonoBehaviour
     
     private RigidbodyConstraints Constraints; private Rigidbody rb; private Collider Collider;
     
-    
-    
-    private bool OnClick = false;
     public bool CanControll = true;
 
     public Vector3 ToPos;
