@@ -15,7 +15,9 @@ public class Controller : MonoBehaviour
 
     
     public GameObject MovePlaner;
+    public Vector3 MovePlanerPos;
     public GameObject AttackPlaner;
+    public Vector3 AttackPlanerPos;
     
     
     public bool CanControll = true;
@@ -26,7 +28,7 @@ public class Controller : MonoBehaviour
     void Awake()
     {   
         /*Parameter Set*/
-        {        
+        {
             Collider = GetComponent<Collider>();
             rb = GetComponent<Rigidbody>();
             Constraints = rb.constraints;
@@ -36,21 +38,21 @@ public class Controller : MonoBehaviour
         }
         /*Move Controller*/
         {
-            MovePlaner = new GameObject(name + " : MovePlaner", typeof(MeshFilter), typeof(MeshRenderer));
+            MovePlaner = new GameObject(name + " : MovePlaner", typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider));
             MovePlaner.transform.position = transform.position;
             MovePlaner.transform.rotation = transform.rotation;
 
             MovePlaner.GetComponent<MeshFilter>().mesh = GetComponent<MeshFilter>().mesh;
-
-            MovePlaner.transform.parent = transform;
+            
+            MovePlaner.GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshCollider>().sharedMesh;
+            MovePlaner.GetComponent<MeshCollider>().convex = true;
+            MovePlaner.GetComponent<MeshCollider>().isTrigger = true;
         }
         /*Attack Controller*/
         {
             AttackPlaner = new GameObject(name + " : AttackPlaner", typeof(MeshFilter), typeof(MeshRenderer));
             AttackPlaner.transform.position = transform.position;
             AttackPlaner.transform.rotation = transform.rotation;
-
-            AttackPlaner.transform.parent = transform;
         }
     
     }
@@ -71,11 +73,6 @@ public class Controller : MonoBehaviour
                 // Planning
                 default: 
                     SwitchPhysics(true);
-                    // MovePlaner.transform.position = transform.position;
-                    // MovePlaner.transform.rotation = transform.rotation;
-
-                    // AttackPlaner.transform.position = transform.position;
-                    // AttackPlaner.transform.rotation = transform.rotation;
                 break;
 
                 case "active": 
@@ -91,7 +88,7 @@ public class Controller : MonoBehaviour
 
                     transform.position = Vector3.MoveTowards(Pos, YUpPos() + new Vector3(0, 1, 0), 0.03f);
 
-                    LookingTo(CursorPos());
+                    //LookingTo(CursorPos());
                 break;
             }
         }
@@ -146,6 +143,27 @@ public class Controller : MonoBehaviour
 
     
     
+    
+    
+    class CursorManipulation : MonoBehaviour
+    {
+    
+        bool PlanerChecker(int dist)
+        {
+           bool OnDistance = Vector3.Distance(Controller.MovePlaner.transform.position, )
+           
+           return true;
+        }
+        void PlanerStay()
+        {
+
+        }
+        Color PlanerPainter()
+        {
+            if(true) return Color.green;
+            else return Color.red;
+        }
+    }
     
     
     
