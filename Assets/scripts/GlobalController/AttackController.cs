@@ -10,19 +10,13 @@ public class Attack : MonoBehaviour
     public string DamageType;
     public string Debuff;
 
-    
-        
-
     public override string ToString()
     {
         return "NAME: " + WhoAttack.name + " attacks on " + WhereAttack.name + "   Damage: " + Damage + "   DamageType: " + DamageType + "   Debuff: " + Debuff == ""? "None" : Debuff;
     }
 }
+
 public class AttackController : MonoBehaviour
 {
-
-    void Update()
-    {
-        
-    }
+    List<Attack> lol = new List<Attack>();
 }

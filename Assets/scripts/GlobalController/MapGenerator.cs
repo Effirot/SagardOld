@@ -3,12 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-
-
-
-
-
-
 public class MapGenerator : MonoBehaviour
 {
     [SerializeField] private bool RegenerateMap = false;

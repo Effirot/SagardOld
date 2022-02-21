@@ -5,8 +5,7 @@ using System;
 
 public class PlayerParameterList : MonoBehaviour
 {
-    private PlayerController Controller;
-    private Skills Skills;
+
 
 
 
@@ -49,20 +48,10 @@ public class PlayerParameterList : MonoBehaviour
             HP = MaxHP;
             Sanity = MaxSanity;
         }
-
-
-        Controller = GetComponent<PlayerController>();
-        Skills = GetComponent<Skills>();
     }
 
     public void Rest()
     {
         Stamina = MaxStamina;
-    }
-
-    
-    public void Walk()
-    {
-
     }
 }

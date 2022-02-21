@@ -60,7 +60,7 @@ public class CellGenerator : MonoBehaviour
 
             
                 obj.transform.position += new Vector3(0, (UpIndex) * UpMultiplyer + 0.4f, 0);
-                obj.name = x + " | " + z + "      " + UpIndex;
+                obj.name = x + " | " + z;
                 GlobController.Cells[x, z] = obj;
             }
         }
@@ -88,11 +88,12 @@ public class CellGenerator : MonoBehaviour
                 float Column = Mathf.Abs(Mathf.Sin(((x + 11) * (z + 3) * key) + 29) * 5) % 6;
                 
                 obj.transform.position += new Vector3(0, (Column >= 4.93f ? 10 + UpIndex : UpIndex) * UpMultiplyer + 0.4f, 0);
-                obj.name = x + " | " + z + "      " + UpIndex;
+                obj.name = x + " | " + z;
                 GlobController.Cells[x, z] = obj;
             }
         }
     }
+
     void Empty()
     {
         enabled = false;
