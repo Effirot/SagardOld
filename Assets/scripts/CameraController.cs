@@ -5,9 +5,17 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [Range(1, 100)]public float cameraSpd = 20, rotSpd = 20;
-    [Range(1, 100)]public Transform Camera;
+    public Camera Camera;
+    float StartedFieldOfView;
+    float toFieldOfView = 0;
 
-    [SerializeField]private bool toBase = false;
+    [SerializeField] private bool toBase = false;
+
+    void Start()
+    {
+        StartedFieldOfView = Camera.fieldOfView;
+        toFieldOfView = StartedFieldOfView;
+    }
 
     void Update()
     {
@@ -16,8 +24,11 @@ public class CameraController : MonoBehaviour
 
         Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0);
 
-        transform.Translate((hor + ver) * cameraSpd);
+        toFieldOfView = Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") * -60 + toFieldOfView, 15, StartedFieldOfView);
+        Camera.fieldOfView = Mathf.Lerp(Camera.fieldOfView, toFieldOfView, 0.1f);
 
+        transform.Translate((hor + ver) * cameraSpd);
+        Debug.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y + 10000, transform.position.z));
 
         if(Input.GetKeyDown("space")) toBase = true;
 
