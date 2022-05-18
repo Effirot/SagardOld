@@ -5,8 +5,6 @@ public class Controller : MonoBehaviour
 {
     private Collider Collider;
 
-
-    public string Action = "";
     public int SkillIndex;
 
     private GameObject MovePlaner;
@@ -180,7 +178,7 @@ public class Controller : MonoBehaviour
         else
         {
             // Acting
-            switch(Action)
+            switch(StepTest())
             {
                 default: 
                     StayOnFloor();
@@ -278,18 +276,18 @@ public class Controller : MonoBehaviour
         else return "";
     }   
 
-    string StepTest(string stage) 
+    string StepTest() 
     {
         string result = "";
-        switch (stage)
-        {
-            case "active":
-                if(planed.AttackPlane) return "attack";
-            break;
-            case "move":
-                if(planed.WalkPlane) return "move";
-            break;
-        }
+        // switch ()
+        // {
+        //     case "active":
+        //         if(planed.AttackPlane) return "attack";
+        //     break;
+        //     case "move":
+        //         if(planed.WalkPlane) return "move";
+        //     break;
+        // }
 
 
         return result;

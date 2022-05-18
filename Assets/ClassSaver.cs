@@ -1,318 +1,339 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
-using System;
+using SagardCL.Usabless;
 
-/*
-Damage types:
-Melee
-Balistic
-Rezo
-Pure
-*/
-
-
-[System.Serializable]
-public class ParameterList
-{   
-    [Header("Can Controll?")]
-    public bool CanControll = true;
-    public bool IsDead = false;
-
-    [Space]
-
-    public string ClassTAG = "";
-
-    public int WalkDistance;
-    [Space]
-
-    public List<Usabless.Skill> AvailableSkills;
-    [Space]
-    public List<Usabless.Effect> Resists;
-    public List<Usabless.Effect> Debuffs;
-    [Space]
-
-
-    [Space]
-    [Space]
-    [Header("Base Parameters")]
-    public int MaxStamina;
-    public int MaxHP;
-    public int MaxSanity;
-    [Space]
-    public int ArmoreClose;
-    public int ArmoreBalistic;
-    public int SanityShield;
-    [Space]
-    public  int Stamina;
-    public int HP;
-    public int Sanity;
-
-    private void Awake()
-    {
-        Stamina = MaxStamina;
-        HP = MaxHP;
-        Sanity = MaxSanity;
-    }
-    public void Rest(int StaminaAdd)
-    {
-        Stamina = Mathf.Clamp(Stamina + StaminaAdd, 0, MaxStamina);
-    }
-    
-    public void CompleteAllEffects()
-    {
-        foreach(Usabless.Effect Effect in Debuffs)
-        {
-
-        }
-    }
-
-    public void SetMax(int Stamina, int HP, int Sanity)
-    {
-        MaxStamina = Stamina;
-        MaxHP = HP;
-        MaxSanity = Sanity;
-    }
-    public void SetBase(int Stamina, int HP, int Sanity)
-    {
-        MaxStamina = Stamina;
-        MaxHP = HP;
-        MaxSanity = Sanity;
-    }
-    public void SetProtection(int Close, int Balistic, int Sanity)
-    {
-        ArmoreClose = Stamina;
-        ArmoreBalistic = HP;
-        SanityShield = Sanity;
-    }
-
-    public void AddSkill(string name, uint level, uint damage)
-    {
-        AvailableSkills.Add(new Usabless.Skill(name, level, damage));
-    }
-    public void AddSkill(Usabless.Skill skill)
-    {
-        AvailableSkills.Add(skill);
-    }
-
-    public void RemoveSkill(string name, uint level, uint damage)
-    {
-        AvailableSkills.Remove(new Usabless.Skill(name, level, damage));
-    }
-    public void RemoveSkill(Usabless.Skill skill)
-    {
-        AvailableSkills.Remove(skill);
-    }
-
-
-    public void Damage(string damageType, int damage, Usabless.Effect debuff)
-    {
-
-    }
-    public void Damage(Attack attack)
-    {
-
-    }
-
-    public void AddRangeSkill(List<Usabless.Skill> skills)
-    {
-        AvailableSkills.AddRange(skills);
-    }
-    public static ParameterList operator +(ParameterList a, ParameterList b)
-    {
-        ParameterList list = a;
-        list.SetMax(a.MaxStamina + b.MaxStamina, a.MaxHP + b.MaxHP, a.MaxSanity + b.MaxSanity);
-        list.SetBase(a.Stamina + b.Stamina, a.HP + b.HP, a.Sanity + b.Sanity);
-        list.SetProtection(a.ArmoreClose + b.ArmoreClose, a.ArmoreBalistic + b.ArmoreBalistic, a.SanityShield + b.SanityShield);
-
-        if(b.AvailableSkills != null) list.AddRangeSkill(b.AvailableSkills);
-
-        return list;
-    }
-    public static ParameterList operator -(ParameterList a, ParameterList b)
-    {
-        ParameterList list = a;
-        list.SetMax(a.MaxStamina - b.MaxStamina, a.MaxHP - b.MaxHP, a.MaxSanity - b.MaxSanity);
-        list.SetBase(a.Stamina - b.Stamina, a.HP - b.HP, a.Sanity - b.Sanity);
-        list.SetProtection(a.ArmoreClose - b.ArmoreClose, a.ArmoreBalistic - b.ArmoreBalistic, a.SanityShield - b.SanityShield);
-
-        foreach(Usabless.Skill skill in b.AvailableSkills)
-        {
-            list.RemoveSkill(skill);
-        }
-
-        return list;
-    }
-
-}
-
-
-public class Usabless{
-    
+namespace SagardCL
+{
     [System.Serializable]
-    public class Skill
-    {
-        public string Name;
-        public string Description;
-        Texture2D image;
-        public string Type;
-        public uint Level;
-        public uint DamageModifier;
-        public bool NoWalking = false;
+    public class ParameterList
+    {   
+        [Header("Can Controll?")]
+        public bool CanControll = true;
+        public bool IsDead = false;
 
-        public Skill(string type, uint level, uint damage, bool noWlaking = false)
-        { Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
+        [Space]
 
-        public override string ToString()
-        { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + (NoWalking?":No" : ":Yes") + ")"; }
-        
-        LayerMask Mask = LayerMask.GetMask(new string[] {"Map", "Object"});
-        
-        private Vector3 ToPoint(Vector3 f, Vector3 t, float Distance)
+        public string ClassTAG = "";
+
+        public int WalkDistance;
+        [Space]
+
+        public List<Usabless.Skill> AvailableSkills;
+        [Space]
+        public List<Usabless.Effect> Resists;
+        public List<Usabless.Effect> Debuffs;
+        [Space]
+
+
+        [Space]
+        [Space]
+        [Header("Base Parameters")]
+        public int MaxStamina;
+        public int MaxHP;
+        public int MaxSanity;
+        [Space]
+        public int ArmoreClose;
+        public int ArmoreBalistic;
+        public int SanityShield;
+        [Space]
+        public  int Stamina;
+        public int HP;
+        public int Sanity;
+
+        private void Awake()
         {
-            if(Physics.Raycast(f, t - f, out RaycastHit hit, Distance, Mask))
-            { 
-                return new Checkers(hit.point, 0.3f);
-            }
-            else return t; 
+            Stamina = MaxStamina;
+            HP = MaxHP;
+            Sanity = MaxSanity;
         }
-
-        public void Complete(Vector3 from, Vector3 to)
+        public void Rest(int StaminaAdd)
         {
-            switch(Type)
-            {
-                case "Sword swing":
-                {
-                    
-                    break;
-                }
-                case "Shot":
-                {
-                    float Distance = 5.5f + (2 * Level);
-                    
-                    Debug.DrawLine(from, to, Color.yellow);
-                    Debug.DrawLine(from, ToPoint(from, to, Distance), Color.red);
-                    break;
-                }
-                case "Volley":
-                {
-
-                    break;
-                }
-            }
+            Stamina = Mathf.Clamp(Stamina + StaminaAdd, 0, MaxStamina);
         }
         
-        public bool Check(Vector3 from, Vector3 to)
+        public void CompleteAllEffects()
         {
-            bool result = false;
-            switch(Type)
+            foreach(Usabless.Effect Effect in Debuffs)
             {
-                case "Sword swing":
-                {
-                    
-                    break;
-                }
-                case "Shot":
-                {
-                    float Distance = 5.5f + (2 * Level);
 
-                    result = Vector3.Distance(from, to) < Distance & !(from.x == to.x && from.z == to.z);
-                    break;
-                }
-                case "Volley":
-                {
+            }
+        }
 
-                    break;
+        public void SetMax(int Stamina, int HP, int Sanity)
+        {
+            MaxStamina = Stamina;
+            MaxHP = HP;
+            MaxSanity = Sanity;
+        }
+        public void SetBase(int Stamina, int HP, int Sanity)
+        {
+            MaxStamina = Stamina;
+            MaxHP = HP;
+            MaxSanity = Sanity;
+        }
+        public void SetProtection(int Close, int Balistic, int Sanity)
+        {
+            ArmoreClose = Stamina;
+            ArmoreBalistic = HP;
+            SanityShield = Sanity;
+        }
+
+        public void AddSkill(string name, uint level, uint damage)
+        {
+            AvailableSkills.Add(new Usabless.Skill(name, level, damage));
+        }
+        public void AddSkill(Usabless.Skill skill)
+        {
+            AvailableSkills.Add(skill);
+        }
+
+        public void RemoveSkill(string name, uint level, uint damage)
+        {
+            AvailableSkills.Remove(new Usabless.Skill(name, level, damage));
+        }
+        public void RemoveSkill(Usabless.Skill skill)
+        {
+            AvailableSkills.Remove(skill);
+        }
+
+
+        public void Damage(string damageType, int damage, Usabless.Effect debuff)
+        {
+
+        }
+        public void Damage(Attack attack)
+        {
+
+        }
+
+        public void AddRangeSkill(List<Usabless.Skill> skills)
+        {
+            AvailableSkills.AddRange(skills);
+        }
+        public static ParameterList operator +(ParameterList a, ParameterList b)
+        {
+            ParameterList list = a;
+            list.SetMax(a.MaxStamina + b.MaxStamina, a.MaxHP + b.MaxHP, a.MaxSanity + b.MaxSanity);
+            list.SetBase(a.Stamina + b.Stamina, a.HP + b.HP, a.Sanity + b.Sanity);
+            list.SetProtection(a.ArmoreClose + b.ArmoreClose, a.ArmoreBalistic + b.ArmoreBalistic, a.SanityShield + b.SanityShield);
+
+            if(b.AvailableSkills != null) list.AddRangeSkill(b.AvailableSkills);
+
+            return list;
+        }
+        public static ParameterList operator -(ParameterList a, ParameterList b)
+        {
+            ParameterList list = a;
+            list.SetMax(a.MaxStamina - b.MaxStamina, a.MaxHP - b.MaxHP, a.MaxSanity - b.MaxSanity);
+            list.SetBase(a.Stamina - b.Stamina, a.HP - b.HP, a.Sanity - b.Sanity);
+            list.SetProtection(a.ArmoreClose - b.ArmoreClose, a.ArmoreBalistic - b.ArmoreBalistic, a.SanityShield - b.SanityShield);
+
+            foreach(Usabless.Skill skill in b.AvailableSkills)
+            {
+                list.RemoveSkill(skill);
+            }
+
+            return list;
+        }
+
+    }
+
+
+
+    namespace Usabless{
+
+        public enum DamageType
+        {
+            Melee,
+            Range,
+            Rezo,
+            Terra,
+            Pure
+        }        
+        public enum HitType
+        {
+            SwordSwing,
+            Shot,
+            Volley,
+            Dash,
+            
+        }
+        
+        [System.Serializable]
+        public class Skill
+        {
+            public string Name;
+            public string Description;
+            Texture2D image;
+            public HitType Type;
+            public uint Level;
+            public uint DamageModifier;
+            public bool NoWalking = false;
+
+            public Skill(HitType type, uint level, uint damage, bool noWlaking = false)
+            { Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
+
+            public override string ToString()
+            { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + (NoWalking?":No" : ":Yes") + ")"; }
+            
+            LayerMask Mask = LayerMask.GetMask(new string[] {"Map", "Object"});
+            
+            private Vector3 ToPoint(Vector3 f, Vector3 t, float Distance)
+            {
+                if(Physics.Raycast(f, t - f, out RaycastHit hit, Distance, Mask))
+                { 
+                    return new Checkers(hit.point, 0.3f);
+                }
+                else return t; 
+            }
+
+            public void Complete(Vector3 from, Vector3 to)
+            {
+                switch(Type)
+                {
+                    case HitType.SwordSwing:
+                    {
+                        
+                        break;
+                    }
+                    case HitType.Shot:
+                    {
+                        float Distance = 5.5f + (2 * Level);
+                        
+                        Debug.DrawLine(from, to, Color.yellow);
+                        Debug.DrawLine(from, ToPoint(from, to, Distance), Color.red);
+                        break;
+                    }
+                    case HitType.Volley:
+                    {
+
+                        break;
+                    }
                 }
             }
             
-            return result;
-        }
-
-        public void DrawLine(LineRenderer lnRenderer, Vector3 from, Vector3 to)
-        {
-            switch(Type)
+            public bool Check(Vector3 from, Vector3 to)
             {
-                case "Sword swing":
+                bool result = false;
+                switch(Type)
                 {
-                    
-                    break;
-                }
-                case "Shot":
-                {   
-                    float Distance = 5.5f + (2 * Level);
-                    Vector3 toPoint = to;
+                    case HitType.SwordSwing:
+                    {
+                        
+                        break;
+                    }
+                    case HitType.Shot:
+                    {
+                        float Distance = 5.5f + (2 * Level);
 
-                    if (Physics.Raycast(from, to - from, out RaycastHit hit, Distance, Mask))
-                    { toPoint = new Checkers(hit.point, 0.3f); }
-                    else toPoint = to;
+                        result = Vector3.Distance(from, to) < Distance & !(from.x == to.x && from.z == to.z);
+                        break;
+                    }
+                    case HitType.Volley:
+                    {
 
-                    lnRenderer.positionCount = 2;
-                    lnRenderer.SetPositions(new Vector3[] {from, toPoint});
-                    break;
+                        break;
+                    }
                 }
-                case "Volley":
+                
+                return result;
+            }
+
+            public void DrawLine(LineRenderer lnRenderer, Vector3 from, Vector3 to)
+            {
+                switch(Type)
                 {
+                    case HitType.SwordSwing:
+                    {
+                        
+                        break;
+                    }
+                    case HitType.Shot:
+                    {   
+                        float Distance = 5.5f + (2 * Level);
+                        Vector3 toPoint = to;
 
-                    break;
+                        if (Physics.Raycast(from, to - from, out RaycastHit hit, Distance, Mask))
+                        { toPoint = new Checkers(hit.point, 0.3f); }
+                        else toPoint = to;
+
+                        lnRenderer.positionCount = 2;
+                        lnRenderer.SetPositions(new Vector3[] {from, toPoint});
+                        break;
+                    }
+                    case HitType.Volley:
+                    {
+
+                        break;
+                    }
                 }
             }
+
+            public void ResetLine(LineRenderer lnRenderer)
+            { lnRenderer.positionCount = 0; }
         }
 
-        public void ResetLine(LineRenderer lnRenderer)
-        { lnRenderer.positionCount = 0; }
-    }
-    [System.Serializable]
-    public class Item
-    {
-    string Name = "";
-    string Description = "";
-    Texture2D texture = new Texture2D(256, 256);
-    }
+        [System.Serializable]
+        public class Item
+        {
+            string Name = "";
+            string Description = "";
+            Texture2D texture = new Texture2D(256, 256);
+        }
 
-    [System.Serializable]
-    public class Effect
-    {
-    public string Name;
-    public string Description;
-    public Texture2D image;
+        [System.Serializable]
+        public class Effect
+        {
+            public string Name;
+            public string Description;
+            public Texture2D image;
+        }
+
+
+        [System.Serializable]
+        public class Attack
+        {
+            public GameObject WhoAttack;
+            public Checkers WhereAttack;
+            public int Damage;
+            DamageType damageType;
+            public Usabless.Effect[] Debuff;
+
+            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Usabless.Effect[] debuff)
+            {
+                WhoAttack = Who;
+                WhereAttack = Where;
+                Damage = Dam;
+
+                damageType = Type;
+                Debuff = debuff;
+            }
+            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Usabless.Effect debuff)
+            {
+                WhoAttack = Who;
+                WhereAttack = Where;
+                Damage = Dam;
+
+                damageType = Type;
+                Debuff = new Usabless.Effect[] { debuff };
+            }
+        }
     }
 }
 
-public class Attack
-{
-    public GameObject WhoAttack;
-    public Checkers WhereAttack;
-    public int Damage;
-    public string DamageType;
-    public Usabless.Effect[] Debuff;
-
-    public Attack(GameObject Who, Checkers Where, int Dam, string Type, Usabless.Effect[] debuff)
-    {
-        WhoAttack = Who;
-        WhereAttack = Where;
-        Damage = Dam;
-
-        DamageType = Type;
-        Debuff = debuff;
-    }
-    public Attack(GameObject Who, Checkers Where, int Dam, string Type, Usabless.Effect debuff)
-    {
-        WhoAttack = Who;
-        WhereAttack = Where;
-        Damage = Dam;
-
-        DamageType = Type;
-        Debuff = new Usabless.Effect[] { debuff };
-    }
-}
 
 
+
+
+
+
+
+[System.Serializable]
 public struct Checkers
 {
-    static int X, Z;
-    static float UP;
+    public static int X, Z;
+    public static float UP;
     
     void Update()
     {
@@ -328,19 +349,19 @@ public struct Checkers
 
     public Checkers(float Xadd, float Zadd, float UPadd = 0) 
     { 
-        X = Convert.ToInt32(Xadd); Z = Convert.ToInt32(Zadd); UP = YUpPos() + UPadd;
+        X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = YUpPos() + UPadd;
     }
     public Checkers(Vector3 Vector3add, float UPadd = 0) 
     { 
-        X = Convert.ToInt32(Vector3add.x); Z = Convert.ToInt32(Vector3add.z); UP = YUpPos() + UPadd;
+        X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = YUpPos() + UPadd;
     }
     public Checkers(Vector2 Vector2add, float UPadd = 0) 
     { 
-        X = Convert.ToInt32(Vector2add.x); Z = Convert.ToInt32(Vector2add.y); UP = YUpPos() + UPadd;
+        X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = YUpPos() + UPadd;
     }
     public Checkers(Transform Transformadd, float UPadd = 0) 
     { 
-        X = Convert.ToInt32(Transformadd.position.x); Z = Convert.ToInt32(Transformadd.position.z); UP = YUpPos() + UPadd;
+        X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = YUpPos() + UPadd;
     }
 
     public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
@@ -422,8 +443,8 @@ public class Map : MonoBehaviour
 
                     obj.transform.localPosition = new Vector3(3 - i, 0, 3 - j);
                                 
-                    int x = Convert.ToInt32(obj.transform.position.x);
-                    int z = Convert.ToInt32(obj.transform.position.z);
+                    int x = (int)Mathf.Round(obj.transform.position.x);
+                    int z = (int)Mathf.Round(obj.transform.position.z);
 
                     int UpIndex;
 
@@ -444,8 +465,8 @@ public class Map : MonoBehaviour
 
                     obj.transform.localPosition = new Vector3(3 - i, 0, 3 - j);
                                 
-                    int x = Convert.ToInt32(obj.transform.position.x);
-                    int z = Convert.ToInt32(obj.transform.position.z);
+                    int x = (int)Mathf.Round(obj.transform.position.x);
+                    int z = (int)Mathf.Round(obj.transform.position.z);
 
 
                     int UpIndex = (int)Mathf.Abs(Mathf.Sin(((x + 1) * (z + 1) + key) + 31) * 5) % 4;
