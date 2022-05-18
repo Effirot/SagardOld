@@ -19,10 +19,10 @@ namespace SagardCL
         public int WalkDistance;
         [Space]
 
-        public List<Usabless.Skill> AvailableSkills;
+        public List<Skill> AvailableSkills;
         [Space]
-        public List<Usabless.Effect> Resists;
-        public List<Usabless.Effect> Debuffs;
+        public List<Effect> Resists;
+        public List<Effect> Debuffs;
         [Space]
 
 
@@ -54,7 +54,7 @@ namespace SagardCL
         
         public void CompleteAllEffects()
         {
-            foreach(Usabless.Effect Effect in Debuffs)
+            foreach(Effect Effect in Debuffs)
             {
 
             }
@@ -79,26 +79,26 @@ namespace SagardCL
             SanityShield = Sanity;
         }
 
-        public void AddSkill(string name, uint level, uint damage)
+        public void AddSkill(string name, HitType type, uint level, uint damage)
         {
-            AvailableSkills.Add(new Usabless.Skill(name, level, damage));
+            AvailableSkills.Add(new Skill(name, type, level, damage));
         }
-        public void AddSkill(Usabless.Skill skill)
+        public void AddSkill(Skill skill)
         {
             AvailableSkills.Add(skill);
         }
 
-        public void RemoveSkill(string name, uint level, uint damage)
+        public void RemoveSkill(string name, HitType type, uint level, uint damage)
         {
-            AvailableSkills.Remove(new Usabless.Skill(name, level, damage));
+            AvailableSkills.Remove(new Skill(name, type, level, damage));
         }
-        public void RemoveSkill(Usabless.Skill skill)
+        public void RemoveSkill(Skill skill)
         {
             AvailableSkills.Remove(skill);
         }
 
 
-        public void Damage(string damageType, int damage, Usabless.Effect debuff)
+        public void Damage(string damageType, int damage, Effect debuff)
         {
 
         }
@@ -107,7 +107,7 @@ namespace SagardCL
 
         }
 
-        public void AddRangeSkill(List<Usabless.Skill> skills)
+        public void AddRangeSkill(List<Skill> skills)
         {
             AvailableSkills.AddRange(skills);
         }
@@ -129,7 +129,7 @@ namespace SagardCL
             list.SetBase(a.Stamina - b.Stamina, a.HP - b.HP, a.Sanity - b.Sanity);
             list.SetProtection(a.ArmoreClose - b.ArmoreClose, a.ArmoreBalistic - b.ArmoreBalistic, a.SanityShield - b.SanityShield);
 
-            foreach(Usabless.Skill skill in b.AvailableSkills)
+            foreach(Skill skill in b.AvailableSkills)
             {
                 list.RemoveSkill(skill);
             }
@@ -171,11 +171,11 @@ namespace SagardCL
             public uint DamageModifier;
             public bool NoWalking = false;
 
-            public Skill(HitType type, uint level, uint damage, bool noWlaking = false)
-            { Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
+            public Skill(string name, HitType type, uint level, uint damage, bool noWlaking = false)
+            { Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
 
             public override string ToString()
-            { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + (NoWalking?":No" : ":Yes") + ")"; }
+            { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + ":" + (NoWalking?":No" : ":Yes") + " walk)"; }
             
             LayerMask Mask = LayerMask.GetMask(new string[] {"Map", "Object"});
             
@@ -298,9 +298,9 @@ namespace SagardCL
             public Checkers WhereAttack;
             public int Damage;
             DamageType damageType;
-            public Usabless.Effect[] Debuff;
+            public Effect[] Debuff;
 
-            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Usabless.Effect[] debuff)
+            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
             {
                 WhoAttack = Who;
                 WhereAttack = Where;
@@ -309,31 +309,24 @@ namespace SagardCL
                 damageType = Type;
                 Debuff = debuff;
             }
-            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Usabless.Effect debuff)
+            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect debuff)
             {
                 WhoAttack = Who;
                 WhereAttack = Where;
                 Damage = Dam;
 
                 damageType = Type;
-                Debuff = new Usabless.Effect[] { debuff };
+                Debuff = new Effect[] { debuff };
             }
         }
     }
 }
 
-
-
-
-
-
-
-
 [System.Serializable]
 public struct Checkers
 {
-    public static int X, Z;
-    public static float UP;
+    [SerializeField] static int X, Z;
+    [SerializeField] static float UP;
     
     void Update()
     {
@@ -367,7 +360,6 @@ public struct Checkers
     public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
     public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
     
-    
     //public Vector3() { return new Vector3(X, UP, Z); }
 
     public int x { get{ return X; } }
@@ -389,109 +381,48 @@ public struct Checkers
         return new Checkers(X, Y, a.up);
     }
 
-
     public Vector3 ToVector3{ get{ return new Vector3(X, UP, Z);} }
-
-
 }
 
 
 [System.Serializable]
 public class Map : MonoBehaviour
 {
-    public GameObject PolePreset = null;
-    public GameObject CellPreset = null;
-
-    public string[] Biomes = new string[] {"Sands", "Weathered sands"};
-
-    public float HeightMultiplier = 0.17f;
-    public int key;
-    
-    public Map(GameObject polePreset, GameObject cellPreset, float heightMultiplier, int Key) { PolePreset = polePreset; CellPreset = cellPreset;  HeightMultiplier = heightMultiplier; key = Key; }
-    public Map(GameObject polePreset, GameObject cellPreset, float heightMultiplier) { PolePreset = polePreset; CellPreset = cellPreset;  HeightMultiplier = heightMultiplier; key = UnityEngine.Random.Range(0, 1000000); }
-    public Map(GameObject polePreset, GameObject cellPreset) { PolePreset = polePreset; CellPreset = cellPreset; }
-    
-
-    public void GenerateMap(int width, int height)
+    public enum MapGeneratorType
     {
-        for(int i = 0; i < width; i++)
-        {
-            for(int j = 0; j < height; j++)
-            {
-                GameObject Pole = Instantiate(PolePreset, GameObject.Find("MapController").transform);
-                int BiomeID = (int)Mathf.Abs((int)(Mathf.Sin((((3 * i + 1) * (j * 12 + 1)) + 31 * key)) * 5)) % Biomes.Length;
-
-                Pole.name = "Pole: " + (i + 1)  + " | " + (j + 1) + " - " + Biomes[BiomeID];
-
-                Pole.transform.position = new Vector3(3 + i * 7, -0.1f, 3 + j * 7);   
-
-                GenerateBiome(Biomes[BiomeID], key, Pole.transform);
-            }
-        }
+        Desert,
+        WeatheredDesert
     }
-    
-    private void GenerateBiome(string biome, int key, Transform parent)
+
+
+    static Mesh map;
+    static Mesh collider;
+    int[] scale = new int[2];
+    [SerializeField] static uint key;
+    [SerializeField] MapGeneratorType type;
+
+    public Map(uint Key, MapGeneratorType Type)
     {
-        switch (biome)
-        {
-            case "Sands":
-            for (int i = 0; i < 7; i++)
-            {
-                for(int j = 0; j < 7; j++)
-                {
-                    GameObject obj = Instantiate(CellPreset, parent);
 
-                    obj.transform.localPosition = new Vector3(3 - i, 0, 3 - j);
-                                
-                    int x = (int)Mathf.Round(obj.transform.position.x);
-                    int z = (int)Mathf.Round(obj.transform.position.z);
-
-                    int UpIndex;
-
-                    UpIndex = (int)Mathf.Abs(Mathf.Sin(((x + 1) * (z + 1) + key) + 31) * 5) % 3;
                 
-                    obj.transform.position += new Vector3(0, (UpIndex) * HeightMultiplier + 0.4f, 0);
-                    obj.name = x + " | " + z;
-                }
-            }
-            break; 
-
-            case "Weathered sands":
-            for (int i = 0; i < 7; i++)
-            {
-                for(int j = 0; j < 7; j++)
-                {
-                    GameObject obj = Instantiate(CellPreset, parent);
-
-                    obj.transform.localPosition = new Vector3(3 - i, 0, 3 - j);
-                                
-                    int x = (int)Mathf.Round(obj.transform.position.x);
-                    int z = (int)Mathf.Round(obj.transform.position.z);
-
-
-                    int UpIndex = (int)Mathf.Abs(Mathf.Sin(((x + 1) * (z + 1) + key) + 31) * 5) % 4;
-                    float Column = Mathf.Abs(Mathf.Sin(((x + 1) * (z + 3) + key) + 29) * 5) % 6;
-                    
-                    obj.transform.position += new Vector3(0, (Column >= 4.91f ? 10 + UpIndex : UpIndex) * HeightMultiplier + 0.4f, 0);
-                    obj.name = x + " | " + z + "  " + Column;
-
-                }
-            }
-            break;
-
-            case "Empty":
-                Destroy(parent.gameObject);
-            break;
-        }
-    
     }
-    public static void Delete()
+
+    public void GenerateMap()
     {
-        GameObject[] map = GameObject.FindGameObjectsWithTag("Map");
-        
-        foreach (GameObject mapObject in map)
-        {
-            Destroy(mapObject);
-        }
+
     }
+    public Mesh MapMesh() 
+    {
+        Mesh map = new Mesh();
+
+        return map;
+    }
+    public Mesh ColliderMesh() 
+    {
+        Mesh map = new Mesh();
+
+        return map;
+    }
+
+
 }
