@@ -35,6 +35,7 @@ public class Controller : MonoBehaviour
     void Awake()
     {   
         name += " (" + baseParameter.ClassTAG + ") ";
+    
 
         /*Move Controller*/
         {
@@ -87,11 +88,24 @@ public class Controller : MonoBehaviour
             MoveLnRenderer.materials = new Material[] { MovePlanerLineMaterial };
         }
     
-    
+        ref Vector3 a = ref MovePlaner.transform.position;
+
+        baseParameter.AvailableSkills[0].From = ref MovePlaner.transform.position;
+        
     }
+
+
+    void parameterUpdate()
+    {
+
+    }
+
+
+
 
     void Update()
     {
+        
         if(GlobalStepController.Planning && Parameters.CanControll && !Parameters.IsDead)
         {
             Parameters = baseParameter;            
@@ -100,8 +114,8 @@ public class Controller : MonoBehaviour
             
             //Graphics
             {
-                if(Parameters.AvailableSkills[SkillIndex].Check(MovePlaner.transform.position, AttackPlaner.transform.position))
-                { Parameters.AvailableSkills[SkillIndex].DrawLine(AttackLnRenderer, new Checkers(MovePlaner.transform.position, 0.3f), AttackPlaner.transform.position); }
+                if(Parameters.AvailableSkills[SkillIndex].Check(AttackPlaner.transform.position))
+                { Parameters.AvailableSkills[SkillIndex].DrawLine(AttackLnRenderer, AttackPlaner.transform.position); }
                 else
                 { Parameters.AvailableSkills[SkillIndex].ResetLine(AttackLnRenderer); }
 
@@ -125,7 +139,7 @@ public class Controller : MonoBehaviour
                     }
                     /*Attack planer*/
                     { 
-                        bool SkillCheck = Parameters.AvailableSkills[SkillIndex].Check(MovePlaner.transform.position, AttackPlaner.transform.position);
+                        bool SkillCheck = Parameters.AvailableSkills[SkillIndex].Check(AttackPlaner.transform.position);
                         PlanerStay(SkillCheck, AttackPlaner, MovePlaner.transform);
                     }
                 }
@@ -144,16 +158,15 @@ public class Controller : MonoBehaviour
                     }
                     /*AttackPlaner*/
                     {
-                        Vector3 from = new Checkers(MovePlaner.transform.position, 0.3f);
                         Vector3 to = new Checkers(AttackPlaner.transform.position, 0.3f);
 
                         SetObjectToCursor(AttackPlaner);
                         PlanerStay(true, AttackPlaner, MovePlaner.transform);
                         
-                        bool SkillCheck = Parameters.AvailableSkills[SkillIndex].Check(from, to);
+                        bool SkillCheck = Parameters.AvailableSkills[SkillIndex].Check(to);
                         AttackPlaner.GetComponent<Renderer>().material.color = PlanerPainter(SkillCheck);
 
-                        if(SkillCheck) Parameters.AvailableSkills[SkillIndex].Complete(from, to);
+                        if(SkillCheck) Parameters.AvailableSkills[SkillIndex].Complete(to);
                     }
                 }
                 break;

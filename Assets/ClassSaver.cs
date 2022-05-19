@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using SagardCL.Usabless;
 
-namespace SagardCL
+namespace SagardCL //Class library
 {
     [System.Serializable]
     public class ParameterList
@@ -79,18 +79,18 @@ namespace SagardCL
             SanityShield = Sanity;
         }
 
-        public void AddSkill(string name, HitType type, uint level, uint damage)
+        public void AddSkill(ref Vector3 from, string name, HitType type, uint level, uint damage)
         {
-            AvailableSkills.Add(new Skill(name, type, level, damage));
+            AvailableSkills.Add(new Skill(ref from, name, type, level, damage));
         }
         public void AddSkill(Skill skill)
         {
             AvailableSkills.Add(skill);
         }
 
-        public void RemoveSkill(string name, HitType type, uint level, uint damage)
+        public void RemoveSkill(ref Vector3 from, string name, HitType type, uint level, uint damage)
         {
-            AvailableSkills.Remove(new Skill(name, type, level, damage));
+            AvailableSkills.Remove(new Skill(ref from, name, type, level, damage));
         }
         public void RemoveSkill(Skill skill)
         {
@@ -163,6 +163,7 @@ namespace SagardCL
         [System.Serializable]
         public class Skill
         {
+            public extern ref Vector3 From { get; }
             public string Name;
             public string Description;
             Texture2D image;
@@ -171,8 +172,8 @@ namespace SagardCL
             public uint DamageModifier;
             public bool NoWalking = false;
 
-            public Skill(string name, HitType type, uint level, uint damage, bool noWlaking = false)
-            { Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
+            public Skill(ref Vector3 from, string name, HitType type, uint level, uint damage, bool noWlaking = false)
+            { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
 
             public override string ToString()
             { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + ":" + (NoWalking?":No" : ":Yes") + " walk)"; }
@@ -188,7 +189,7 @@ namespace SagardCL
                 else return t; 
             }
 
-            public void Complete(Vector3 from, Vector3 to)
+            public void Complete(Vector3 to)
             {
                 switch(Type)
                 {
@@ -201,8 +202,8 @@ namespace SagardCL
                     {
                         float Distance = 5.5f + (2 * Level);
                         
-                        Debug.DrawLine(from, to, Color.yellow);
-                        Debug.DrawLine(from, ToPoint(from, to, Distance), Color.red);
+                        Debug.DrawLine(From, to, Color.yellow);
+                        Debug.DrawLine(From, ToPoint(From, to, Distance), Color.red);
                         break;
                     }
                     case HitType.Volley:
@@ -213,7 +214,7 @@ namespace SagardCL
                 }
             }
             
-            public bool Check(Vector3 from, Vector3 to)
+            public bool Check(Vector3 to)
             {
                 bool result = false;
                 switch(Type)
@@ -227,7 +228,7 @@ namespace SagardCL
                     {
                         float Distance = 5.5f + (2 * Level);
 
-                        result = Vector3.Distance(from, to) < Distance & !(from.x == to.x && from.z == to.z);
+                        result = Vector3.Distance(From, to) < Distance & !(From.x == to.x && From.z == to.z);
                         break;
                     }
                     case HitType.Volley:
@@ -240,7 +241,7 @@ namespace SagardCL
                 return result;
             }
 
-            public void DrawLine(LineRenderer lnRenderer, Vector3 from, Vector3 to)
+            public void DrawLine(LineRenderer lnRenderer, Vector3 to)
             {
                 switch(Type)
                 {
@@ -254,12 +255,12 @@ namespace SagardCL
                         float Distance = 5.5f + (2 * Level);
                         Vector3 toPoint = to;
 
-                        if (Physics.Raycast(from, to - from, out RaycastHit hit, Distance, Mask))
+                        if (Physics.Raycast(From, to - From, out RaycastHit hit, Distance, Mask))
                         { toPoint = new Checkers(hit.point, 0.3f); }
                         else toPoint = to;
 
                         lnRenderer.positionCount = 2;
-                        lnRenderer.SetPositions(new Vector3[] {from, toPoint});
+                        lnRenderer.SetPositions(new Vector3[] {From, toPoint});
                         break;
                     }
                     case HitType.Volley:
@@ -386,7 +387,7 @@ public struct Checkers
 
 
 [System.Serializable]
-public class Map : MonoBehaviour
+public class Map
 {
     public enum MapGeneratorType
     {
@@ -396,33 +397,29 @@ public class Map : MonoBehaviour
 
 
     static Mesh map;
-    static Mesh collider;
-    int[] scale = new int[2];
+    static Mesh mapCollider;
+    int scaleX, scaleY;
     [SerializeField] static uint key;
     [SerializeField] MapGeneratorType type;
 
-    public Map(uint Key, MapGeneratorType Type)
+    public Map(uint Key, int[] size, MapGeneratorType Type)
     {
+        scaleX = size[0]; scaleY = size[1]; key = Key; type = Type;
 
-                
+        GenerateMap();    
     }
 
     public void GenerateMap()
     {
 
     }
-    public Mesh MapMesh() 
+    
+
+    private static class mapScale
     {
-        Mesh map = new Mesh();
-
-        return map;
+        public static int[] Size(int xSize, int ySize)
+        {
+            return new int[2] { xSize, ySize };
+        }
     }
-    public Mesh ColliderMesh() 
-    {
-        Mesh map = new Mesh();
-
-        return map;
-    }
-
-
 }
