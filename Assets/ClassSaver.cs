@@ -79,18 +79,18 @@ namespace SagardCL //Class library
             SanityShield = Sanity;
         }
 
-        public void AddSkill(ref Vector3 from, string name, HitType type, uint level, uint damage)
+        public void AddSkill(GameObject from, string name, HitType type, uint level, uint damage)
         {
-            AvailableSkills.Add(new Skill(ref from, name, type, level, damage));
+            AvailableSkills.Add(new Skill(from, name, type, level, damage));
         }
         public void AddSkill(Skill skill)
         {
             AvailableSkills.Add(skill);
         }
 
-        public void RemoveSkill(ref Vector3 from, string name, HitType type, uint level, uint damage)
+        public void RemoveSkill(GameObject from, string name, HitType type, uint level, uint damage)
         {
-            AvailableSkills.Remove(new Skill(ref from, name, type, level, damage));
+            AvailableSkills.Remove(new Skill(from, name, type, level, damage));
         }
         public void RemoveSkill(Skill skill)
         {
@@ -163,7 +163,7 @@ namespace SagardCL //Class library
         [System.Serializable]
         public class Skill
         {
-            public extern ref Vector3 From { get; }
+            public GameObject From;
             public string Name;
             public string Description;
             Texture2D image;
@@ -172,8 +172,12 @@ namespace SagardCL //Class library
             public uint DamageModifier;
             public bool NoWalking = false;
 
-            public Skill(ref Vector3 from, string name, HitType type, uint level, uint damage, bool noWlaking = false)
-            { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
+            private Vector3 startPos;
+
+            public Skill(GameObject from, string name, HitType type, uint level, uint damage, bool noWlaking = false)
+            { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; 
+                startPos = From.transform.position;
+            }
 
             public override string ToString()
             { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + ":" + (NoWalking?":No" : ":Yes") + " walk)"; }
@@ -202,8 +206,8 @@ namespace SagardCL //Class library
                     {
                         float Distance = 5.5f + (2 * Level);
                         
-                        Debug.DrawLine(From, to, Color.yellow);
-                        Debug.DrawLine(From, ToPoint(From, to, Distance), Color.red);
+                        Debug.DrawLine(startPos, to, Color.yellow);
+                        Debug.DrawLine(startPos, ToPoint(startPos, to, Distance), Color.red);
                         break;
                     }
                     case HitType.Volley:
@@ -228,7 +232,7 @@ namespace SagardCL //Class library
                     {
                         float Distance = 5.5f + (2 * Level);
 
-                        result = Vector3.Distance(From, to) < Distance & !(From.x == to.x && From.z == to.z);
+                        result = Vector3.Distance(startPos, to) < Distance & !(startPos.x == to.x && startPos.z == to.z);
                         break;
                     }
                     case HitType.Volley:
@@ -255,12 +259,12 @@ namespace SagardCL //Class library
                         float Distance = 5.5f + (2 * Level);
                         Vector3 toPoint = to;
 
-                        if (Physics.Raycast(From, to - From, out RaycastHit hit, Distance, Mask))
+                        if (Physics.Raycast(startPos, to - startPos, out RaycastHit hit, Distance, Mask))
                         { toPoint = new Checkers(hit.point, 0.3f); }
                         else toPoint = to;
 
                         lnRenderer.positionCount = 2;
-                        lnRenderer.SetPositions(new Vector3[] {From, toPoint});
+                        lnRenderer.SetPositions(new Vector3[] {startPos, toPoint});
                         break;
                     }
                     case HitType.Volley:
