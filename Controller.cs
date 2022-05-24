@@ -187,7 +187,7 @@ public class Controller : MonoBehaviour
 
     float Sinus() { return (Mathf.Sin(Time.fixedTime) / 4) + 0.6f; }
 
-    bool WalkPlanerChecker(bool Other, GameObject Planer)
+    bool WalkPlanerChecker(GameObject Planer, bool Other = true)
     {
         Vector3 StartPos = new Vector3(0, 100, 0) + Planer.transform.position;
         
