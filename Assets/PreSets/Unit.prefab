@@ -61,6 +61,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4747291919557899644}
+  - {fileID: 8261764584354182334}
   m_Father: {fileID: 6828420722621915725}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -107,8 +108,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8956747533012029976}
-  m_Father: {fileID: 6828420722621915725}
-  m_RootOrder: 2
+  m_Father: {fileID: 2017180247765613572}
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6533158161002452622
 GameObject:
@@ -370,6 +371,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6828420722621915725}
   - component: {fileID: 760492574079706140}
+  - component: {fileID: 6881626030716744344}
   m_Layer: 7
   m_Name: Unit
   m_TagString: Figure
@@ -391,7 +393,6 @@ Transform:
   m_Children:
   - {fileID: 1892631942462364634}
   - {fileID: 2017180247765613572}
-  - {fileID: 8261764584354182334}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -408,16 +409,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SkillIndex: 0
-  Platform: {fileID: 0}
+  Platform: {fileID: 6578298447475953083}
   MPlaner:
     Planer: {fileID: 3247773065290817402}
   APlaner:
     Planer: {fileID: 6390476027061664742}
-  baseParameter:
+  Parameters:
     CanControll: 1
     IsDead: 0
     ClassTAG: 
     WalkDistance: 0
+    AvailableSkills: []
+    Resists: []
+    Debuffs: []
+    MaxStamina: 0
+    MaxHP: 0
+    MaxSanity: 0
+    ArmoreClose: 0
+    ArmoreBalistic: 0
+    SanityShield: 0
+    Stamina: 0
+    HP: 0
+    Sanity: 0
+  baseParameter:
+    CanControll: 1
+    IsDead: 0
+    ClassTAG: 
+    WalkDistance: 3
     AvailableSkills:
     - From: {fileID: 0}
       Name: a
@@ -437,20 +455,17 @@ MonoBehaviour:
     Stamina: 0
     HP: 0
     Sanity: 0
-  Parameters:
-    CanControll: 1
-    IsDead: 0
-    ClassTAG: 
-    WalkDistance: 0
-    AvailableSkills: []
-    Resists: []
-    Debuffs: []
-    MaxStamina: 0
-    MaxHP: 0
-    MaxSanity: 0
-    ArmoreClose: 0
-    ArmoreBalistic: 0
-    SanityShield: 0
-    Stamina: 0
-    HP: 0
-    Sanity: 0
+--- !u!64 &6881626030716744344
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6828420722621915729}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3298800115395149385, guid: 332634a7e996c014bb4479d42d328516, type: 3}

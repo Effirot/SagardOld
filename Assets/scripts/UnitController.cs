@@ -12,6 +12,8 @@ public class UnitController : MonoBehaviour
     [SerializeField]private AllInOne MPlaner;
     [SerializeField]private AllInOne APlaner;
 
+    Checkers CursorPos(float Up){ return new Checkers(GameObject.Find("3DCursor").transform.position, Up); }
+
     public ParameterList Parameters;
     
     public ParameterList baseParameter;
@@ -30,20 +32,35 @@ public class UnitController : MonoBehaviour
             default:
             {
                 //Base model
-                transform.position = Vector3.MoveTowards(transform.position, new Checkers(transform.position), 
-                0.004f + Vector3.Distance(transform.position, new Checkers(transform.position)) / 8 * Time.deltaTime);
+                transform.position = Vector3.Lerp(transform.position, new Checkers(transform.position), 
+                1.4f * Time.deltaTime);
                 
                 //Move planner
-                //MPlaner.Planer.transform.position
+                MPlaner.Planer.transform.position = (!MPlanerChecker())?
+                transform.position :
+                MPlaner.pos;
+
+                MPlaner.Renderer.enabled = MPlanerChecker();
+                MPlaner.Collider.enabled = true;
             
                 //Attack planner
-                //APlaner.Planer.transform.position
+                APlaner.Renderer.enabled = false;
             
             }
             break;
             case Controll.move:
             {
-
+                //Base model
+                transform.position = new Checkers(transform.position, 0.7f);
+                
+                //Move planner
+                MPlaner.Planer.transform.position = CursorPos(0.7f);
+                MPlaner.Renderer.material.color = (!MPlanerChecker())? Color.green : Color.red;
+                MPlaner.Renderer.enabled = true;
+                MPlaner.Collider.enabled = false;
+                
+                //Attack planner
+                if(Input.GetMouseButtonDown(1))APlaner.Planer.transform.position = MPlaner.pos;
             }
             break;
             case Controll.active:
@@ -59,27 +76,6 @@ public class UnitController : MonoBehaviour
 
 
 
-
-
-
-    bool WalkPlanerChecker(GameObject Planer, bool Other = true)
-    {
-        Vector3 StartPos = new Vector3(0, 100, 0) + Planer.transform.position;
-        
-        bool OnOtherPlaner = true;
-
-        foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.pos(), -Vector3.up, 105, LayerMask.GetMask("Object"))) 
-        { 
-            if(hit.collider.gameObject != Planer) {OnOtherPlaner = false; break; }
-        }
-
-        bool OnSelf = 
-        (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(Planer.transform.position.x) 
-        && 
-        (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(Planer.transform.position.z);
-        
-        return Other && OnOtherPlaner && !OnSelf;
-    }
 
 
 
@@ -102,6 +98,34 @@ public class UnitController : MonoBehaviour
         if (Changer) { return Controll.active; }
         else return Controll.none;
     }
+    bool MPlanerChecker(bool Other = true)
+    {        
+        bool OnOtherPlaner()
+        {  
+            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.pos, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
+            { 
+                if(hit.collider.gameObject != MPlaner.Planer) { return false; }
+            }
+            return true;
+        }
+
+        bool OnSelf()
+        {
+            return (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(MPlaner.pos.x) 
+            && 
+            (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(MPlaner.pos.z);
+        }
+
+        bool OnDistance()
+        {
+            return Parameters.WalkDistance >= Vector3.Distance(transform.position, MPlaner.pos); 
+        }
+        
+        return Other && OnOtherPlaner() && !OnSelf() && OnDistance();
+    }
+
+
+
 
     void parameterEdited()
     {
@@ -113,26 +137,6 @@ public class UnitController : MonoBehaviour
             else skill.From = MPlaner.Planer;
         }
     }
-
-
-    bool WalkPlanerChecker(GameObject Planer, bool Other = true)
-    {
-        Vector3 StartPos = new Vector3(0, 100, 0) + Planer.transform.position;
-        
-        bool OnOtherPlaner = true;
-
-        foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.pos, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
-        { 
-            if(hit.collider.gameObject != Planer) {OnOtherPlaner = false; break; }
-        }
-
-        bool OnSelf = 
-        (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(Planer.transform.position.x) 
-        && 
-        (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(Planer.transform.position.z);
-        
-        return Other && OnOtherPlaner && !OnSelf;
-    }
 }
 
 
@@ -141,8 +145,6 @@ public class UnitController : MonoBehaviour
 public class AllInOne
 {
     public GameObject Planer;
-
-
     public AllInOne(GameObject planer) { Planer = planer; }
 
     public Vector3 pos
@@ -150,10 +152,11 @@ public class AllInOne
         get{ return Planer.transform.position; }
     }
 
+    public static implicit operator GameObject(AllInOne a) { return a.Planer; }
 
     public GameObject Model { get{ return Planer.transform.Find("Model").gameObject; } }
     public Material Material { get{ return Model.GetComponent<Material>(); } }
-    public Collider Collider { get{  return Model.GetComponent<MeshCollider>(); } }
+    public Collider Collider { get{  return Planer.GetComponent<MeshCollider>(); } }
     public Renderer Renderer { get{  return Model.GetComponent<Renderer>(); } }
 
     public LineRenderer LineRenderer { get{ return Planer.GetComponent<LineRenderer>(); } }
