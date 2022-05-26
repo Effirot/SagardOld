@@ -41,12 +41,6 @@ namespace SagardCL //Class library
         public int HP;
         public int Sanity;
 
-        private void Awake()
-        {
-            Stamina = MaxStamina;
-            HP = MaxHP;
-            Sanity = MaxSanity;
-        }
         public void Rest(int StaminaAdd)
         {
             Stamina = Mathf.Clamp(Stamina + StaminaAdd, 0, MaxStamina);
@@ -66,17 +60,17 @@ namespace SagardCL //Class library
             MaxHP = HP;
             MaxSanity = Sanity;
         }
-        public void SetBase(int Stamina, int HP, int Sanity)
+        public void SetBase(int stamina, int hp, int sanity)
         {
-            MaxStamina = Stamina;
-            MaxHP = HP;
-            MaxSanity = Sanity;
+            Stamina = Mathf.Clamp(stamina, 0, MaxStamina);
+            HP = Mathf.Clamp(hp, 0, MaxHP);
+            Sanity = Mathf.Clamp(sanity, -5, MaxSanity);
         }
-        public void SetProtection(int Close, int Balistic, int Sanity)
+        public void SetProtection(int Close, int Balistic, int sanity)
         {
-            ArmoreClose = Stamina;
-            ArmoreBalistic = HP;
-            SanityShield = Sanity;
+            ArmoreClose = Close;
+            ArmoreBalistic = Balistic;
+            SanityShield = sanity;
         }
 
         public void AddSkill(GameObject from, string name, HitType type, uint level, uint damage)
@@ -191,9 +185,9 @@ namespace SagardCL //Class library
             {
                 if(Physics.Raycast(f, t - f, out RaycastHit hit, Distance, Mask))
                 { 
-                    return new Checkers(hit.point, 0.3f);
+                    return hit.point;
                 }
-                else return t; 
+                return t; 
             }
 
             public void Complete()
@@ -256,10 +250,7 @@ namespace SagardCL //Class library
                     {   
                         float Distance = 5.5f + (2 * Level);
 
-                        if (Physics.Raycast(startPos, endPos - startPos, out RaycastHit hit, Distance, Mask))
-                            return new Vector3[] {startPos, new Checkers(hit.point, 0f)};
-                        else 
-                            return new Vector3[] {startPos, new Checkers(endPos, 0f)};
+                        return new Vector3[] {From.transform.position, ToPoint(From.transform.position, To.transform.position, Distance)};
                     }
                     case HitType.Volley:
                     {
@@ -332,76 +323,7 @@ namespace SagardCL //Class library
     }
 }
 
-[System.Serializable]
-public struct Checkers
-{
-    [SerializeField] static int X, Z;
-    [SerializeField] static float UP;
-    
-    void Update()
-    {
-        UP = YUpPos();
-    }
 
-    private float YUpPos()
-    {
-        RaycastHit hit;
-        Physics.Raycast(new Vector3(X, 1000, Z), -Vector3.up, out hit, Mathf.Infinity, LayerMask.GetMask("Map"));
-        return hit.point.y;
-    }
-
-    public Checkers(float Xadd, float Zadd, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = YUpPos() + UPadd;
-    }
-    public Checkers(Vector3 Vector3add, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = YUpPos() + UPadd;
-    }
-    public Checkers(Vector2 Vector2add, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = YUpPos() + UPadd;
-    }
-    public Checkers(Transform Transformadd, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = YUpPos() + UPadd;
-    }
-
-    public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
-    public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
-    
-    //public Vector3() { return new Vector3(X, UP, Z); }
-
-    public int x { get{ return X; } }
-    public int z { get{ return Z; } }
-    public float up { get{ return UP; } }
-
-    public static Checkers operator +(Checkers a, Checkers b)
-    {
-        int X = a.x + b.z;
-        int Y = a.z + b.z;
-
-        return new Checkers(X, Y, a.up);
-    }
-    public static Checkers operator -(Checkers a, Checkers b)
-    {
-        int X = a.x - b.z;
-        int Y = a.z - b.z;
-
-        return new Checkers(X, Y, a.up);
-    }
-
-    public static float Distance(Checkers a, Checkers b)
-    {
-        return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
-    }
-    public static float Distance(Vector3 a, Vector3 b)
-    {
-        return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
-    }
-
-    public Vector3 ToVector3{ get{ return new Vector3(X, UP, Z);} }
-}
 
 
 [System.Serializable]

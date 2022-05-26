@@ -19,6 +19,6 @@ public class CameraRayer : MonoBehaviour
             SelectedCell = hit.collider.gameObject;
         }
         float Distance = Vector3.Distance(transform.position, Pos) / 10;
-        transform.position = Vector3.MoveTowards(transform.position, Pos, 0.4f + Distance * 1.5f);
+        transform.position = Vector3.MoveTowards(transform.position, Pos, 0.4f + Distance * 1.8f);
     }
 }

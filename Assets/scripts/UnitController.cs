@@ -8,6 +8,7 @@ public class UnitController : MonoBehaviour
 {
     public int SkillIndex;
     Skill NowUsingSkill{ get{ return Parameters.AvailableSkills[SkillIndex];} }
+    Vector3 position{ get{ return transform.position; }}
 
     [SerializeField]private GameObject Platform;
     [SerializeField]private AllInOne MPlaner;
@@ -27,13 +28,27 @@ public class UnitController : MonoBehaviour
         Platform.transform.eulerAngles += new Vector3(0, Random.Range(0f, 360f), 0);
     }
 
+
+
     void Update()
     {   
         MPlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
+
+        if (MPlanerChecker()){
+            MPlaner.LineRenderer.positionCount = Checkers.PatchWay.WayTo(position, MPlaner.position).Length;
+            MPlaner.LineRenderer.SetPositions(Checkers.PatchWay.WayTo(position, MPlaner.position)); 
+            Debug.DrawLine(position, MPlaner.position, Color.blue);
+            
+        }
+        MPlaner.LineRenderer.enabled = MPlanerChecker();
+
+
+
+
         APlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
 
-        if(NowUsingSkill.Check()) 
-        {
+        if (NowUsingSkill.Check()){
+            APlaner.LineRenderer.positionCount = NowUsingSkill.Line().Length;
             APlaner.LineRenderer.SetPositions(NowUsingSkill.Line()); 
             NowUsingSkill.Complete();
         }
@@ -50,15 +65,15 @@ public class UnitController : MonoBehaviour
                 //Move planner
                 MPlaner.Planer.transform.position = (!MPlanerChecker())?
                 transform.position :
-                MPlaner.pos;
+                MPlaner.position;
 
                 MPlaner.Renderer.enabled = MPlanerChecker();
                 MPlaner.Collider.enabled = true;
             
                 //Attack planner
                 APlaner.Planer.transform.position = (!NowUsingSkill.Check())?
-                MPlaner.pos :
-                APlaner.pos;
+                MPlaner.position :
+                APlaner.position;
 
                 APlaner.Renderer.enabled = NowUsingSkill.Check();
 
@@ -77,7 +92,7 @@ public class UnitController : MonoBehaviour
                 MPlaner.Collider.enabled = false;
                 
                 //Attack planner
-                if(Input.GetMouseButtonDown(1))APlaner.Planer.transform.position = MPlaner.pos;
+                if(Input.GetMouseButtonDown(1))APlaner.Planer.transform.position = MPlaner.position;
                 APlaner.Renderer.enabled = false;
             }
             break;
@@ -136,7 +151,7 @@ public class UnitController : MonoBehaviour
     {        
         bool OnOtherPlaner()
         {  
-            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.pos, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
+            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
             { 
                 if(hit.collider.gameObject != MPlaner.Planer) { return false; }
             }
@@ -144,13 +159,14 @@ public class UnitController : MonoBehaviour
         }
         bool OnSelf()
         {
-            return (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(MPlaner.pos.x) 
+            return 
+            (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(MPlaner.position.x) 
             && 
-            (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(MPlaner.pos.z);
+            (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(MPlaner.position.z);
         }
         bool OnDistance()
         {
-            return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.pos, transform.position); 
+            return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, transform.position); 
         }
         
         return Other && OnOtherPlaner() && !OnSelf() && OnDistance();
@@ -181,10 +197,8 @@ public class AllInOne
     public GameObject Planer;
     public AllInOne(GameObject planer) { Planer = planer; }
 
-    public Vector3 pos
-    { 
-        get{ return Planer.transform.position; }
-    }
+    public Vector3 position{ get{ return Planer.transform.position; } }
+    public Vector3 localPosition{ get{ return Planer.transform.localPosition; } }
 
     public static implicit operator GameObject(AllInOne a) { return a.Planer; }
 
