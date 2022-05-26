@@ -164,6 +164,8 @@ namespace SagardCL //Class library
         public class Skill
         {
             public GameObject From;
+            public GameObject To;
+
             public string Name;
             public string Description;
             Texture2D image;
@@ -172,13 +174,14 @@ namespace SagardCL //Class library
             public uint DamageModifier;
             public bool NoWalking = false;
 
-            private Vector3 startPos;
-
+            private Vector3 startPos{ get{ return From.transform.position; } }
+            private Vector3 endPos{ get{ return To.transform.position; } }
+            
+            // Overloads
             public Skill(GameObject from, string name, HitType type, uint level, uint damage, bool noWlaking = false)
-            { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; 
-                startPos = From.transform.position;
-            }
+            { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
 
+            // ToString
             public override string ToString()
             { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + ":" + (NoWalking?":No" : ":Yes") + " walk)"; }
             
@@ -193,7 +196,7 @@ namespace SagardCL //Class library
                 else return t; 
             }
 
-            public void Complete(Vector3 to)
+            public void Complete()
             {
                 switch(Type)
                 {
@@ -206,8 +209,8 @@ namespace SagardCL //Class library
                     {
                         float Distance = 5.5f + (2 * Level);
                         
-                        Debug.DrawLine(startPos, to, Color.yellow);
-                        Debug.DrawLine(startPos, ToPoint(startPos, to, Distance), Color.red);
+                        Debug.DrawLine(startPos, endPos, Color.yellow);
+                        Debug.DrawLine(startPos, ToPoint(startPos, endPos, Distance), Color.red);
                         break;
                     }
                     case HitType.Volley:
@@ -217,10 +220,8 @@ namespace SagardCL //Class library
                     }
                 }
             }
-            
-            public bool Check(Vector3 to)
+            public bool Check()
             {
-                bool result = false;
                 switch(Type)
                 {
                     case HitType.SwordSwing:
@@ -232,8 +233,7 @@ namespace SagardCL //Class library
                     {
                         float Distance = 5.5f + (2 * Level);
 
-                        result = Vector3.Distance(startPos, to) < Distance & !(startPos.x == to.x && startPos.z == to.z);
-                        break;
+                        return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
                     }
                     case HitType.Volley:
                     {
@@ -241,11 +241,9 @@ namespace SagardCL //Class library
                         break;
                     }
                 }
-                
-                return result;
+                return false;
             }
-
-            public void DrawLine(LineRenderer lnRenderer, Vector3 to)
+            public Vector3[] Line()
             {
                 switch(Type)
                 {
@@ -257,15 +255,11 @@ namespace SagardCL //Class library
                     case HitType.Shot:
                     {   
                         float Distance = 5.5f + (2 * Level);
-                        Vector3 toPoint = to;
 
-                        if (Physics.Raycast(startPos, to - startPos, out RaycastHit hit, Distance, Mask))
-                        { toPoint = new Checkers(hit.point, 0.3f); }
-                        else toPoint = to;
-
-                        lnRenderer.positionCount = 2;
-                        lnRenderer.SetPositions(new Vector3[] {startPos, toPoint});
-                        break;
+                        if (Physics.Raycast(startPos, endPos - startPos, out RaycastHit hit, Distance, Mask))
+                            return new Vector3[] {startPos, new Checkers(hit.point, 0f)};
+                        else 
+                            return new Vector3[] {startPos, new Checkers(endPos, 0f)};
                     }
                     case HitType.Volley:
                     {
@@ -273,10 +267,8 @@ namespace SagardCL //Class library
                         break;
                     }
                 }
+                return new Vector3[] {};
             }
-
-            public void ResetLine(LineRenderer lnRenderer)
-            { lnRenderer.positionCount = 0; }
         }
 
         [System.Serializable]
@@ -295,7 +287,6 @@ namespace SagardCL //Class library
             public Texture2D image;
         }
 
-
         [System.Serializable]
         public class Attack
         {
@@ -305,6 +296,7 @@ namespace SagardCL //Class library
             DamageType damageType;
             public Effect[] Debuff;
 
+            // Overloads
             public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
             {
                 WhoAttack = Who;
@@ -323,6 +315,19 @@ namespace SagardCL //Class library
                 damageType = Type;
                 Debuff = new Effect[] { debuff };
             }
+            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type)
+            {
+                WhoAttack = Who;
+                WhereAttack = Where;
+                Damage = Dam;
+
+                damageType = Type;
+                Debuff = new Effect[] { };
+            }
+        
+
+        
+        
         }
     }
 }
@@ -384,6 +389,15 @@ public struct Checkers
         int Y = a.z - b.z;
 
         return new Checkers(X, Y, a.up);
+    }
+
+    public static float Distance(Checkers a, Checkers b)
+    {
+        return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
+    }
+    public static float Distance(Vector3 a, Vector3 b)
+    {
+        return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
     }
 
     public Vector3 ToVector3{ get{ return new Vector3(X, UP, Z);} }

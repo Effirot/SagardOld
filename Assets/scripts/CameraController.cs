@@ -25,10 +25,12 @@ public class CameraController : MonoBehaviour
         Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0);
 
         toFieldOfView = Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") * -60 + toFieldOfView, 15, StartedFieldOfView);
-        Camera.fieldOfView = Mathf.Lerp(Camera.fieldOfView, toFieldOfView, 0.1f);
+        Camera.fieldOfView = 
+        Mathf.Lerp(Camera.fieldOfView, 
+        toFieldOfView, 
+        0.1f);
 
-        transform.Translate((hor + ver) * cameraSpd);
-        Debug.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y + 10000, transform.position.z));
+        transform.Translate((hor + ver) * cameraSpd * (Camera.fieldOfView / (StartedFieldOfView)));
 
         if(Input.GetKeyDown("space")) toBase = true;
 

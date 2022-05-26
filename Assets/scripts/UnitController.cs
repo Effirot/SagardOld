@@ -7,33 +7,45 @@ using SagardCL.Usabless;
 public class UnitController : MonoBehaviour
 {
     public int SkillIndex;
+    Skill NowUsingSkill{ get{ return Parameters.AvailableSkills[SkillIndex];} }
 
     [SerializeField]private GameObject Platform;
     [SerializeField]private AllInOne MPlaner;
     [SerializeField]private AllInOne APlaner;
+    
 
     Checkers CursorPos(float Up){ return new Checkers(GameObject.Find("3DCursor").transform.position, Up); }
-
-    public ParameterList Parameters;
     
+    [Space(3)]
+    public ParameterList Parameters;
     public ParameterList baseParameter;
     
-
     void Start()
     {
         parameterEdited();
+
+        Platform.transform.eulerAngles += new Vector3(0, Random.Range(0f, 360f), 0);
     }
 
     void Update()
-    {
-        parameterEdited();
+    {   
+        MPlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
+        APlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
+
+        if(NowUsingSkill.Check()) 
+        {
+            APlaner.LineRenderer.SetPositions(NowUsingSkill.Line()); 
+            NowUsingSkill.Complete();
+        }
+        APlaner.LineRenderer.enabled = NowUsingSkill.Check();
+
         switch(MouseTest())
         {
             default:
             {
                 //Base model
                 transform.position = Vector3.Lerp(transform.position, new Checkers(transform.position), 
-                1.4f * Time.deltaTime);
+                2.5f * Time.deltaTime);
                 
                 //Move planner
                 MPlaner.Planer.transform.position = (!MPlanerChecker())?
@@ -44,14 +56,19 @@ public class UnitController : MonoBehaviour
                 MPlaner.Collider.enabled = true;
             
                 //Attack planner
-                APlaner.Renderer.enabled = false;
-            
+                APlaner.Planer.transform.position = (!NowUsingSkill.Check())?
+                MPlaner.pos :
+                APlaner.pos;
+
+                APlaner.Renderer.enabled = NowUsingSkill.Check();
+
             }
             break;
             case Controll.move:
             {
                 //Base model
                 transform.position = new Checkers(transform.position, 0.7f);
+                //Platform.transform.eulerAngles = new Vector3(0, Quaternion.LookRotation(MPlaner.pos - transform.position, -Vector3.up).eulerAngles.y + 180, 0);
                 
                 //Move planner
                 MPlaner.Planer.transform.position = CursorPos(0.7f);
@@ -61,11 +78,28 @@ public class UnitController : MonoBehaviour
                 
                 //Attack planner
                 if(Input.GetMouseButtonDown(1))APlaner.Planer.transform.position = MPlaner.pos;
+                APlaner.Renderer.enabled = false;
             }
             break;
             case Controll.active:
             {
-                
+                //Base model
+                transform.position = new Checkers(transform.position, 0.7f);
+
+                //Move planner
+                if(NowUsingSkill.NoWalking)
+                {
+                    MPlaner.Planer.transform.position = transform.position;
+                    MPlaner.Renderer.enabled = false;
+                    MPlaner.Collider.enabled = true;
+                }
+
+
+                //Attack planner
+                APlaner.Planer.transform.position = CursorPos(1f);
+
+                APlaner.Renderer.material.color = (!NowUsingSkill.Check())? Color.green : Color.red;
+                APlaner.Renderer.enabled = true;
             }
             break;
         }
@@ -108,17 +142,15 @@ public class UnitController : MonoBehaviour
             }
             return true;
         }
-
         bool OnSelf()
         {
             return (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(MPlaner.pos.x) 
             && 
             (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(MPlaner.pos.z);
         }
-
         bool OnDistance()
         {
-            return Parameters.WalkDistance >= Vector3.Distance(transform.position, MPlaner.pos); 
+            return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.pos, transform.position); 
         }
         
         return Other && OnOtherPlaner() && !OnSelf() && OnDistance();
@@ -135,6 +167,8 @@ public class UnitController : MonoBehaviour
         {
             if (skill.NoWalking) skill.From = gameObject;
             else skill.From = MPlaner.Planer;
+
+            skill.To = APlaner.Planer;
         }
     }
 }

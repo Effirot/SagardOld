@@ -27,6 +27,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4554630650189576357}
   m_Father: {fileID: 0}
@@ -51,7 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraSpd: 15.8
   rotSpd: 8.3
-  Camera: {fileID: 4554630650189576357}
+  Camera: {fileID: 4554630650189576354}
   toBase: 0
 --- !u!1 &4554630650189576352
 GameObject:
@@ -81,6 +82,7 @@ Transform:
   m_LocalRotation: {x: 0.34697568, y: -0, z: -0, w: 0.93787414}
   m_LocalPosition: {x: 0, y: 6.36, z: -4.74}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4554630649988616369}
   m_RootOrder: 0
@@ -110,7 +112,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 70.7
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
