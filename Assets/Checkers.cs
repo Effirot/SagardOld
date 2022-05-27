@@ -8,17 +8,16 @@ public struct Checkers
 {
     [SerializeField] static int X, Z;
     [SerializeField] static float UP;
-    
-    void Update()
-    {
-        UP = YUpPos();
-    }
+
+    public int x { get{ return X; } }
+    public int z { get{ return Z; } }
+    public float up { get{ return UP; } }
 
     private float YUpPos()
     {
         RaycastHit hit;
-        Physics.Raycast(new Vector3(X, 1000, Z), -Vector3.up, out hit, Mathf.Infinity, LayerMask.GetMask("Map"));
-        return hit.Checkers.y;
+        Physics.Raycast(new Vector3(x, 1000, Z), -Vector3.up, out hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+        return hit.point.y;
     }
 
     public Checkers(float Xadd, float Zadd, float UPadd = 0) 
@@ -40,27 +39,14 @@ public struct Checkers
 
     public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
     public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
-    
-    //public Vector3() { return new Vector3(X, UP, Z); }
 
-    public int x { get{ return X; } }
-    public int z { get{ return Z; } }
-    public float up { get{ return UP; } }
+    public static Checkers operator +(Checkers a, Checkers b) { return new Checkers(a.x + b.x, a.z + b.z, a.up); }
+    public static Checkers operator -(Checkers a, Checkers b) { return new Checkers(a.x - b.x, a.z - b.z, a.up); }
+    public static bool operator ==(Checkers a, Checkers b) { return a.x == b.x & a.z == b.z; }
+    public static bool operator !=(Checkers a, Checkers b) { return !(a.x == b.x & a.z == b.z); }
 
-    public static Checkers operator +(Checkers a, Checkers b)
-    {
-        int X = a.x + b.z;
-        int Y = a.z + b.z;
-
-        return new Checkers(X, Y, a.up);
-    }
-    public static Checkers operator -(Checkers a, Checkers b)
-    {
-        int X = a.x - b.z;
-        int Y = a.z - b.z;
-
-        return new Checkers(X, Y, a.up);
-    }
+    public override int GetHashCode() { return 0; }  
+    public override bool Equals(object o) { return true; }  
 
     public enum mode{ NoHeight, Height }
     public static float Distance(Checkers a, Checkers b, mode Mode = mode.NoHeight)
@@ -73,6 +59,10 @@ public struct Checkers
         if(Mode == mode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
         return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
     }
+
+    public Vector3 ToVector3{ get{ return new Vector3(X, UP, Z);} }
+    
+
 
 
 
@@ -87,7 +77,7 @@ public struct Checkers
             return new Vector3[] { a, b };
     }
     
-        class PathNode
+        private class PathNode
         {
             // Координаты точки на карте.
             public Checkers Position { get; set; }
@@ -101,7 +91,7 @@ public struct Checkers
             public int EstimateFullPathLength { get { return this.PathLengthFromStart + this.HeuristicEstimatePathLength; } }
         }
 
-        public static List<Checkers> FindPath(int[,] field, Checkers start, Checkers goal)
+        public static List<Checkers> FindPath(bool[,] field, Checkers start, Checkers goal)
         {
             // Шаг 1.
             var closedSet = new List<PathNode>();
@@ -162,16 +152,16 @@ public struct Checkers
         
         
         private static List<PathNode> GetNeighbours(PathNode pathNode, 
-        Checkers goal, int[,] field)
+        Checkers goal, bool[,] field)
         {
         var result = new List<PathNode>();
         
         // Соседними точками являются соседние по стороне клетки.
-        Checkers[] neighbourPoints = new Point[4];
-        neighbourPoints[0] = new Checkers(pathNode.Position.X + 1, pathNode.Position.Y);
-        neighbourPoints[1] = new Checkers(pathNode.Position.X - 1, pathNode.Position.Y);
-        neighbourPoints[2] = new Checkers(pathNode.Position.X, pathNode.Position.Y + 1);
-        neighbourPoints[3] = new Checkers(pathNode.Position.X, pathNode.Position.Y - 1);
+        Checkers[] neighbourPoints = new Checkers[4];
+        neighbourPoints[0] = new Checkers(pathNode.Position.x + 1, pathNode.Position.z);
+        neighbourPoints[1] = new Checkers(pathNode.Position.x - 1, pathNode.Position.z);
+        neighbourPoints[2] = new Checkers(pathNode.Position.x, pathNode.Position.z + 1);
+        neighbourPoints[3] = new Checkers(pathNode.Position.x, pathNode.Position.z - 1);
         
         foreach (Checkers point in neighbourPoints)
         {
@@ -181,8 +171,8 @@ public struct Checkers
             if (point.z < 0 || point.z >= field.GetLength(1))
             continue;
             // Проверяем, что по клетке можно ходить.
-            if ((field[point.x, point.z] != 0) && (field[point.x, point.z] != 1))
-            continue;
+            if (field[point.x, point.z])
+                continue;
             // Заполняем данные для точки маршрута.
             var neighbourNode = new PathNode()
             {
@@ -197,13 +187,20 @@ public struct Checkers
         return result;
         }
 
+        private static List<Checkers> GetPathForNode(PathNode pathNode)
+        {
+            var result = new List<Checkers>();
+            var currentNode = pathNode;
+            while (currentNode != null)
+            {
+                result.Add(currentNode.Position);
+                currentNode = currentNode.CameFrom;
+            }
+            result.Reverse();
+            return result;
+        }
 
 
 
     }
-
-
-
-    
-    public Vector3 ToVector3{ get{ return new Vector3(X, UP, Z);} }
 }
