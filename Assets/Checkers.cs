@@ -12,6 +12,7 @@ public struct Checkers
     public int x { get{ return X; } }
     public int z { get{ return Z; } }
     public float up { get{ return UP; } }
+    public float clearUp { get{ return UP - YUpPos(); } }
 
     private float YUpPos()
     {
@@ -20,22 +21,10 @@ public struct Checkers
         return hit.point.y;
     }
 
-    public Checkers(float Xadd, float Zadd, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = YUpPos() + UPadd;
-    }
-    public Checkers(Vector3 Vector3add, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = YUpPos() + UPadd;
-    }
-    public Checkers(Vector2 Vector2add, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = YUpPos() + UPadd;
-    }
-    public Checkers(Transform Transformadd, float UPadd = 0) 
-    { 
-        X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = YUpPos() + UPadd;
-    }
+    public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = YUpPos() + UPadd; }
+    public Checkers(Vector3 Vector3add, float UPadd = 0) { X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = YUpPos() + UPadd; }
+    public Checkers(Vector2 Vector2add, float UPadd = 0) { X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = YUpPos() + UPadd; }
+    public Checkers(Transform Transformadd, float UPadd = 0) { X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = YUpPos() + UPadd; }
 
     public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
     public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
@@ -79,7 +68,6 @@ public struct Checkers
     
         private class PathNode
         {
-            // Координаты точки на карте.
             public Checkers Position { get; set; }
             // Длина пути от старта (G).
             public int PathLengthFromStart { get; set; }
@@ -97,15 +85,14 @@ public struct Checkers
             var closedSet = new List<PathNode>();
             var openSet = new List<PathNode>();
             // Шаг 2.
-            PathNode startNode = new PathNode()
+            openSet.Add(new PathNode()
             {
                 Position = start,
                 CameFrom = null,
                 PathLengthFromStart = 0,
                 HeuristicEstimatePathLength = GetHeuristicPathLength(start, goal)
-            };
-
-            openSet.Add(startNode);
+            };);
+            
             while (openSet.Count > 0)
             {
                 // Шаг 3.

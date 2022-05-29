@@ -331,35 +331,45 @@ public class Map
 {
     public enum MapGeneratorType
     {
-        Desert,
-        WeatheredDesert
+        Desert = 1,
+        WeatheredDesert = 2,
+        SwampedDesert = 3,
+        MagnetAnomaly = 4
     }
 
 
     static Mesh map;
-    static Mesh mapCollider;
+    static int[,] PlatformModifiers;
+    static float[,] PlatformUp;
     int scaleX, scaleY;
     [SerializeField] static uint key;
     [SerializeField] MapGeneratorType type;
 
-    public Map(uint Key, int[] size, MapGeneratorType Type)
+    public Map(uint Key, Vector2 Scale, MapGeneratorType Type)
     {
-        scaleX = size[0]; scaleY = size[1]; key = Key; type = Type;
+        scaleX = Scale.X; scaleY = Scale.Y; key = Key; type = Type;
 
         GenerateMap();    
     }
 
     public void GenerateMap()
     {
-
+        for(int x = 0; x < scaleX; x++)
+        {
+            for(int z = 0; z < scaleY; z++)
+            {
+                PlatformUp[x, z] = 
+            }
+        }
     }
+
+
+
+    
     
 
     private static class mapScale
     {
-        public static int[] Size(int xSize, int ySize)
-        {
-            return new int[2] { xSize, ySize };
-        }
+
     }
 }
