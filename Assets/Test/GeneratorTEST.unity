@@ -172,6 +172,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a123d428e3e4fa2439b548f095e8f9b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlatformPrefab: {fileID: 7050857232321542953, guid: d37056bb2fb60a64fa889c391ab91445, type: 3}
+  Modificators: []
 --- !u!120 &1132371274
 LineRenderer:
   m_ObjectHideFlags: 0

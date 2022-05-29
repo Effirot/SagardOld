@@ -325,51 +325,56 @@ namespace SagardCL //Class library
 
 
 
+public enum MapType
+{
+    Desert = 1,
+    WeatheredDesert = 2,
+    SwampedDesert = 3,
+    MagnetAnomaly = 4
+}
 
 [System.Serializable]
-public class Map
+public struct Map
 {
-    public enum MapGeneratorType
+    private class MapCell
     {
-        Desert = 1,
-        WeatheredDesert = 2,
-        SwampedDesert = 3,
-        MagnetAnomaly = 4
+        public int Modifier;
+        public float Up;
+        public bool Let = false;
+        
+        public MapCell(int Mod, float up, bool let = false)
+        { Modifier = Mod; Up = up; Let = let; }
     }
-
 
     static Mesh map;
-    static int[,] PlatformModifiers;
-    static float[,] PlatformUp;
-    int scaleX, scaleY;
+    MapCell[,] MapPlatformParameters;
+    int scaleX, scaleZ;
     [SerializeField] static uint key;
-    [SerializeField] MapGeneratorType type;
+    [SerializeField] MapType type;
 
-    public Map(uint Key, Vector2 Scale, MapGeneratorType Type)
+
+    public Map(uint Key, Vector2 Scale, MapType Type)
     {
-        scaleX = Scale.X; scaleY = Scale.Y; key = Key; type = Type;
-
+        scaleX = (int)Scale.x; scaleZ = (int)Scale.y; key = Key; type = Type;
+        MapPlatformParameters = new MapCell[scaleX, scaleZ];
         GenerateMap();    
     }
+    
+    public int XScale { get{ return scaleX; } }
+    public int YScale { get{ return scaleZ; } }
 
     public void GenerateMap()
     {
         for(int x = 0; x < scaleX; x++)
         {
-            for(int z = 0; z < scaleY; z++)
-            {
-                PlatformUp[x, z] = 
+            for(int z = 0; z < scaleZ; z++)
+            {   
+                float noise = Mathf.Round(Mathf.PerlinNoise(500 / (float)x + (float)key / 45, 500 / (float)z + (float)key / 31) * 10) / 10;
+                MapPlatformParameters[x, z] = new MapCell(0, noise);
             }
         }
     }
 
-
-
-    
-    
-
-    private static class mapScale
-    {
-
-    }
+    public int GetPlatformModifier(int x, int z) { return MapPlatformParameters[x, z].Modifier; }
+    public float GetPlatformUp(int x, int z) { return MapPlatformParameters[x, z].Up; }
 }

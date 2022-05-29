@@ -16,9 +16,9 @@ public struct Checkers
 
     private float YUpPos()
     {
-        RaycastHit hit;
-        Physics.Raycast(new Vector3(x, 1000, Z), -Vector3.up, out hit, Mathf.Infinity, LayerMask.GetMask("Map"));
-        return hit.point.y;
+        if (Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map")))
+            return hit.point.y;
+        return 0;
     }
 
     public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = YUpPos() + UPadd; }
@@ -50,6 +50,15 @@ public struct Checkers
     }
 
     public Vector3 ToVector3{ get{ return new Vector3(X, UP, Z);} }
+
+    public static bool CheckCoords(Checkers Coordinats) 
+    {
+        return Physics.Raycast(new Vector3(Coordinats.x, 1000, Coordinats.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+    }
+    public static bool CheckCoords(int x, int z) 
+    {
+        return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+    }
     
 
 
@@ -91,7 +100,7 @@ public struct Checkers
                 CameFrom = null,
                 PathLengthFromStart = 0,
                 HeuristicEstimatePathLength = GetHeuristicPathLength(start, goal)
-            };);
+            });
             
             while (openSet.Count > 0)
             {
@@ -186,7 +195,6 @@ public struct Checkers
             result.Reverse();
             return result;
         }
-
 
 
     }

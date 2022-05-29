@@ -4,34 +4,22 @@ using UnityEngine;
 
 public class Atest : MonoBehaviour
 {
-    bool[,] field = new bool[12, 12];
+    public GameObject PlatformPrefab;
+    public Mesh[][] Modificators;
+    Map map = new Map(111, new Vector2(10, 10), MapType.Desert);
+
+    
+
     void Start()
     {
-        for(int i = 0; i < 12; i++)
+        for(int x = 0; x < 10; x++)
         {
-            for(int j = 0; j < 12; j++)
+            for(int z = 0; z < 10; z++)
             {
-                field[i, j] = true;
+                Instantiate(PlatformPrefab, new Vector3(x, map.GetPlatformUp(x, z), z), Quaternion.Euler(0, Random.Range(0, 360), 0), transform);
             }
-        } 
-        DrawWay(new Checkers(Random.Range(0, 12), Random.Range(0, 12)));
-    }
-
-    void DrawWay(Checkers EndPos)
-    {
-        LineRenderer lineRenderer = GetComponent<LineRenderer>();
-        
-        Checkers start = new Checkers(2, 2);
-        
-        List<Checkers> way = Checkers.PatchWay.FindPath(field, start, EndPos);
-
-        lineRenderer.positionCount = way.Count;
-        for(int i = 0; i < way.Count; i++)
-        {
-            lineRenderer.SetPosition(i, way[i].ToVector3);
         }
     }
-
 
 
 }
