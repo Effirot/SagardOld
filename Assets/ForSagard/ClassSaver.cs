@@ -187,19 +187,26 @@ namespace SagardCL //Class library
                 }
                 return t; 
             }
-            private float DistanceToTo(){ return Checkers.Distance(startPos, endPos); }
-            
-            public List<Attack> Complete()
+
+            public List<Attack> Attacks()
             {
                 switch(Type)
                 {
+                    default: return new List<Attack>();
                     case HitType.SwordSwing:
                     {
                         break;
                     }
                     case HitType.Shot:
                     {
-                        break;
+                        int damage = 4 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.3f);
+                        int distanceDamage(int dist) { return (int)Mathf.Round(damage - dist * 0.5f); }
+                        List<Attack> attackList = new List<Attack>();
+                        foreach(RaycastHit hit in Physics.RaycastAll(startPos, endPos - startPos, Checkers.Distance(startPos, endPos), LayerMask.GetMask("Map")))
+                        {
+                            Attack attack = new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)), DamageType.Range);
+                        }
+                        return attackList;
                     }
                     case HitType.Volley:
                     {
@@ -207,35 +214,30 @@ namespace SagardCL //Class library
                         break;
                     }
                 }
-                return null;
+                return new List<Attack>();
             }
             public bool Check()
             {
                 switch(Type)
                 {
-                    case HitType.SwordSwing:
-                    {
-                        
-                        break;
-                    }
+                    default: return true;
                     case HitType.Shot:
                     {
                         float Distance = 5.5f + (2 * Level);
-
                         return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
                     }
                     case HitType.Volley:
                     {
-
-                        break;
+                        float Distance = 6.5f + (3 * Level);
+                        return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
                     }
                 }
-                return false;
             }
             public Vector3[] Line()
             {
                 switch(Type)
                 {
+                    default: return new Vector3[] { };
                     case HitType.Shot:
                     {   
                         Debug.DrawLine(startPos, endPos, Color.blue);
@@ -243,7 +245,7 @@ namespace SagardCL //Class library
                         return new Vector3[] {startPos, ToPoint(startPos, endPos)};
                     }
                 }
-                return new Vector3[] {};
+                
             }
         }
 

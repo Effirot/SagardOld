@@ -24,14 +24,14 @@ public class Generation : MonoBehaviour
             for(int z = 0; z < map.ZScale; z++)
             {
                 PlatformVisual NowPlatform = Platform[map.GetModifier(x, z)];
-                    if(!map.GetExist(x, z)){
-                        GameObject obj = Instantiate(
-                        NowPlatform.Platform, 
-                        new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(0, Random.Range(0, 360), 0), transform);
+                if(!map.GetExist(x, z)){
+                    GameObject obj = Instantiate(
+                    NowPlatform.Platform, 
+                    new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(0, Random.Range(0, 360), 0), transform);
 
-                        obj.tag = "Map";
-                        if(NowPlatform.Meshes!= null) obj.GetComponent<MeshFilter>().mesh = NowPlatform.Meshes[Random.Range(0, NowPlatform.Meshes.Length)];
-                    }
+                    obj.tag = "Map";
+                    if(NowPlatform.Meshes!= null) obj.GetComponent<MeshFilter>().mesh = NowPlatform.Meshes[Random.Range(0, NowPlatform.Meshes.Length)];
+                }
             }
         }
     }
