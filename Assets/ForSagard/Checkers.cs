@@ -64,137 +64,128 @@ public struct Checkers
 
 
 
-    public static class PatchWay
+    public class PatchWay
     {
-        public static Checkers[] WayTo(Checkers a, Checkers b)
-        {
-            return new Checkers[] { a, b };
-        }
-        public static Vector3[] WayTo(Vector3 a, Vector3 b)
-        {
-            return new Vector3[] { a, b };
-    }
+        public static Checkers[] WayTo(Checkers a, Checkers b) { return new Checkers[] { a, b }; }
+        public static Vector3[] WayTo(Vector3 a, Vector3 b) { return new Vector3[] { a, b }; }
     
-        private class PathNode
-        {
-            public Checkers Position { get; set; }
-            // Длина пути от старта (G).
-            public int PathLengthFromStart { get; set; }
-            // Точка, из которой пришли в эту точку.
-            public PathNode CameFrom { get; set; }
-            // Примерное расстояние до цели (H).
-            public int HeuristicEstimatePathLength { get; set; }
-            // Ожидаемое полное расстояние до цели (F).
-            public int EstimateFullPathLength { get { return this.PathLengthFromStart + this.HeuristicEstimatePathLength; } }
-        }
+        // private class PathNode
+        // {
+        //     public Checkers Position { get; set; }
+        //     public int PathLengthFromStart { get; set; }
+        //     public PathNode CameFrom { get; set; }
+        //     public int HeuristicEstimatePathLength { get; set; }
+        //     public int EstimateFullPathLength { get { return this.PathLengthFromStart + this.HeuristicEstimatePathLength; } }
+        // }
 
-        public static List<Checkers> FindPath(bool[,] field, Checkers start, Checkers goal)
-        {
-            // Шаг 1.
-            var closedSet = new List<PathNode>();
-            var openSet = new List<PathNode>();
-            // Шаг 2.
-            openSet.Add(new PathNode()
-            {
-                Position = start,
-                CameFrom = null,
-                PathLengthFromStart = 0,
-                HeuristicEstimatePathLength = GetHeuristicPathLength(start, goal)
-            });
+        // public static List<Checkers> FindPath(Checkers start, Checkers goal)
+        // {
+        //     // Шаг 1.
+        //     var closedSet = new List<PathNode>();
+        //     var openSet = new List<PathNode>();
+        //     // Шаг 2.
+        //     openSet.Add(new PathNode()
+        //     {
+        //         Position = start,
+        //         CameFrom = null,
+        //         PathLengthFromStart = 0,
+        //         HeuristicEstimatePathLength = GetHeuristicPathLength(start, goal)
+        //     });
             
-            while (openSet.Count > 0)
-            {
-                // Шаг 3.
-                var currentNode = openSet.OrderBy(node => 
-                node.EstimateFullPathLength).First();
-                // Шаг 4.
-                if (currentNode.Position == goal)
-                return GetPathForNode(currentNode);
-                // Шаг 5.
-                openSet.Remove(currentNode);
-                closedSet.Add(currentNode);
-                // Шаг 6.
-                foreach (var neighbourNode in GetNeighbours(currentNode, goal, field))
-                {
-                // Шаг 7.
-                if (closedSet.Count(node => node.Position == neighbourNode.Position) > 0)
-                    continue;
-                var openNode = openSet.FirstOrDefault(node =>
-                    node.Position == neighbourNode.Position);
-                // Шаг 8.
-                if (openNode == null)
-                    openSet.Add(neighbourNode);
-                else
-                    if (openNode.PathLengthFromStart > neighbourNode.PathLengthFromStart)
-                    {
-                    // Шаг 9.
-                    openNode.CameFrom = currentNode;
-                    openNode.PathLengthFromStart = neighbourNode.PathLengthFromStart;
-                    }
-                }
-            }
-            // Шаг 10.
-            return null;
-        }
+        //     while (openSet.Count > 0)
+        //     {
+        //         // Шаг 3.
+        //         var currentNode = openSet.OrderBy(node => 
+        //         node.EstimateFullPathLength).First();
+        //         // Шаг 4.
+        //         if (currentNode.Position == goal)
+        //         return GetPathForNode(currentNode);
+        //         // Шаг 5.
+        //         openSet.Remove(currentNode);
+        //         closedSet.Add(currentNode);
+        //         // Шаг 6.
+        //         foreach (var neighbourNode in GetNeighbours(currentNode, goal))
+        //         {
+        //         // Шаг 7.
+        //         if (closedSet.Count(node => node.Position == neighbourNode.Position) > 0)
+        //             continue;
+        //         var openNode = openSet.FirstOrDefault(node =>
+        //             node.Position == neighbourNode.Position);
+        //         // Шаг 8.
+        //         if (openNode == null)
+        //             openSet.Add(neighbourNode);
+        //         else
+        //             if (openNode.PathLengthFromStart > neighbourNode.PathLengthFromStart)
+        //             {
+        //             // Шаг 9.
+        //             openNode.CameFrom = currentNode;
+        //             openNode.PathLengthFromStart = neighbourNode.PathLengthFromStart;
+        //             }
+        //         }
+        //     }
+        //     // Шаг 10.
+        //     return null;
+        // }
 
-        private static int GetHeuristicPathLength(Checkers from, Checkers to)
-        {
-        return Mathf.Abs(from.x - to.x) + Mathf.Abs(from.z - to.z);
-        }
-        private static int GetDistanceBetweenNeighbours()
-        {
-            return 1;
-        }
+        // private static int GetHeuristicPathLength(Checkers from, Checkers to)
+        // {
+        // return Mathf.Abs(from.x - to.x) + Mathf.Abs(from.z - to.z);
+        // }
+        // private static int GetDistanceBetweenNeighbours()
+        // {
+        //     return 1;
+        // }
         
-        
-        private static List<PathNode> GetNeighbours(PathNode pathNode, 
-        Checkers goal, bool[,] field)
-        {
-        var result = new List<PathNode>();
-        
-        // Соседними точками являются соседние по стороне клетки.
-        Checkers[] neighbourPoints = new Checkers[4];
-        neighbourPoints[0] = new Checkers(pathNode.Position.x + 1, pathNode.Position.z);
-        neighbourPoints[1] = new Checkers(pathNode.Position.x - 1, pathNode.Position.z);
-        neighbourPoints[2] = new Checkers(pathNode.Position.x, pathNode.Position.z + 1);
-        neighbourPoints[3] = new Checkers(pathNode.Position.x, pathNode.Position.z - 1);
-        
-        foreach (Checkers point in neighbourPoints)
-        {
-            // Проверяем, что не вышли за границы карты.
-            if (point.x < 0 || point.x >= field.GetLength(0))
-            continue;
-            if (point.z < 0 || point.z >= field.GetLength(1))
-            continue;
-            // Проверяем, что по клетке можно ходить.
-            if (field[point.x, point.z])
-                continue;
-            // Заполняем данные для точки маршрута.
-            var neighbourNode = new PathNode()
-            {
-            Position = point,
-            CameFrom = pathNode,
-            PathLengthFromStart = pathNode.PathLengthFromStart +
-                GetDistanceBetweenNeighbours(),
-            HeuristicEstimatePathLength = GetHeuristicPathLength(point, goal)
-            };
-            result.Add(neighbourNode);
-        }
-        return result;
-        }
 
-        private static List<Checkers> GetPathForNode(PathNode pathNode)
-        {
-            var result = new List<Checkers>();
-            var currentNode = pathNode;
-            while (currentNode != null)
-            {
-                result.Add(currentNode.Position);
-                currentNode = currentNode.CameFrom;
-            }
-            result.Reverse();
-            return result;
-        }
+        // GameObject CheckPosition(int x, int z) {
+        //     Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map", "Object"));  
+        //     return hit.collider.gameObject;
+        // }
+
+
+
+        // private static List<PathNode> GetNeighbours(PathNode pathNode, Checkers goal)
+        // {
+        //     var result = new List<PathNode>();
+        //     for(int x = 0; x < 3; x++)
+        //     {
+        //         for(int z = 0; z < 3; z++)
+        //         {
+        //             bool Checked = 
+        //         }
+        //     }
+
+            
+        //     foreach (Checkers point in neighbourPoints)
+        //     {
+        //         if ()
+        //             continue;
+        //         // Заполняем данные для точки маршрута.
+        //         var neighbourNode = new PathNode()
+        //         {
+        //             Position = point,
+        //             CameFrom = pathNode,
+        //             PathLengthFromStart = pathNode.PathLengthFromStart +
+        //                 GetDistanceBetweenNeighbours(),
+        //             HeuristicEstimatePathLength = GetHeuristicPathLength(point, goal)
+        //         };
+        //         result.Add(neighbourNode);
+        //     }
+        //     return result;
+        // }
+
+        // private static List<Checkers> GetPathForNode(PathNode pathNode)
+        // {
+        //     var result = new List<Checkers>();
+        //     var currentNode = pathNode;
+        //     while (currentNode != null)
+        //     {
+        //         result.Add(currentNode.Position);
+        //         currentNode = currentNode.CameFrom;
+        //     }
+        //     result.Reverse();
+        //     return result;
+        // }
 
 
     }

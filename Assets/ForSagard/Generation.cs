@@ -18,6 +18,7 @@ public class Generation : MonoBehaviour
     }
 
     protected void Letsgenerate(Map map, PlatformVisual[] Platform){
+        ClearMap();
         for(int x = 0; x < map.XScale; x++)
         {
             for(int z = 0; z < map.ZScale; z++)
@@ -27,10 +28,17 @@ public class Generation : MonoBehaviour
                         GameObject obj = Instantiate(
                         NowPlatform.Platform, 
                         new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(0, Random.Range(0, 360), 0), transform);
-                    
+
+                        obj.tag = "Map";
                         if(NowPlatform.Meshes!= null) obj.GetComponent<MeshFilter>().mesh = NowPlatform.Meshes[Random.Range(0, NowPlatform.Meshes.Length)];
                     }
             }
+        }
+    }
+    private void ClearMap(){
+        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Map"))
+        {   
+            Destroy(obj);
         }
     }
 }
@@ -63,8 +71,6 @@ public class Map
 
     MapCell[,] MapPlatformParameters = new MapCell[,] {};
 
-
-
     public Map(uint Key, Vector2 Scale, ReliefType Type)
     {
         scaleX = (int)Scale.x; scaleZ = (int)Scale.y; key = Key; type = Type;
@@ -72,19 +78,19 @@ public class Map
     }
     public Map(int PlayerNum, uint Key)
     {
-        scaleX = PlayerNum * 15 + (((int)key / 23)%7); scaleZ = PlayerNum * 15 + (((int)key / 14)%7); 
+        scaleX = PlayerNum * 9 + (((int)key / 23)%7); scaleZ = PlayerNum * 9 + (((int)key / 14)%7); 
         key = Key;
         MapPlatformParameters = GenerateRelief();
     }
     public Map(int PlayerNum)
     {
-        scaleX = PlayerNum * 15 + (((int)key / 23)%7); scaleZ = PlayerNum * 15 + (((int)key / 14)%7); 
+        scaleX = PlayerNum * 9 + (((int)key / 23)%7); scaleZ = PlayerNum * 9 + (((int)key / 14)%7); 
         key = (uint)Random.Range(0, 99999999);
         MapPlatformParameters = GenerateRelief();
     }
     public Map()
     {
-        scaleX = 2 * 15 + (((int)key / 23)%7); scaleZ = 2 * 15 + (((int)key / 14)%7); 
+        scaleX = 2 * 9 + (((int)key / 23)%7); scaleZ = 2 * 9 + (((int)key / 14)%7); 
         key = (uint)Random.Range(0, 99999999);
         MapPlatformParameters = GenerateRelief();
     }

@@ -50,7 +50,6 @@ public class UnitController : MonoBehaviour
         if (NowUsingSkill.Check()){
             APlaner.LineRenderer.positionCount = NowUsingSkill.Line().Length;
             APlaner.LineRenderer.SetPositions(NowUsingSkill.Line()); 
-            NowUsingSkill.Complete();
         }
         APlaner.LineRenderer.enabled = NowUsingSkill.Check();
 

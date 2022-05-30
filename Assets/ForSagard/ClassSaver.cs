@@ -160,16 +160,16 @@ namespace SagardCL //Class library
             public GameObject From;
             public GameObject To;
 
-            public string Name;
-            public string Description;
-            Texture2D image;
-            public HitType Type;
-            public uint Level;
-            public uint DamageModifier;
+            [SerializeField] string Name;
+            [SerializeField] string Description;
+            [SerializeField] Texture2D image;
+            [SerializeField] HitType Type;
+            [SerializeField] uint Level;
+            [SerializeField] uint DamageModifier;
             public bool NoWalking = false;
 
-            private Vector3 startPos{ get{ return From.transform.position; } }
-            private Vector3 endPos{ get{ return To.transform.position; } }
+            private Checkers startPos{ get{ return new Checkers(From.transform.position, 0.3f); } }
+            private Checkers endPos{ get{ return new Checkers(To.transform.position, 0.3f); } }
             
             // Overloads
             public Skill(GameObject from, string name, HitType type, uint level, uint damage, bool noWlaking = false)
@@ -179,40 +179,35 @@ namespace SagardCL //Class library
             public override string ToString()
             { return "Skill:" + Name + " Type:" + Type + "(" + Level + ":" + DamageModifier + ":" + (NoWalking?":No" : ":Yes") + " walk)"; }
             
-            LayerMask Mask = LayerMask.GetMask(new string[] {"Map", "Object"});
-            
-            private Vector3 ToPoint(Vector3 f, Vector3 t, float Distance)
+            private Vector3 ToPoint(Vector3 f, Vector3 t)
             {
-                if(Physics.Raycast(f, t - f, out RaycastHit hit, Distance, Mask))
+                if(Physics.Raycast(f, t - f, out RaycastHit hit, Vector3.Distance(f, t), LayerMask.GetMask("Object", "Map")))
                 { 
-                    return hit.point;
+                    return new Checkers(hit.point);
                 }
                 return t; 
             }
-
-            public void Complete()
+            private float DistanceToTo(){ return Checkers.Distance(startPos, endPos); }
+            
+            public List<Attack> Complete()
             {
                 switch(Type)
                 {
                     case HitType.SwordSwing:
                     {
-                        
                         break;
                     }
                     case HitType.Shot:
                     {
-                        float Distance = 5.5f + (2 * Level);
-                        
-                        Debug.DrawLine(startPos, endPos, Color.yellow);
-                        Debug.DrawLine(startPos, ToPoint(startPos, endPos, Distance), Color.red);
                         break;
                     }
                     case HitType.Volley:
                     {
-
+                        
                         break;
                     }
                 }
+                return null;
             }
             public bool Check()
             {
@@ -241,21 +236,11 @@ namespace SagardCL //Class library
             {
                 switch(Type)
                 {
-                    case HitType.SwordSwing:
-                    {
-                        
-                        break;
-                    }
                     case HitType.Shot:
                     {   
-                        float Distance = 5.5f + (2 * Level);
-
-                        return new Vector3[] {From.transform.position, ToPoint(From.transform.position, To.transform.position, Distance)};
-                    }
-                    case HitType.Volley:
-                    {
-
-                        break;
+                        Debug.DrawLine(startPos, endPos, Color.blue);
+                        Debug.DrawLine(startPos, ToPoint(startPos, endPos), Color.red);
+                        return new Vector3[] {startPos, ToPoint(startPos, endPos)};
                     }
                 }
                 return new Vector3[] {};
@@ -315,10 +300,14 @@ namespace SagardCL //Class library
                 damageType = Type;
                 Debuff = new Effect[] { };
             }
-        
 
-        
+            public static Attack Empty{ get{ return new Attack(null, new Checkers(), 0, DamageType.Pure);}}
         
         }
     }
+}
+
+public class ActionLog 
+{
+
 }

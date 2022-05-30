@@ -12,12 +12,12 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Object
+  - 
   - Water
   - UI
-  - Map
   - Cursor
-  - 
+  - Map
+  - Object
   - 
   - 
   - 
