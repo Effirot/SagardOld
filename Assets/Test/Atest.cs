@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class Atest : Generation
 {   
+    [SerializeField] GameObject PlatformPreset;
     void Start()
     {
-        map = new Map();
-        Letsgenerate();
+        Letsgenerate(new Map(), new PlatformVisual[] { new PlatformVisual(PlatformPreset) });
     }
 
 

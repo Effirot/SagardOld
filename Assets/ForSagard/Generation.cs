@@ -4,30 +4,38 @@ using UnityEngine;
 
 public class Generation : MonoBehaviour
 {
-    Map map = new Map((uint)Random.Range(0, 99991999), new Vector2(10, 10), MapType.Desert);
-
-    class PlatformVisual
+    protected class PlatformVisual
     {
-        public GameObject platform;
-        public Mesh[] MeshVariants;
+        static GameObject platform;
+        static Mesh[] MeshVariants;
+
+        public PlatformVisual(GameObject Platform) { platform = Platform; MeshVariants = null; }
+        public PlatformVisual(GameObject Platform, Mesh Mesh) { platform = Platform; MeshVariants = new Mesh[] { Mesh }; }
+        public PlatformVisual(GameObject Platform, Mesh[] Meshes) { platform = Platform; MeshVariants = Meshes; }
+
+        public GameObject Platform { get{ return platform; } }
+        public Mesh[] Meshes { get{ return MeshVariants; } }
     }
 
-    void Letsgenerate(PlatformVisual[] Platform){
+    protected void Letsgenerate(Map map, PlatformVisual[] Platform){
         for(int x = 0; x < map.XScale; x++)
         {
             for(int z = 0; z < map.ZScale; z++)
             {
-                GameObject obj = Instantiate(
-                    Platform[map.GetModifier(x, z)].platform, 
-                    new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(0, Random.Range(0, 360), 0), transform);
-
-                
+                PlatformVisual NowPlatform = Platform[map.GetModifier(x, z)];
+                    if(!map.GetExist(x, z)){
+                        GameObject obj = Instantiate(
+                        NowPlatform.Platform, 
+                        new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(0, Random.Range(0, 360), 0), transform);
+                    
+                        if(NowPlatform.Meshes!= null) obj.GetComponent<MeshFilter>().mesh = NowPlatform.Meshes[Random.Range(0, NowPlatform.Meshes.Length)];
+                    }
             }
         }
     }
 }
 
-public enum MapType
+public enum ReliefType
 {
     Desert = 1,
     WeatheredDesert = 2,
@@ -49,30 +57,43 @@ public class Map
     }
 
     static Mesh map;
-    int scaleX, scaleZ;
+    [SerializeField] int scaleX, scaleZ;
     [SerializeField] static uint key;
-    [SerializeField] MapType type;
+    [SerializeField] ReliefType type;
 
     MapCell[,] MapPlatformParameters = new MapCell[,] {};
 
 
 
-    public Map(uint Key, Vector2 Scale, MapType Type)
+    public Map(uint Key, Vector2 Scale, ReliefType Type)
     {
         scaleX = (int)Scale.x; scaleZ = (int)Scale.y; key = Key; type = Type;
-        MapPlatformParameters = GenerateMap();
+        MapPlatformParameters = GenerateRelief();
     }
-    public Map(uint Key, int PlayerNum)
+    public Map(int PlayerNum, uint Key)
     {
-        scaleX = (int); scaleZ = (int)Scale.y; 
+        scaleX = PlayerNum * 15 + (((int)key / 23)%7); scaleZ = PlayerNum * 15 + (((int)key / 14)%7); 
         key = Key;
-        MapPlatformParameters = GenerateMap();
+        MapPlatformParameters = GenerateRelief();
     }
+    public Map(int PlayerNum)
+    {
+        scaleX = PlayerNum * 15 + (((int)key / 23)%7); scaleZ = PlayerNum * 15 + (((int)key / 14)%7); 
+        key = (uint)Random.Range(0, 99999999);
+        MapPlatformParameters = GenerateRelief();
+    }
+    public Map()
+    {
+        scaleX = 2 * 15 + (((int)key / 23)%7); scaleZ = 2 * 15 + (((int)key / 14)%7); 
+        key = (uint)Random.Range(0, 99999999);
+        MapPlatformParameters = GenerateRelief();
+    }
+    
     
     public int XScale { get{ return scaleX; } }
     public int ZScale { get{ return scaleZ; } }
 
-    private MapCell[,] GenerateMap()
+    private MapCell[,] GenerateRelief()
     {
         MapCell[,] result = new MapCell[scaleX, scaleZ];
         for(int x = 0; x < scaleX; x++)
@@ -92,4 +113,5 @@ public class Map
     public int GetModifier(int x, int z) { return MapPlatformParameters[x, z].Modifier; }
     public float GetUp(int x, int z) { return MapPlatformParameters[x, z].Up; }
     public bool GetLet(int x, int z) { return MapPlatformParameters[x, z].Let; }
+    public bool GetExist(int x, int z) { return MapPlatformParameters[x, z] == null; }
 }
