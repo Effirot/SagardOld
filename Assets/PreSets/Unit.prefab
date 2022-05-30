@@ -2599,6 +2599,7 @@ MonoBehaviour:
       To: {fileID: 0}
       Name: 
       Description: 
+      image: {fileID: 0}
       Type: 1
       Level: 1
       DamageModifier: 1
@@ -2624,6 +2625,7 @@ MonoBehaviour:
       To: {fileID: 0}
       Name: a
       Description: 
+      image: {fileID: 0}
       Type: 1
       Level: 0
       DamageModifier: 0
@@ -2650,7 +2652,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -3298800115395149385, guid: 9a2987d1167ec8d46a626199ac05bb1b, type: 3}
 --- !u!1 &6871638595594809548

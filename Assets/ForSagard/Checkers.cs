@@ -69,14 +69,14 @@ public struct Checkers
         public static Checkers[] WayTo(Checkers a, Checkers b) { return new Checkers[] { a, b }; }
         public static Vector3[] WayTo(Vector3 a, Vector3 b) { return new Vector3[] { a, b }; }
     
-        // private class PathNode
-        // {
-        //     public Checkers Position { get; set; }
-        //     public int PathLengthFromStart { get; set; }
-        //     public PathNode CameFrom { get; set; }
-        //     public int HeuristicEstimatePathLength { get; set; }
-        //     public int EstimateFullPathLength { get { return this.PathLengthFromStart + this.HeuristicEstimatePathLength; } }
-        // }
+        private class PathNode
+        {
+            public Checkers Position { get; set; }
+            public int PathLengthFromStart { get; set; }
+            public PathNode CameFrom { get; set; }
+            public int HeuristicEstimatePathLength { get; set; }
+            public int EstimateFullPathLength { get { return this.PathLengthFromStart + this.HeuristicEstimatePathLength; } }
+        }
 
         // public static List<Checkers> FindPath(Checkers start, Checkers goal)
         // {
@@ -127,22 +127,20 @@ public struct Checkers
         //     return null;
         // }
 
-        // private static int GetHeuristicPathLength(Checkers from, Checkers to)
-        // {
-        // return Mathf.Abs(from.x - to.x) + Mathf.Abs(from.z - to.z);
-        // }
-        // private static int GetDistanceBetweenNeighbours()
-        // {
-        //     return 1;
-        // }
+        private static int GetHeuristicPathLength(Checkers from, Checkers to)
+        {
+        return Mathf.Abs(from.x - to.x) + Mathf.Abs(from.z - to.z);
+        }
+        private static int GetDistanceBetweenNeighbours()
+        {
+            return 1;
+        }
         
 
-        // GameObject CheckPosition(int x, int z) {
-        //     Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map", "Object"));  
-        //     return hit.collider.gameObject;
-        // }
-
-
+        GameObject CheckPosition(int x, int z) {
+            Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map", "Object"));  
+            return hit.collider.gameObject;
+        }
 
         // private static List<PathNode> GetNeighbours(PathNode pathNode, Checkers goal)
         // {
@@ -174,18 +172,18 @@ public struct Checkers
         //     return result;
         // }
 
-        // private static List<Checkers> GetPathForNode(PathNode pathNode)
-        // {
-        //     var result = new List<Checkers>();
-        //     var currentNode = pathNode;
-        //     while (currentNode != null)
-        //     {
-        //         result.Add(currentNode.Position);
-        //         currentNode = currentNode.CameFrom;
-        //     }
-        //     result.Reverse();
-        //     return result;
-        // }
+        private static List<Checkers> GetPathForNode(PathNode pathNode)
+        {
+            var result = new List<Checkers>();
+            var currentNode = pathNode;
+            while (currentNode != null)
+            {
+                result.Add(currentNode.Position);
+                currentNode = currentNode.CameFrom;
+            }
+            result.Reverse();
+            return result;
+        }
 
 
     }
