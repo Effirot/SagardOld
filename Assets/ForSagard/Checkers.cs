@@ -6,25 +6,25 @@ using System.Linq;
 [System.Serializable]
 public struct Checkers
 {
-    [SerializeField] static int X, Z;
-    [SerializeField] static float UP;
+    int X, Z;
+    float UP;
 
     public int x { get{ return X; } }
     public int z { get{ return Z; } }
-    public float up { get{ return UP; } }
-    public float clearUp { get{ return UP - YUpPos(); } }
+    public float up { get{ return this.UP + YUpPos(); } }
+    public float clearUp { get{ return UP; } }
 
-    private float YUpPos()
+    float YUpPos()
     {
         if (Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map")))
             return hit.point.y;
         return 0;
     }
 
-    public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = YUpPos() + UPadd; }
-    public Checkers(Vector3 Vector3add, float UPadd = 0) { X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = YUpPos() + UPadd; }
-    public Checkers(Vector2 Vector2add, float UPadd = 0) { X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = YUpPos() + UPadd; }
-    public Checkers(Transform Transformadd, float UPadd = 0) { X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = YUpPos() + UPadd; }
+    public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = UPadd; }
+    public Checkers(Vector3 Vector3add, float UPadd = 0) { X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = UPadd; }
+    public Checkers(Vector2 Vector2add, float UPadd = 0) { X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = UPadd; }
+    public Checkers(Transform Transformadd, float UPadd = 0) { X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = UPadd; }
 
     public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
     public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }

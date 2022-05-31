@@ -8,15 +8,12 @@ public class UnitController : MonoBehaviour
 {
     public int SkillIndex;
     Skill NowUsingSkill{ get{ return Parameters.AvailableSkills[SkillIndex];} }
-    Vector3 position{ get{ return transform.position; }}
+    Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
     public UnityEngine.UI.Text DebugText;
-    public Attack[] atk;
     
     [SerializeField]private GameObject Platform;
     [SerializeField]private AllInOne MPlaner;
     [SerializeField]private AllInOne APlaner;
-    
-    
 
     Checkers CursorPos(float Up){ return new Checkers(GameObject.Find("3DCursor").transform.position, Up); }
     
@@ -26,7 +23,6 @@ public class UnitController : MonoBehaviour
     
     void Start()
     {
-        DebugText.text = new Attack(gameObject, new Checkers(1, 1), 3, DamageType.Range).InString();
         parameterEdited();
 
         Platform.transform.eulerAngles += new Vector3(0, Random.Range(0f, 360f), 0);
@@ -46,9 +42,6 @@ public class UnitController : MonoBehaviour
         }
         MPlaner.LineRenderer.enabled = MPlanerChecker();
 
-
-
-
         APlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
 
         if (NowUsingSkill.Check()){
@@ -59,8 +52,8 @@ public class UnitController : MonoBehaviour
             foreach(Attack attack in NowUsingSkill.DamageZone())
             {
                 txt += attack.InString() + "\n";
+                Debug.DrawLine(attack.Where, new Checkers(attack.Where, 1f), Color.red);
             }
-            atk = NowUsingSkill.DamageZone().ToArray();
             DebugText.text = txt;
         }
         APlaner.LineRenderer.enabled = NowUsingSkill.Check();
@@ -70,12 +63,12 @@ public class UnitController : MonoBehaviour
             default:
             {
                 //Base model
-                transform.position = Vector3.Lerp(transform.position, new Checkers(transform.position), 
+                position = Vector3.Lerp(position, new Checkers(position), 
                 2.5f * Time.deltaTime);
                 
                 //Move planner
                 MPlaner.Planer.transform.position = (!MPlanerChecker())?
-                transform.position :
+                position :
                 MPlaner.position;
 
                 MPlaner.Renderer.enabled = MPlanerChecker();
@@ -93,7 +86,7 @@ public class UnitController : MonoBehaviour
             case Controll.move:
             {
                 //Base model
-                transform.position = new Checkers(transform.position, 0.7f);
+                position = new Checkers(position, 0.7f);
                 //Platform.transform.eulerAngles = new Vector3(0, Quaternion.LookRotation(MPlaner.pos - transform.position, -Vector3.up).eulerAngles.y + 180, 0);
                 
                 //Move planner
@@ -110,12 +103,12 @@ public class UnitController : MonoBehaviour
             case Controll.active:
             {
                 //Base model
-                transform.position = new Checkers(transform.position, 0.7f);
+                position = new Checkers(position, 0.7f);
 
                 //Move planner
                 if(NowUsingSkill.NoWalking)
                 {
-                    MPlaner.Planer.transform.position = transform.position;
+                    MPlaner.Planer.transform.position = position;
                     MPlaner.Renderer.enabled = false;
                     MPlaner.Collider.enabled = true;
                 }
@@ -182,8 +175,6 @@ public class UnitController : MonoBehaviour
         
         return Other && OnOtherPlaner() && !OnSelf() && OnDistance();
     }
-
-
 
 
     void parameterEdited()

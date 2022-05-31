@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using SagardCL.Usabless;
 
@@ -44,14 +45,6 @@ namespace SagardCL //Class library
         public void Rest(int StaminaAdd)
         {
             Stamina = Mathf.Clamp(Stamina + StaminaAdd, 0, MaxStamina);
-        }
-        
-        public void CompleteAllEffects()
-        {
-            foreach(Effect Effect in Debuffs)
-            {
-
-            }
         }
 
         public void SetMax(int Stamina, int HP, int Sanity)
@@ -166,9 +159,10 @@ namespace SagardCL //Class library
             [SerializeField] DamageType damageType;
             [SerializeField] HitType Type;
             [SerializeField] uint Level;
-            [SerializeField] uint DamageModifier;
-            public bool NoWalking = false;
             public float distanceBuff = 0.0f;
+            public uint DamageModifier;
+            public bool NoWalking = false;
+
 
             private Checkers startPos{ get{ return new Checkers(From.transform.position, 0.3f); } }
             private Checkers endPos{ get{ return new Checkers(To.transform.position, 0.3f); } }
@@ -200,7 +194,7 @@ namespace SagardCL //Class library
                         int damage = 4 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.3f);
                         int distanceDamage(int dist) { return (int)Mathf.Round(damage - dist * 0.5f); }
 
-                        List<Attack> attackList = new List<Attack>();
+                        var result = new List<Attack>();
                         foreach(RaycastHit hit in Physics.RaycastAll(
                             new Checkers(startPos, -1), ToPoint(new Checkers(startPos, -1), 
                             new Checkers(endPos, -1)) - startPos.ToVector3, 
@@ -209,28 +203,34 @@ namespace SagardCL //Class library
                         {
                             if(new Checkers(ToPoint(startPos, endPos)) == endPos)
                             {
-                                attackList.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)) + 2, damageType));
+                                result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)) + 2, damageType));
                                 continue;
                             }
-                            attackList.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)), damageType));
+                            result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)), damageType));
                         }
-                        return attackList;
+                        return result;
                     }
                     case HitType.Volley:
                     {
                         int damage = 5 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.4f);
 
-                        List<Attack> attackList = new List<Attack>();
-                        attackList.Add(new Attack(From, endPos, damage, damageType));
+                        List<Attack> result = new List<Attack>();
                         if(Level >= 2)
                         {
-                            attackList.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z + 1), damage - 2, damageType));
-                            attackList.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z - 1), damage - 2, damageType));
-                            attackList.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z + 1), damage - 2, damageType));
-                            attackList.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z - 1), damage - 2, damageType));
+                            result.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z), damage - 2, damageType));
+                            result.Add(new Attack(From, new Checkers(endPos.x, endPos.z + 1), damage - 2, damageType));
+                            result.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z), damage - 2, damageType));
+                            result.Add(new Attack(From, new Checkers(endPos.x, endPos.z - 1), damage - 2, damageType));
                         }
-
-                        return attackList;
+                        if(Level >= 3)
+                        {
+                            result.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z + 1), damage - 2, damageType));
+                            result.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z + 1), damage - 2, damageType));
+                            result.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z - 1), damage - 2, damageType));
+                            result.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z - 1), damage - 2, damageType));
+                        }
+                        result.Add(new Attack(From, endPos, damage, damageType));
+                        return result;
                     }
                 }
                 return new List<Attack>();
@@ -242,12 +242,12 @@ namespace SagardCL //Class library
                     default: return true;
                     case HitType.Shot:
                     {
-                        float Distance = 5.5f + (2 * Level) + distanceBuff;
+                        float Distance = 3.5f + (2 * Level) + distanceBuff;
                         return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
                     }
                     case HitType.Volley:
                     {
-                        float Distance = 9.5f + (1.5f * Level) + distanceBuff;
+                        float Distance = 5.5f + (1.5f * Level) + distanceBuff;
                         return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
                     }
                 }
@@ -290,13 +290,18 @@ namespace SagardCL //Class library
         }
 
         [System.Serializable]
-        public class Attack
+        public struct Attack
         {
             public GameObject WhoAttack;
-            public Checkers WhereAttack;
-            public int Damage;
-            DamageType damageType;
-            public Effect[] Debuff;
+
+            [SerializeField]Checkers WhereAttack;
+            public Checkers Where { get { return WhereAttack; } }
+
+            [SerializeField]int Damage;
+            [SerializeField]DamageType damageType;
+            [SerializeField]Effect[] Debuff;
+
+
 
             // Overloads
             public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
@@ -328,9 +333,18 @@ namespace SagardCL //Class library
             }
 
             public string InString()
-            { return "Attack from " + WhoAttack.transform.parent.name + " to " + WhereAttack.x + ":" + WhereAttack.z + " (" + damageType.ToString() + " - " + Damage + ")"; }
-
-            public static Attack Empty{ get{ return new Attack(null, new Checkers(), 0, DamageType.Pure);}}
+            { 
+                string effects = "";
+                foreach(Effect effect in Debuff)
+                {
+                    effects += effect.Name + ", ";
+                }
+                return "Attack from " + WhoAttack.transform.parent.name + 
+                       " to " + WhereAttack.x + 
+                       ":" + WhereAttack.z + 
+                       " (" + damageType.ToString() +
+                       " - " + Damage + ")" +
+                       effects; }
         
         }
     }
