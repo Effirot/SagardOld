@@ -2584,6 +2584,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SkillIndex: 0
+  DebugText: {fileID: 0}
+  atk: []
   Platform: {fileID: 6578298447475953083}
   MPlaner:
     Planer: {fileID: 3247773065290817402}
@@ -2604,6 +2606,7 @@ MonoBehaviour:
       Level: 1
       DamageModifier: 1
       NoWalking: 0
+      distanceBuff: 0
     Resists: []
     Debuffs: []
     MaxStamina: 0
@@ -2626,10 +2629,11 @@ MonoBehaviour:
       Name: a
       Description: 
       image: {fileID: 0}
-      Type: 1
+      Type: 2
       Level: 0
       DamageModifier: 0
       NoWalking: 0
+      distanceBuff: 0
     Resists: []
     Debuffs: []
     MaxStamina: 3

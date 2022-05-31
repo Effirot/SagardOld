@@ -9,10 +9,13 @@ public class UnitController : MonoBehaviour
     public int SkillIndex;
     Skill NowUsingSkill{ get{ return Parameters.AvailableSkills[SkillIndex];} }
     Vector3 position{ get{ return transform.position; }}
-
+    public UnityEngine.UI.Text DebugText;
+    public Attack[] atk;
+    
     [SerializeField]private GameObject Platform;
     [SerializeField]private AllInOne MPlaner;
     [SerializeField]private AllInOne APlaner;
+    
     
 
     Checkers CursorPos(float Up){ return new Checkers(GameObject.Find("3DCursor").transform.position, Up); }
@@ -23,6 +26,7 @@ public class UnitController : MonoBehaviour
     
     void Start()
     {
+        DebugText.text = new Attack(gameObject, new Checkers(1, 1), 3, DamageType.Range).InString();
         parameterEdited();
 
         Platform.transform.eulerAngles += new Vector3(0, Random.Range(0f, 360f), 0);
@@ -37,7 +41,7 @@ public class UnitController : MonoBehaviour
         if (MPlanerChecker()){
             MPlaner.LineRenderer.positionCount = Checkers.PatchWay.WayTo(position, MPlaner.position).Length;
             MPlaner.LineRenderer.SetPositions(Checkers.PatchWay.WayTo(position, MPlaner.position)); 
-            Debug.DrawLine(position, MPlaner.position, Color.blue);
+            Debug.DrawLine(position, MPlaner.position, Color.yellow);
             
         }
         MPlaner.LineRenderer.enabled = MPlanerChecker();
@@ -50,6 +54,14 @@ public class UnitController : MonoBehaviour
         if (NowUsingSkill.Check()){
             APlaner.LineRenderer.positionCount = NowUsingSkill.Line().Length;
             APlaner.LineRenderer.SetPositions(NowUsingSkill.Line()); 
+
+            string txt = "";
+            foreach(Attack attack in NowUsingSkill.DamageZone())
+            {
+                txt += attack.InString() + "\n";
+            }
+            atk = NowUsingSkill.DamageZone().ToArray();
+            DebugText.text = txt;
         }
         APlaner.LineRenderer.enabled = NowUsingSkill.Check();
 
@@ -180,9 +192,7 @@ public class UnitController : MonoBehaviour
 
         foreach(Skill skill in Parameters.AvailableSkills)
         {
-            if (skill.NoWalking) skill.From = gameObject;
-            else skill.From = MPlaner.Planer;
-
+            skill.From = MPlaner.Planer;
             skill.To = APlaner.Planer;
         }
     }
