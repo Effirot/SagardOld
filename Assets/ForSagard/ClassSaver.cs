@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using SagardCL.Usabless;
 
 namespace SagardCL //Class library
 {
@@ -66,7 +65,7 @@ namespace SagardCL //Class library
             SanityShield = sanity;
         }
 
-        public void AddSkill(GameObject from, string name, HitType type, uint level, uint damage)
+        public void AddSkill(GameObject from, string name, HitType type, int level, int damage)
         {
             AvailableSkills.Add(new Skill(from, name, type, level, damage));
         }
@@ -75,7 +74,7 @@ namespace SagardCL //Class library
             AvailableSkills.Add(skill);
         }
 
-        public void RemoveSkill(GameObject from, string name, HitType type, uint level, uint damage)
+        public void RemoveSkill(GameObject from, string name, HitType type, int level, int damage)
         {
             AvailableSkills.Remove(new Skill(from, name, type, level, damage));
         }
@@ -128,226 +127,232 @@ namespace SagardCL //Class library
 
 
 
-    namespace Usabless{
 
-        public enum DamageType
-        {
-            Melee,
-            Range,
-            Rezo,
-            Terra,
-            Pure
-        }        
-        public enum HitType
-        {
-            SwordSwing,
-            Shot,
-            Volley,
-            Dash,
-            
-        }
+    public enum DamageType
+    {
+        Melee,
+        Range,
+        Rezo,
+        Terra,
+        Pure
+    }        
+    public enum HitType
+    {
+        SwordSwing,
+        SniperShot,
+        ShotGunShot,
+        Volley,
+        EmptyVolley,
+        Dash,
         
-        [System.Serializable]
-        public class Skill
+    }
+    
+    [System.Serializable]
+    public class Skill
+    {
+        public GameObject From;
+        public GameObject To;
+
+        [SerializeField] string Name;
+        [SerializeField] string Description;
+        [SerializeField] Texture2D image;
+        [SerializeField] DamageType damageType;
+        [SerializeField] HitType Type;
+        [SerializeField] int Level;
+        public float distanceBuff = 0.0f;
+        public int DamageModifier;
+        public bool NoWalking = false;
+        public bool WaitAStep = false;
+
+        private Checkers startPos{ get{ return new Checkers(From.transform.position, 0.3f); } set { From.transform.position = value; } }
+        private Checkers endPos{ get{ return new Checkers(To.transform.position, 0.3f); } }
+        
+        // Overloads
+        public Skill(GameObject from, string name, HitType type, int level, int damage, bool noWlaking = false, bool waitAStep = false)
+        { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; WaitAStep = waitAStep; }
+        
+        private Checkers ToPoint(Vector3 f, Vector3 t)
         {
-            public GameObject From;
-            public GameObject To;
-
-            [SerializeField] string Name;
-            [SerializeField] string Description;
-            [SerializeField] Texture2D image;
-            [SerializeField] DamageType damageType;
-            [SerializeField] HitType Type;
-            [SerializeField] uint Level;
-            public float distanceBuff = 0.0f;
-            public uint DamageModifier;
-            public bool NoWalking = false;
-
-
-            private Checkers startPos{ get{ return new Checkers(From.transform.position, 0.3f); } }
-            private Checkers endPos{ get{ return new Checkers(To.transform.position, 0.3f); } }
-            
-            // Overloads
-            public Skill(GameObject from, string name, HitType type, uint level, uint damage, bool noWlaking = false)
-            { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; }
-            
-            private Vector3 ToPoint(Vector3 f, Vector3 t)
-            {
-                if(Physics.Raycast(f, t - f, out RaycastHit hit, Vector3.Distance(f, t), LayerMask.GetMask("Object", "Map")))
-                { 
-                    return new Checkers(hit.point);
-                }
-                return t; 
-            }
-
-            public List<Attack> DamageZone()
-            {
-                switch(Type)
-                {
-                    default: return new List<Attack>();
-                    case HitType.SwordSwing:
-                    {
-                        break;
-                    }
-                    case HitType.Shot:
-                    {
-                        int damage = 4 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.3f);
-                        int distanceDamage(int dist) { return (int)Mathf.Round(damage - dist * 0.5f); }
-
-                        var result = new List<Attack>();
-                        foreach(RaycastHit hit in Physics.RaycastAll(
-                            new Checkers(startPos, -1), ToPoint(new Checkers(startPos, -1), 
-                            new Checkers(endPos, -1)) - startPos.ToVector3, 
-                            Checkers.Distance(startPos, new Checkers(ToPoint(startPos, endPos))), 
-                            LayerMask.GetMask("Map")))
-                        {
-                            if(new Checkers(ToPoint(startPos, endPos)) == endPos)
-                            {
-                                result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)) + 2, damageType));
-                                continue;
-                            }
-                            result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)), damageType));
-                        }
-                        return result;
-                    }
-                    case HitType.Volley:
-                    {
-                        int damage = 5 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.4f);
-
-                        List<Attack> result = new List<Attack>();
-                        if(Level >= 2)
-                        {
-                            result.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z), damage - 2, damageType));
-                            result.Add(new Attack(From, new Checkers(endPos.x, endPos.z + 1), damage - 2, damageType));
-                            result.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z), damage - 2, damageType));
-                            result.Add(new Attack(From, new Checkers(endPos.x, endPos.z - 1), damage - 2, damageType));
-                        }
-                        if(Level >= 3)
-                        {
-                            result.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z + 1), damage - 2, damageType));
-                            result.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z + 1), damage - 2, damageType));
-                            result.Add(new Attack(From, new Checkers(endPos.x + 1, endPos.z - 1), damage - 2, damageType));
-                            result.Add(new Attack(From, new Checkers(endPos.x - 1, endPos.z - 1), damage - 2, damageType));
-                        }
-                        result.Add(new Attack(From, endPos, damage, damageType));
-                        return result;
-                    }
-                }
-                return new List<Attack>();
-            }
-            public bool Check()
-            {
-                switch(Type)
-                {
-                    default: return true;
-                    case HitType.Shot:
-                    {
-                        float Distance = 3.5f + (2 * Level) + distanceBuff;
-                        return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
-                    }
-                    case HitType.Volley:
-                    {
-                        float Distance = 5.5f + (1.5f * Level) + distanceBuff;
-                        return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
-                    }
-                }
-            }
-            public Vector3[] Line()
-            {
-                switch(Type)
-                {
-                    default: return new Vector3[] { };
-                    case HitType.Shot:
-                    {   
-                        Debug.DrawLine(startPos, endPos, Color.blue);
-                        Debug.DrawLine(startPos, ToPoint(startPos, endPos), Color.red);
-                        return new Vector3[] {startPos, ToPoint(startPos, endPos)};
-                    }
-                    case HitType.Volley:
-                    {   
-                        Debug.DrawLine(startPos, endPos, Color.red);
-                        return new Vector3[] {startPos, endPos};
-                    }
-                }
-                
-            }
-        }
-
-        [System.Serializable]
-        public class Item
-        {
-            string Name = "";
-            string Description = "";
-            Texture2D texture = new Texture2D(256, 256);
-        }
-
-        [System.Serializable]
-        public class Effect
-        {
-            public string Name;
-            public string Description;
-            public Texture2D image;
-        }
-
-        [System.Serializable]
-        public struct Attack
-        {
-            public GameObject WhoAttack;
-
-            [SerializeField]Checkers WhereAttack;
-            public Checkers Where { get { return WhereAttack; } }
-
-            [SerializeField]int Damage;
-            [SerializeField]DamageType damageType;
-            [SerializeField]Effect[] Debuff;
-
-
-
-            // Overloads
-            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
-            {
-                WhoAttack = Who;
-                WhereAttack = Where;
-                Damage = Dam;
-
-                damageType = Type;
-                Debuff = debuff;
-            }
-            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect debuff)
-            {
-                WhoAttack = Who;
-                WhereAttack = Where;
-                Damage = Dam;
-
-                damageType = Type;
-                Debuff = new Effect[] { debuff };
-            }
-            public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type)
-            {
-                WhoAttack = Who;
-                WhereAttack = Where;
-                Damage = Dam;
-
-                damageType = Type;
-                Debuff = new Effect[] { };
-            }
-
-            public string InString()
+            if(Physics.Raycast(f, t - f, out RaycastHit hit, Vector3.Distance(f, t), LayerMask.GetMask("Object", "Map")))
             { 
-                string effects = "";
-                foreach(Effect effect in Debuff)
+                return new Checkers(hit.point);
+            }
+            return t; 
+        }
+
+        public List<Attack> DamageZone()
+        {
+            switch(Type)
+            {
+                default: return new List<Attack>();
+                case HitType.SwordSwing:
                 {
-                    effects += effect.Name + ", ";
+                    break;
                 }
-                return "Attack from " + WhoAttack.transform.parent.name + 
-                       " to " + WhereAttack.x + 
-                       ":" + WhereAttack.z + 
-                       " (" + damageType.ToString() +
-                       " - " + Damage + ")" +
-                       effects; }
-        
+                case HitType.SniperShot:
+                {
+                    int damage = 4 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.3f);
+                    int distanceDamage(int dist) { return (int)Mathf.Round(damage - dist * 0.5f); }
+
+                    var result = new List<Attack>();
+                    foreach(RaycastHit hit in Physics.RaycastAll(
+                        new Checkers(startPos, -1), 
+                        ToPoint(new Vector3(startPos.x, -1, startPos.z), new Vector3(endPos.x, -1, endPos.z) - new Vector3(startPos.x, -1, startPos.z)), 
+                        Checkers.Distance(startPos, new Checkers(ToPoint(startPos, endPos))), 
+                        LayerMask.GetMask("Map")))
+                    {
+                        if(new Checkers(ToPoint(startPos, endPos)) == endPos)
+                        {
+                            result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)) + 2, damageType));
+                            continue;
+                        }
+                        result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)), damageType));
+                    }
+                    return result;
+                }
+                case HitType.Volley:
+                {
+                    int damage = 5 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.4f);
+                    int distanceDamage(float dist){ return (int)Mathf.Round((float)damage - (dist * 3f)); };
+
+                    List<Attack> result = new List<Attack>();
+                    result.Add(new Attack(From, endPos, damage, damageType));
+
+                    for(int x = -DamageModifier; x < 1 + DamageModifier; x++)
+                    {
+                        for(int z = -DamageModifier; z < 1 + DamageModifier; z++)
+                        {
+                            if(Checkers.Distance(endPos, endPos + new Checkers(x, z)) >= DamageModifier * 0.5f)
+                                continue;
+                            if(endPos == endPos + new Checkers(x, z))
+                                continue;
+                            result.Add(new Attack(From, 
+                            new Checkers(endPos + new Checkers(x, z)), 
+                            distanceDamage(Checkers.Distance(endPos, endPos + new Checkers(x, z))), 
+                            damageType));
+                        }
+                    } 
+                    return result;
+                }
+
+            }
+            return new List<Attack>();
+        }
+        public bool Check()
+        {
+            switch(Type)
+            {
+                default: return true;
+                case HitType.SniperShot:
+                {
+                    float Distance = 3.5f + (2 * Level) + distanceBuff;
+                    return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
+                }
+                case HitType.Volley:
+                {
+                    float Distance = 5.5f + (1.5f * Level) + distanceBuff;
+                    return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
+                }
+            }
+        }
+        public Vector3[] Line()
+        {
+            switch(Type)
+            {
+                default: return new Vector3[] { };
+                case HitType.SniperShot:
+                {   
+                    Debug.DrawLine(startPos, endPos, Color.blue);
+                    Debug.DrawLine(startPos, ToPoint(startPos, endPos), Color.red);
+                    return new Vector3[] {startPos, ToPoint(startPos, endPos)};
+                }
+                case HitType.Volley:
+                {   
+                    Debug.DrawLine(startPos, endPos, Color.red);
+                    return new Vector3[] {startPos, endPos};
+                }
+            }
+            
         }
     }
+
+    [System.Serializable]
+    public class Item
+    {
+        string Name = "";
+        string Description = "";
+        Texture2D texture = new Texture2D(256, 256);
+    }
+
+    [System.Serializable]
+    public class Effect
+    {
+        public string Name;
+        public string Description;
+        public Texture2D image;
+    }
+
+    [System.Serializable]
+    public struct Attack
+    {
+        public GameObject WhoAttack;
+
+        [SerializeField]Checkers WhereAttack;
+        public Checkers Where { get { return WhereAttack; } }
+
+        [SerializeField]int Damage;
+        public int damage { get { return Damage; } }
+
+        [SerializeField]DamageType damageType;
+        [SerializeField]Effect[] Debuff;
+
+
+
+        // Overloads
+        public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
+        {
+            WhoAttack = Who;
+            WhereAttack = Where;
+            Damage = Dam;
+
+            damageType = Type;
+            Debuff = debuff;
+        }
+        public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect debuff)
+        {
+            WhoAttack = Who;
+            WhereAttack = Where;
+            Damage = Dam;
+
+            damageType = Type;
+            Debuff = new Effect[] { debuff };
+        }
+        public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type)
+        {
+            WhoAttack = Who;
+            WhereAttack = Where;
+            Damage = Dam;
+
+            damageType = Type;
+            Debuff = new Effect[] { };
+        }
+
+        public string InString()
+        { 
+            string effects = "";
+            foreach(Effect effect in Debuff)
+            {
+                effects += effect.Name + ", ";
+            }
+            return "Attack from " + WhoAttack.transform.parent.name + 
+                    " to " + WhereAttack.x + 
+                    ":" + WhereAttack.z + 
+                    " (" + damageType.ToString() +
+                    " - " + Damage + ")" +
+                    effects; }
+    
+    }
+    
 }
 
 public class GameLog 

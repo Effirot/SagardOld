@@ -2,14 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SagardCL;
-using SagardCL.Usabless;
 
 public class UnitController : MonoBehaviour
 {
+    public Color Team;
     public int SkillIndex;
     Skill NowUsingSkill{ get{ return Parameters.AvailableSkills[SkillIndex];} }
     Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
-    public UnityEngine.UI.Text DebugText;
+    public List<Attack> AttackList
+    {
+        get{ 
+            if(NowUsingSkill.Check()) return NowUsingSkill.DamageZone(); 
+            return new List<Attack>();
+        }
+    }
     
     [SerializeField]private GameObject Platform;
     [SerializeField]private AllInOne MPlaner;
@@ -18,8 +24,8 @@ public class UnitController : MonoBehaviour
     Checkers CursorPos(float Up){ return new Checkers(GameObject.Find("3DCursor").transform.position, Up); }
     
     [Space(3)]
-    public ParameterList Parameters;
-    public ParameterList baseParameter;
+    public ParameterList baseParameters;
+    public ParameterList Parameters{ get{ return baseParameters; }}
     
     void Start()
     {
@@ -52,9 +58,8 @@ public class UnitController : MonoBehaviour
             foreach(Attack attack in NowUsingSkill.DamageZone())
             {
                 txt += attack.InString() + "\n";
-                Debug.DrawLine(attack.Where, new Checkers(attack.Where, 1f), Color.red);
+                Debug.DrawLine(attack.Where, new Checkers(attack.Where, 1f), new Color(attack.damage * 0.1f, 0, 0));
             }
-            DebugText.text = txt;
         }
         APlaner.LineRenderer.enabled = NowUsingSkill.Check();
 
@@ -67,7 +72,7 @@ public class UnitController : MonoBehaviour
                 2.5f * Time.deltaTime);
                 
                 //Move planner
-                MPlaner.Planer.transform.position = (!MPlanerChecker())?
+                MPlaner.position = (!MPlanerChecker())?
                 position :
                 MPlaner.position;
 
@@ -75,7 +80,7 @@ public class UnitController : MonoBehaviour
                 MPlaner.Collider.enabled = true;
             
                 //Attack planner
-                APlaner.Planer.transform.position = (!NowUsingSkill.Check())?
+                APlaner.position = (!NowUsingSkill.Check())?
                 MPlaner.position :
                 APlaner.position;
 
@@ -90,13 +95,13 @@ public class UnitController : MonoBehaviour
                 //Platform.transform.eulerAngles = new Vector3(0, Quaternion.LookRotation(MPlaner.pos - transform.position, -Vector3.up).eulerAngles.y + 180, 0);
                 
                 //Move planner
-                MPlaner.Planer.transform.position = CursorPos(0.7f);
+                MPlaner.position = CursorPos(0.7f);
                 MPlaner.Renderer.material.color = (!MPlanerChecker())? Color.green : Color.red;
                 MPlaner.Renderer.enabled = true;
                 MPlaner.Collider.enabled = false;
                 
                 //Attack planner
-                if(Input.GetMouseButtonDown(1))APlaner.Planer.transform.position = MPlaner.position;
+                if(Input.GetMouseButtonDown(1))APlaner.position = MPlaner.position;
                 APlaner.Renderer.enabled = false;
             }
             break;
@@ -108,14 +113,14 @@ public class UnitController : MonoBehaviour
                 //Move planner
                 if(NowUsingSkill.NoWalking)
                 {
-                    MPlaner.Planer.transform.position = position;
+                    MPlaner.position = position;
                     MPlaner.Renderer.enabled = false;
                     MPlaner.Collider.enabled = true;
                 }
 
 
                 //Attack planner
-                APlaner.Planer.transform.position = CursorPos(1f);
+                APlaner.position = CursorPos(1f);
 
                 APlaner.Renderer.material.color = (!NowUsingSkill.Check())? Color.green : Color.red;
                 APlaner.Renderer.enabled = true;
@@ -179,8 +184,6 @@ public class UnitController : MonoBehaviour
 
     void parameterEdited()
     {
-        Parameters = baseParameter;
-
         foreach(Skill skill in Parameters.AvailableSkills)
         {
             skill.From = MPlaner.Planer;
@@ -197,8 +200,8 @@ public class AllInOne
     public GameObject Planer;
     public AllInOne(GameObject planer) { Planer = planer; }
 
-    public Vector3 position{ get{ return Planer.transform.position; } }
-    public Vector3 localPosition{ get{ return Planer.transform.localPosition; } }
+    public Vector3 position{ get{ return Planer.transform.position; } set{ Planer.transform.position = value; } }
+    public Vector3 localPosition{ get{ return Planer.transform.localPosition; } set{ Planer.transform.localPosition = value; } }
 
     public static implicit operator GameObject(AllInOne a) { return a.Planer; }
 

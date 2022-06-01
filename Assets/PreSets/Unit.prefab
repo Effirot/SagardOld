@@ -2583,42 +2583,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c80335e3a8ec26459f05797da32df4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Team: {r: 0, g: 0, b: 0, a: 0}
   SkillIndex: 0
-  DebugText: {fileID: 0}
   Platform: {fileID: 6578298447475953083}
   MPlaner:
     Planer: {fileID: 3247773065290817402}
   APlaner:
     Planer: {fileID: 6390476027061664742}
-  Parameters:
-    CanControll: 1
-    IsDead: 0
-    ClassTAG: 
-    WalkDistance: 0
-    AvailableSkills:
-    - From: {fileID: 0}
-      To: {fileID: 0}
-      Name: 
-      Description: 
-      image: {fileID: 0}
-      damageType: 0
-      Type: 1
-      Level: 1
-      distanceBuff: 0
-      DamageModifier: 1
-      NoWalking: 0
-    Resists: []
-    Debuffs: []
-    MaxStamina: 0
-    MaxHP: 0
-    MaxSanity: 0
-    ArmoreClose: 0
-    ArmoreBalistic: 0
-    SanityShield: 0
-    Stamina: 0
-    HP: 0
-    Sanity: 0
-  baseParameter:
+  baseParameters:
     CanControll: 1
     IsDead: 0
     ClassTAG: 
@@ -2626,20 +2598,21 @@ MonoBehaviour:
     AvailableSkills:
     - From: {fileID: 0}
       To: {fileID: 0}
-      Name: a
+      Name: Pow
       Description: 
       image: {fileID: 0}
-      damageType: 1
-      Type: 2
-      Level: 3
+      damageType: 2
+      Type: 3
+      Level: 2
       distanceBuff: 0
-      DamageModifier: 0
+      DamageModifier: 3
       NoWalking: 0
+      WaitAStep: 0
     Resists: []
     Debuffs: []
-    MaxStamina: 3
-    MaxHP: 3
-    MaxSanity: 3
+    MaxStamina: 0
+    MaxHP: 0
+    MaxSanity: 0
     ArmoreClose: 0
     ArmoreBalistic: 0
     SanityShield: 0
