@@ -171,11 +171,11 @@ namespace SagardCL //Class library
         public Skill(GameObject from, string name, HitType type, int level, int damage, bool noWlaking = false, bool waitAStep = false)
         { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; WaitAStep = waitAStep; }
         
-        private Checkers ToPoint(Vector3 f, Vector3 t)
+        private Checkers ToPoint(Vector3 f, Vector3 t, float Up = 0)
         {
             if(Physics.Raycast(f, t - f, out RaycastHit hit, Vector3.Distance(f, t), LayerMask.GetMask("Object", "Map")))
             { 
-                return new Checkers(hit.point);
+                return new Checkers(hit.point, Up);
             }
             return t; 
         }
@@ -197,17 +197,13 @@ namespace SagardCL //Class library
                     var result = new List<Attack>();
                     foreach(RaycastHit hit in Physics.RaycastAll(
                         new Checkers(startPos, -1), 
-                        ToPoint(new Vector3(startPos.x, -1, startPos.z), new Vector3(endPos.x, -1, endPos.z) - new Vector3(startPos.x, -1, startPos.z)), 
+                        ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
                         Checkers.Distance(startPos, new Checkers(ToPoint(startPos, endPos))), 
                         LayerMask.GetMask("Map")))
                     {
-                        if(new Checkers(ToPoint(startPos, endPos)) == endPos)
-                        {
-                            result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)) + 2, damageType));
-                            continue;
-                        }
-                        result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, endPos)), damageType));
+                        result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))), damageType));
                     }
+                    result.Add(new Attack(From, new Checkers(ToPoint(startPos, endPos)), damage, damageType));
                     return result;
                 }
                 case HitType.Volley:

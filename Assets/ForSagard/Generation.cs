@@ -27,7 +27,7 @@ public class Generation : MonoBehaviour
                 if(!map.GetExist(x, z)){
                     GameObject obj = Instantiate(
                     NowPlatform.Platform, 
-                    new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(0, Random.Range(0, 360), 0), transform);
+                    new Vector3(x, map.GetUp(x, z), z), new Quaternion(), transform);
 
                     obj.tag = "Map";
                     if(NowPlatform.Meshes!= null) obj.GetComponent<MeshFilter>().mesh = NowPlatform.Meshes[Random.Range(0, NowPlatform.Meshes.Length)];
@@ -106,10 +106,11 @@ public class Map
         {
             for(int z = 0; z < scaleZ; z++)
             {   
-                float noise = Mathf.Round(Mathf.PerlinNoise(
-                    200 / (float)(x + 1) + (float)key / 45,
-                    200 / (float)(z + 1) + (float)key / 31)
-                    * 10) / 10;
+                float noise = 0;
+                // //Mathf.Round(Mathf.PerlinNoise(
+                //     200 / (float)(x + 1) + (float)key / 45,
+                //     200 / (float)(z + 1) + (float)key / 31)
+                //     * 10) / 10;
                 result[x, z] = new MapCell(0, noise);
             }
         }
