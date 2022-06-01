@@ -204,6 +204,7 @@ namespace SagardCL //Class library
                         result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))), damageType));
                     }
                     result.Add(new Attack(From, new Checkers(ToPoint(startPos, endPos)), damage, damageType));
+                    Debug.DrawLine(new Checkers(startPos, -0.3f), ToPoint(startPos, endPos, -0.3f), Color.yellow);
                     return result;
                 }
                 case HitType.Volley:
