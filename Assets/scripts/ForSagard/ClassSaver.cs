@@ -200,7 +200,7 @@ namespace SagardCL //Class library
         public Skill(AllInOne from, string name, HitType type, int level, int damage, bool noWlaking = false, bool waitAStep = false)
         { From = from; Name = name; Type = type; Level = level; Damage = damage; NoWalking = noWlaking; WaitAStep = waitAStep; }
         
-        public string ToString()
+        public override string ToString()
         { return FatherObj?.name + " type: " + Type + " damageMod: " + Damage + " distanceBuff: " + Distance; }
 
         public static Skill Empty() { return new Skill(null, "null", HitType.Empty, 0, 0); }
@@ -217,18 +217,19 @@ namespace SagardCL //Class library
         public List<Attack> DamageZone()
         {
             if(Check()){
+                List<Attack> result = new List<Attack>();
+
                 switch(Type)
                 {
                     default: return new List<Attack>();
                     case HitType.SwordSwing:
                     {
-                        List<Attack> result = new List<Attack>();
+                        
 
-                        return result;
+                        break;
                     }
                     case HitType.Shot:
-                    {
-                        List<Attack> result = new List<Attack>();
+                    {                   
                         foreach(RaycastHit hit in Physics.RaycastAll(
                             new Checkers(startPos, -1), 
                             ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
@@ -238,11 +239,11 @@ namespace SagardCL //Class library
                             result.Add(new Attack(FatherObj, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
                         }
                         result.Add(new Attack(FatherObj, new Checkers(ToPoint(startPos, endPos)), Damage - 1, damageType));
-                        return result;
+                        break;
                     }
                     case HitType.ExplodeShot:
                     {
-                        List<Attack> result = new List<Attack>();
+                        
                         foreach(RaycastHit hit in Physics.RaycastAll(
                                 new Checkers(startPos, -1), 
                                 ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
@@ -266,11 +267,11 @@ namespace SagardCL //Class library
                                 damageType));
                             }
                         } 
-                        return result;
+                        break;
                     }
                     case HitType.InvertShot:
                     {                    
-                        List<Attack> result = new List<Attack>();
+                        
                         foreach(RaycastHit hit in Physics.RaycastAll(
                             new Checkers(startPos, -1), 
                             ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
@@ -280,11 +281,11 @@ namespace SagardCL //Class library
                             result.Add(new Attack(FatherObj, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
                         }
                         result.Add(new Attack(FatherObj, new Checkers(ToPoint(startPos, endPos)), distanceDamage((int)Checkers.Distance(startPos, ToPoint(startPos, endPos))) + 2, damageType));
-                        return result;
+                        break;
                     }
                     case HitType.PiercingShot:
                     {
-                        List<Attack> result = new List<Attack>();
+                        
                         foreach(RaycastHit hit in Physics.RaycastAll(
                             new Checkers(startPos, -1), 
                             ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
@@ -294,11 +295,11 @@ namespace SagardCL //Class library
                             result.Add(new Attack(FatherObj, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
                         }
                         result.Add(new Attack(FatherObj, endPos, Damage - 1, damageType));
-                        return result;
+                        break;
                     }
                     case HitType.Volley:
                     {
-                        List<Attack> result = new List<Attack>();
+                        
                         result.Add(new Attack(FatherObj, endPos, Damage, damageType));
 
                         for(int x = -Mathf.Abs(Level); x < 1 + Mathf.Abs(Level); x++)
@@ -315,11 +316,11 @@ namespace SagardCL //Class library
                                 damageType));
                             }
                         } 
-                        return result;
+                        break;
                     }
                     case HitType.ObstacleVolley:
                     {
-                        List<Attack> result = new List<Attack>();
+                        
                         result.Add(new Attack(From, newEndPos, Damage, damageType));
 
                         for(int x = -Mathf.Abs(Level); x < 1 + Mathf.Abs(Level); x++)
@@ -336,9 +337,12 @@ namespace SagardCL //Class library
                                 damageType));
                             }
                         } 
-                        return result;
+                        break;
                     }
                 }
+
+
+                return result;
             }
             return new List<Attack>();
         }
