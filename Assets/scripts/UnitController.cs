@@ -29,6 +29,11 @@ public class UnitController : MonoBehaviour
     
     void Start()
     {
+        foreach(Skill skill in Parameters.AvailableSkills)
+        {
+            skill.From = MPlaner.Planer;
+            skill.To = APlaner.Planer;
+        }
         parameterEdited();
 
         Platform.transform.eulerAngles += new Vector3(0, Random.Range(0f, 360f), 0);
@@ -38,30 +43,10 @@ public class UnitController : MonoBehaviour
 
     void Update()
     {   
+        parameterEdited();
+
         MPlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
-
-        if (MPlanerChecker()){
-            MPlaner.LineRenderer.positionCount = Checkers.PatchWay.WayTo(position, MPlaner.position).Length;
-            MPlaner.LineRenderer.SetPositions(Checkers.PatchWay.WayTo(position, MPlaner.position)); 
-            Debug.DrawLine(position, MPlaner.position, Color.yellow);
-            
-        }
-        MPlaner.LineRenderer.enabled = MPlanerChecker();
-
         APlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
-
-        if (NowUsingSkill.Check()){
-            APlaner.LineRenderer.positionCount = NowUsingSkill.Line().Length;
-            APlaner.LineRenderer.SetPositions(NowUsingSkill.Line()); 
-
-            string txt = "";
-            foreach(Attack attack in NowUsingSkill.DamageZone())
-            {
-                txt += attack.InString() + "\n";
-                Debug.DrawLine(attack.Where, new Checkers(attack.Where, 1f), new Color(attack.damage * 0.1f, 0, 0));
-            }
-        }
-        APlaner.LineRenderer.enabled = NowUsingSkill.Check();
 
         switch(MouseTest())
         {
@@ -184,31 +169,19 @@ public class UnitController : MonoBehaviour
 
     void parameterEdited()
     {
-        foreach(Skill skill in Parameters.AvailableSkills)
-        {
-            skill.From = MPlaner.Planer;
-            skill.To = APlaner.Planer;
+        if (MPlanerChecker()){
+            MPlaner.LineRenderer.positionCount = Checkers.PatchWay.WayTo(position, MPlaner.position).Length;
+            MPlaner.LineRenderer.SetPositions(Checkers.PatchWay.WayTo(position, MPlaner.position)); 
+            Debug.DrawLine(position, MPlaner.position, Color.yellow);
         }
+        MPlaner.LineRenderer.enabled = MPlanerChecker();
+
+        if (NowUsingSkill.Check()){
+            APlaner.LineRenderer.positionCount = NowUsingSkill.Line().Length;
+            APlaner.LineRenderer.SetPositions(NowUsingSkill.Line()); 
+        }
+        APlaner.LineRenderer.enabled = NowUsingSkill.Check();
     }
 }
 
 
-
-[System.Serializable]
-public class AllInOne
-{
-    public GameObject Planer;
-    public AllInOne(GameObject planer) { Planer = planer; }
-
-    public Vector3 position{ get{ return Planer.transform.position; } set{ Planer.transform.position = value; } }
-    public Vector3 localPosition{ get{ return Planer.transform.localPosition; } set{ Planer.transform.localPosition = value; } }
-
-    public static implicit operator GameObject(AllInOne a) { return a.Planer; }
-
-    public GameObject Model { get{ return Planer.transform.Find("Model").gameObject; } }
-    public Material Material { get{ return Model.GetComponent<Material>(); } }
-    public Collider Collider { get{  return Planer.GetComponent<MeshCollider>(); } }
-    public Renderer Renderer { get{  return Model.GetComponent<Renderer>(); } }
-
-    public LineRenderer LineRenderer { get{ return Planer.GetComponent<LineRenderer>(); } }
-}
