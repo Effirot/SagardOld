@@ -11,13 +11,6 @@ public class UnitController : MonoBehaviour
     { get{  try{return Parameters.AvailableSkills[SkillIndex];}
             catch{ return Skill.Empty();}} }
     Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
-    public List<Attack> AttackList
-    {
-        get{ 
-            if(NowUsingSkill.Check()) return NowUsingSkill.DamageZone(); 
-            return new List<Attack>();
-        }
-    }
     
     [SerializeField]private GameObject Platform;
     [SerializeField]private AllInOne MPlaner;
@@ -41,8 +34,6 @@ public class UnitController : MonoBehaviour
         Platform.transform.eulerAngles += new Vector3(0, Random.Range(0f, 360f), 0);
     }
 
-
-
     void Update()
     {   
         parameterEdited();
@@ -54,8 +45,7 @@ public class UnitController : MonoBehaviour
             default:
             {
                 //Base model
-                position = Vector3.Lerp(position, new Checkers(position), 
-                2.5f * Time.deltaTime);
+                position = Vector3.MoveTowards(position, new Checkers(position), 2.5f * Time.deltaTime);
                 
                 //Move planner
                 MPlaner.position = (!MPlanerChecker())?

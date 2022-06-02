@@ -20,8 +20,8 @@ public class DebugLogsPrint : MonoBehaviour
         {
             result += "--------------[" + obj.name + "]--------------\n";
             result += " moves to position - " + obj.transform.Find("MovePlaner").transform.position.x + ":" + obj.transform.Find("MovePlaner").transform.position.z + "   \n";
-            if(obj.GetComponent<UnitController>().NowUsingSkill != null) result += " Use skills" + obj.GetComponent<UnitController>().NowUsingSkill.ToString();
-            foreach(Attack attack in obj.GetComponent<UnitController>().AttackList)
+            if(obj.GetComponent<UnitController>().NowUsingSkill != null) result += " Use skills" + obj.GetComponent<UnitController>().NowUsingSkill.ToString() + "\n";
+            foreach(Attack attack in obj.GetComponent<UnitController>().NowUsingSkill.DamageZone())
             {
                 result += " - " + attack.InString() + "\n";
 

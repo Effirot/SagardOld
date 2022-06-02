@@ -2591,23 +2591,41 @@ MonoBehaviour:
   APlaner:
     Planer: {fileID: 6390476027061664742}
   baseParameters:
+    ClassTAG: 
     CanControll: 1
     IsDead: 0
-    ClassTAG: 
-    WalkDistance: 3
+    WalkDistance: 5
     AvailableSkills:
-    - From: {fileID: 0}
-      To: {fileID: 0}
-      Name: Pow
+    - Name: Pow
       Description: 
       image: {fileID: 0}
+      From:
+        Planer: {fileID: 0}
+      To:
+        Planer: {fileID: 0}
+      Type: 6
       damageType: 2
-      Type: 3
-      Level: 2
-      distanceBuff: 0
-      DamageModifier: 3
+      Distance: 8
+      Damage: 5
+      Level: 4
       NoWalking: 0
       WaitAStep: 0
+      DeleteWhenLowAmmo: 0
+    - Name: Pew Pew
+      Description: 
+      image: {fileID: 0}
+      From:
+        Planer: {fileID: 0}
+      To:
+        Planer: {fileID: 0}
+      Type: 4
+      damageType: 2
+      Distance: 8
+      Damage: 5
+      Level: 4
+      NoWalking: 0
+      WaitAStep: 0
+      DeleteWhenLowAmmo: 0
     Resists: []
     Debuffs: []
     MaxStamina: 0
