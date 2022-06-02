@@ -10,7 +10,7 @@ public class Atest : Generation
         Letsgenerate(new Map(), new PlatformVisual[] { new PlatformVisual(PlatformPreset) });
     }
 
-
+    
 
 
 }

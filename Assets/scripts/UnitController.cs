@@ -7,7 +7,9 @@ public class UnitController : MonoBehaviour
 {
     public Color Team;
     public int SkillIndex;
-    Skill NowUsingSkill{ get{ return Parameters.AvailableSkills[SkillIndex];} }
+    public Skill NowUsingSkill
+    { get{  try{return Parameters.AvailableSkills[SkillIndex];}
+            catch{ return Skill.Empty();}} }
     Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
     public List<Attack> AttackList
     {
@@ -31,8 +33,8 @@ public class UnitController : MonoBehaviour
     {
         foreach(Skill skill in Parameters.AvailableSkills)
         {
-            skill.From = MPlaner.Planer;
-            skill.To = APlaner.Planer;
+            skill.From = MPlaner;
+            skill.To = APlaner;
         }
         parameterEdited();
 
@@ -45,8 +47,7 @@ public class UnitController : MonoBehaviour
     {   
         parameterEdited();
 
-        MPlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
-        APlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
+        
 
         switch(MouseTest())
         {
@@ -108,7 +109,10 @@ public class UnitController : MonoBehaviour
                 APlaner.position = CursorPos(1f);
 
                 APlaner.Renderer.material.color = (!NowUsingSkill.Check())? Color.green : Color.red;
-                APlaner.Renderer.enabled = true;
+                APlaner.Renderer.enabled = NowUsingSkill.Type != HitType.Empty;
+
+                //Mouse Scroll
+                SkillIndex = Mathf.Clamp(SkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, Parameters.AvailableSkills.Count - 1);
             }
             break;
         }
@@ -169,6 +173,9 @@ public class UnitController : MonoBehaviour
 
     void parameterEdited()
     {
+        // Move planner
+        MPlaner.Model.transform.eulerAngles = Platform.transform.eulerAngles;
+
         if (MPlanerChecker()){
             MPlaner.LineRenderer.positionCount = Checkers.PatchWay.WayTo(position, MPlaner.position).Length;
             MPlaner.LineRenderer.SetPositions(Checkers.PatchWay.WayTo(position, MPlaner.position)); 
@@ -176,6 +183,8 @@ public class UnitController : MonoBehaviour
         }
         MPlaner.LineRenderer.enabled = MPlanerChecker();
 
+
+        // Attack planner
         if (NowUsingSkill.Check()){
             APlaner.LineRenderer.positionCount = NowUsingSkill.Line().Length;
             APlaner.LineRenderer.SetPositions(NowUsingSkill.Line()); 

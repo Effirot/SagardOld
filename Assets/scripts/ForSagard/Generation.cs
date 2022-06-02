@@ -43,14 +43,6 @@ public class Generation : MonoBehaviour
     }
 }
 
-public enum ReliefType
-{
-    Desert = 1,
-    WeatheredDesert = 2,
-    SwampedDesert = 3,
-    MagnetAnomaly = 4
-}
-
 [System.Serializable]
 public class Map
 {
@@ -67,13 +59,13 @@ public class Map
     static Mesh map;
     [SerializeField] int scaleX, scaleZ;
     [SerializeField] static uint key;
-    [SerializeField] ReliefType type;
+
 
     MapCell[,] MapPlatformParameters = new MapCell[,] {};
 
-    public Map(uint Key, Vector2 Scale, ReliefType Type)
+    public Map(uint Key, Vector2 Scale)
     {
-        scaleX = (int)Scale.x; scaleZ = (int)Scale.y; key = Key; type = Type;
+        scaleX = (int)Scale.x; scaleZ = (int)Scale.y; key = Key; 
         MapPlatformParameters = GenerateRelief();
     }
     public Map(int PlayerNum, uint Key)

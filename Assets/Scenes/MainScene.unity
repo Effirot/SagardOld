@@ -519,8 +519,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -143.23, y: -289.61}
-  m_SizeDelta: {x: 286.4674, y: 579.8193}
+  m_AnchoredPosition: {x: -239.1565, y: -289.61}
+  m_SizeDelta: {x: 478.3206, y: 579.8193}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1168907658
 MonoBehaviour:
@@ -716,7 +716,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 760492574079706140, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[0].Type
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 760492574079706140, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[1].Name
@@ -729,6 +729,10 @@ PrefabInstance:
     - target: {fileID: 760492574079706140, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[1].Level
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 760492574079706140, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
+      propertyPath: baseParameters.AvailableSkills.Array.data[0].Distance
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 760492574079706140, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[0].damageType
@@ -863,7 +867,7 @@ PrefabInstance:
       objectReference: {fileID: 574354731}
     - target: {fileID: 760492574079706140, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[0].Type
-      value: 7
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 760492574079706140, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameter.AvailableSkills.Array.data[0].damageType

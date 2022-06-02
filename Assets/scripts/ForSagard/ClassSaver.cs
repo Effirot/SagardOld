@@ -8,13 +8,15 @@ namespace SagardCL //Class library
     [System.Serializable]
     public class ParameterList
     {   
+        public string ClassTAG = "";
+
         [Header("Can Controll?")]
         public bool CanControll = true;
         public bool IsDead = false;
 
         [Space]
 
-        public string ClassTAG = "";
+        
 
         public int WalkDistance;
         [Space]
@@ -65,7 +67,7 @@ namespace SagardCL //Class library
             SanityShield = sanity;
         }
 
-        public void AddSkill(GameObject from, string name, HitType type, int level, int damage)
+        public void AddSkill(AllInOne from, string name, HitType type, int level, int damage)
         {
             AvailableSkills.Add(new Skill(from, name, type, level, damage));
         }
@@ -74,7 +76,7 @@ namespace SagardCL //Class library
             AvailableSkills.Add(skill);
         }
 
-        public void RemoveSkill(GameObject from, string name, HitType type, int level, int damage)
+        public void RemoveSkill(AllInOne from, string name, HitType type, int level, int damage)
         {
             AvailableSkills.Remove(new Skill(from, name, type, level, damage));
         }
@@ -140,12 +142,15 @@ namespace SagardCL //Class library
     {
         Empty, //
         SwordSwing, 
+        Constant, 
+        BraveSwordSwing, 
         Shot, //
         InvertShot, //
-        ExplodeShot,
+        ExplodeShot, //
         PiercingShot, //
         ShotgunShot,
         Volley, // 
+        ObstacleVolley,//
         EmptyVolley, //
         Dash,
     }
@@ -153,32 +158,46 @@ namespace SagardCL //Class library
     [System.Serializable]
     public class Skill
     {
-        public GameObject From;
-        public GameObject To;
 
+        //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
         [SerializeField] string Name;
         [SerializeField] string Description;
         [SerializeField] Texture2D image;
+        [Space]
+        public AllInOne From;
+        GameObject FatherObj{ get{ return From.Planer.transform.parent.gameObject; }}
+        public AllInOne To;
+        
+        [Space(2)]
+        
         [SerializeField] DamageType damageType;
-        [SerializeField] HitType Type;
-        [SerializeField] int Level;
-        public int distanceBuff = 0;
+        public HitType Type;
+        public int Distance = 0;
         public int DamageModifier;
+        public int Level;
         public bool NoWalking = false;
         public bool WaitAStep = false;
 
-        public bool DeleteWhenLowAmmo = false;
-        public bool UseAmmo = false;
-        
-        
+        public bool DeleteWhenLowAmmo = false;        
 
-        private Checkers startPos{ get{ return new Checkers(From.transform.position, 0.3f); } set { From.transform.position = value; } }
-        private Checkers endPos{ get{ return new Checkers(To.transform.position, 0.3f); } }
+        private Checkers startPos{ get{ return new Checkers(From.position, 0.3f); } set { From.position = value; } }
+        private Checkers endPos{ get{ return new Checkers(To.position, 0.3f); } }
+        private int endPosRotate{ get { return (int)Mathf.Round(Quaternion.LookRotation(cursor.transform.InverseTransformPoint(From.position)).eulerAngles.y) / 90; } }
+
+        public Checkers cursorPos{ get { return new Checkers(GameObject.Find("3DCursor").transform.position); }}
+        private GameObject cursor{ get { return GameObject.Find("3DCursor"); }}
+        //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
+
         
         // Overloads
-        public Skill(GameObject from, string name, HitType type, int level, int damage, bool noWlaking = false, bool waitAStep = false)
+        public Skill(AllInOne from, string name, HitType type, int level, int damage, bool noWlaking = false, bool waitAStep = false)
         { From = from; Name = name; Type = type; Level = level; DamageModifier = damage; NoWalking = noWlaking; WaitAStep = waitAStep; }
         
+        public string ToString()
+        { return FatherObj?.name + " type: " + Type + " damageMod: " + DamageModifier + " distanceBuff: " + Distance; }
+
+        public static Skill Empty() { return new Skill(null, "null", HitType.Empty, 0, 0); }
+
         private Checkers ToPoint(Vector3 f, Vector3 t, float Up = 0)
         {
             if(Physics.Raycast(f, t - f, out RaycastHit hit, Vector3.Distance(f, t), LayerMask.GetMask("Object", "Map")))
@@ -199,7 +218,7 @@ namespace SagardCL //Class library
                 }
                 case HitType.Shot:
                 {
-                    int damage = 3 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.3f);
+                    int damage = 3 + (int)Mathf.Round(DamageModifier * 1.5f);
                     int distanceDamage(int dist) { return (int)Mathf.Round(damage - dist * 0.5f); }
 
                     var result = new List<Attack>();
@@ -209,15 +228,17 @@ namespace SagardCL //Class library
                         Checkers.Distance(startPos, new Checkers(ToPoint(startPos, endPos))), 
                         LayerMask.GetMask("Map")))
                     {
-                        result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
+                        result.Add(new Attack(FatherObj, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
                     }
-                    result.Add(new Attack(From, new Checkers(ToPoint(startPos, endPos)), damage - 1, damageType));
+                    result.Add(new Attack(FatherObj, new Checkers(ToPoint(startPos, endPos)), damage - 1, damageType));
                     return result;
                 }
-                case HitType.InvertShot:
+                case HitType.ExplodeShot:
                 {
-                    int damage = (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.6f) - 2;
-                    int distanceDamage(int dist) { return (int)Mathf.Round(damage + dist * 0.5f); }
+                    int damage = 3 + (int)Mathf.Round(DamageModifier * 1.5f);
+                    int distanceDamage(float dist){ return (int)Mathf.Round((float)damage - (dist * 3f)); };
+
+                    Checkers newEndPos = ToPoint(startPos, endPos);
 
                     var result = new List<Attack>();
                     foreach(RaycastHit hit in Physics.RaycastAll(
@@ -226,14 +247,47 @@ namespace SagardCL //Class library
                         Checkers.Distance(startPos, new Checkers(ToPoint(startPos, endPos))), 
                         LayerMask.GetMask("Map")))
                     {
-                        result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
+                        result.Add(new Attack(FatherObj, new Checkers(hit.point), damage - 4, damageType));
                     }
-                    result.Add(new Attack(From, new Checkers(ToPoint(startPos, endPos)), distanceDamage((int)Checkers.Distance(startPos, ToPoint(startPos, endPos))) + 2, damageType));
+                    
+                    for(int x = -Level; x < 1 + Level; x++)
+                    {
+                        for(int z = -Mathf.Abs(Level); z <= Mathf.Abs(Level); z++)
+                        {
+                            if(Checkers.Distance(newEndPos, newEndPos + new Checkers(x, z)) > Mathf.Abs(Level) - 0.5f)
+                                continue;
+                            if(newEndPos == newEndPos + new Checkers(x, z))
+                                continue;
+                            result.Add(new Attack(FatherObj, 
+                            new Checkers(newEndPos + new Checkers(x, z)), 
+                            distanceDamage(Checkers.Distance(newEndPos, newEndPos + new Checkers(x, z))), 
+                            damageType));
+                        }
+                    } 
+                    return result;
+                }
+                case HitType.InvertShot:
+                {
+                    int damage = (int)Mathf.Round(DamageModifier * 1.5f) - 2;
+                    int distanceDamage(int dist) { return (int)Mathf.Round(damage + dist * 0.5f); }
+
+                    Checkers newEndPos = ToPoint(startPos, endPos);
+
+                    var result = new List<Attack>();
+                    foreach(RaycastHit hit in Physics.RaycastAll(
+                        new Checkers(startPos, -1), 
+                        ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
+                        Checkers.Distance(startPos, new Checkers(ToPoint(startPos, endPos))), 
+                        LayerMask.GetMask("Map")))
+                    {
+                        result.Add(new Attack(FatherObj, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
+                    }
+                    result.Add(new Attack(FatherObj, new Checkers(ToPoint(startPos, endPos)), distanceDamage((int)Checkers.Distance(startPos, ToPoint(startPos, endPos))) + 2, damageType));
                     return result;
                 }
                 case HitType.PiercingShot:
                 {
-                    int damage = 2 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.3f);
+                    int damage = 2 + (int)Mathf.Round(DamageModifier * 1.5f);
                     int distanceDamage(int dist) { return (int)Mathf.Round(damage - dist * 0.5f); }
 
                     var result = new List<Attack>();
@@ -243,30 +297,79 @@ namespace SagardCL //Class library
                         Checkers.Distance(startPos, new Checkers(endPos)), 
                         LayerMask.GetMask("Map")))
                     {
-                        result.Add(new Attack(From, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
+                        result.Add(new Attack(FatherObj, new Checkers(hit.point), distanceDamage((int)Checkers.Distance(startPos, new Checkers(hit.point))) - 1, damageType));
                     }
-                    result.Add(new Attack(From, endPos, damage - 1, damageType));
+                    result.Add(new Attack(FatherObj, endPos, damage - 1, damageType));
                     return result;
                 }
                 case HitType.Volley:
                 {
-                    int damage = 5 + (int)Mathf.Round(DamageModifier * 1.5f + Level * 0.4f);
+                    int damage = 5 + (int)Mathf.Round(DamageModifier * 1.5f);
                     int distanceDamage(float dist){ return (int)Mathf.Round((float)damage - (dist * 3f)); };
 
                     List<Attack> result = new List<Attack>();
-                    result.Add(new Attack(From, endPos, damage, damageType));
+                    result.Add(new Attack(FatherObj, endPos, damage, damageType));
 
-                    for(int x = -DamageModifier; x < 1 + DamageModifier; x++)
+                    for(int x = -Mathf.Abs(Level); x < 1 + Mathf.Abs(Level); x++)
                     {
-                        for(int z = -DamageModifier; z < 1 + DamageModifier; z++)
+                        for(int z = -Mathf.Abs(Level); z <= Mathf.Abs(Level); z++)
                         {
-                            if(Checkers.Distance(endPos, endPos + new Checkers(x, z)) >= DamageModifier * 0.5f)
+                            if(Checkers.Distance(endPos, endPos + new Checkers(x, z)) > Mathf.Abs(Level) - 0.5f)
                                 continue;
                             if(endPos == endPos + new Checkers(x, z))
                                 continue;
-                            result.Add(new Attack(From, 
+                            result.Add(new Attack(FatherObj, 
                             new Checkers(endPos + new Checkers(x, z)), 
                             distanceDamage(Checkers.Distance(endPos, endPos + new Checkers(x, z))), 
+                            damageType));
+                        }
+                    } 
+                    return result;
+                }
+                case HitType.ObstacleVolley:
+                {
+                    int damage = 5 + (int)Mathf.Round(DamageModifier * 1.5f * 0.4f);
+                    int distanceDamage(float dist){ return (int)Mathf.Round((float)damage - (dist * 3f)); };
+
+                    Checkers newEndPos = ToPoint(startPos, endPos);
+
+                    List<Attack> result = new List<Attack>();
+                    result.Add(new Attack(From, newEndPos, damage, damageType));
+
+                    for(int x = -Mathf.Abs(Level); x < 1 + Mathf.Abs(Level); x++)
+                    {
+                        for(int z = -Mathf.Abs(Level); z <= Mathf.Abs(Level); z++)
+                        {
+                            if(Checkers.Distance(newEndPos, newEndPos + new Checkers(x, z)) > Mathf.Abs(Level) - 0.5f)
+                                continue;
+                            if(newEndPos == newEndPos + new Checkers(x, z))
+                                continue;
+                            result.Add(new Attack(From, 
+                            new Checkers(newEndPos + new Checkers(x, z)), 
+                            distanceDamage(Checkers.Distance(newEndPos, newEndPos + new Checkers(x, z))), 
+                            damageType));
+                        }
+                    } 
+                    return result;
+                }
+                case HitType.EmptyVolley:
+                {
+                    int damage = 0;
+
+                    List<Attack> result = new List<Attack>();
+                    result.Add(new Attack(FatherObj, endPos, damage, damageType));
+
+                    for(int x = -Mathf.Abs(Level); x < 1 + Mathf.Abs(Level); x++)
+                    {
+                        for(int z = -Mathf.Abs(Level); z < 1 + Mathf.Abs(Level); z++)
+                        {
+                            if(Checkers.Distance(endPos, endPos + new Checkers(x, z)) > Mathf.Abs(Level) - 0.5f)
+                                continue;
+                            if(endPos == endPos + new Checkers(x, z))
+                                continue;
+                            result.Add(new Attack(FatherObj, 
+                            new Checkers(endPos + new Checkers(x, z)), 
+                            damage, 
                             damageType));
                         }
                     } 
@@ -278,31 +381,7 @@ namespace SagardCL //Class library
         }
         public bool Check()
         {
-            switch(Type)
-            {
-                default: return true;
-                case HitType.Shot:
-                {
-                    float Distance = 3.5f + (2 * Level) + distanceBuff * 1.5f;
-                    return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
-                }
-                case HitType.InvertShot:
-                {
-                    float Distance = 0.5f + (2.5f * Level) + distanceBuff;
-                    return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
-                }
-                case HitType.PiercingShot:
-                {
-                    float Distance = 1.5f + (2f * Level) + distanceBuff;
-                    return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
-                }
-                case HitType.Volley:
-                {
-                    float Distance = 5.5f + (1.5f * Level) + distanceBuff;
-                    return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
-                }
-            
-            }
+            return Vector3.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z);
         }
         public Vector3[] Line()
         {
@@ -332,6 +411,17 @@ namespace SagardCL //Class library
                     return new Vector3[] {startPos, endPos};
                 }
                 case HitType.Volley:
+                {   
+                    Debug.DrawLine(startPos, endPos, Color.red);
+                    return new Vector3[] {startPos, endPos};
+                }
+                case HitType.ObstacleVolley:
+                {   
+                    Debug.DrawLine(startPos, endPos, Color.blue);
+                    Debug.DrawLine(startPos, ToPoint(startPos, endPos), Color.red);
+                    return new Vector3[] {startPos, ToPoint(startPos, endPos)};
+                }
+                case HitType.EmptyVolley:
                 {   
                     Debug.DrawLine(startPos, endPos, Color.red);
                     return new Vector3[] {startPos, endPos};

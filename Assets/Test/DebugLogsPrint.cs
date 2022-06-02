@@ -15,10 +15,12 @@ public class DebugLogsPrint : MonoBehaviour
     string FigureAttacksAndWalkZones()
     {
         string result = "";
+
         foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Figure"))
         {
             result += "--------------[" + obj.name + "]--------------\n";
             result += " moves to position - " + obj.transform.Find("MovePlaner").transform.position.x + ":" + obj.transform.Find("MovePlaner").transform.position.z + "   \n";
+            if(obj.GetComponent<UnitController>().NowUsingSkill != null) result += " Use skills" + obj.GetComponent<UnitController>().NowUsingSkill.ToString();
             foreach(Attack attack in obj.GetComponent<UnitController>().AttackList)
             {
                 result += " - " + attack.InString() + "\n";
