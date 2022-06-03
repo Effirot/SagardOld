@@ -6,7 +6,15 @@ using SagardCL;
 
 public class DebugLogsPrint : MonoBehaviour
 {
-    public Text DidActive, FigureZones;
+    public Text DidActive, FigureZones, fpsText;
+    float deltaTime;
+ 
+    void Update () {
+         deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
+         float fps = 1.0f / deltaTime;
+         fpsText.text = Mathf.Ceil (fps).ToString ();
+    }
+    
     void LateUpdate()
     {
         FigureZones.text = FigureAttacksAndWalkZones();
