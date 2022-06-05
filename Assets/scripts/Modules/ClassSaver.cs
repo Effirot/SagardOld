@@ -7,7 +7,7 @@ namespace SagardCL //Class library
 {
     [System.Serializable]
     public class ParameterList
-    {   
+    {
         public string ClassTAG = "";
 
         [Space]
@@ -138,7 +138,7 @@ namespace SagardCL //Class library
     public enum HitType
     {
         Empty, //
-        OnSelf,
+        OnSelf, //
         SwordSwing, 
         Constant, 
         BraveSwordSwing, 
@@ -217,8 +217,13 @@ namespace SagardCL //Class library
                 Checkers FinalPoint = (Piercing)? endPos : ToPoint(startPos, endPos);
                 switch(Type)
                 {
-                    
                     default: return new List<Attack>();
+                    case HitType.OnSelf:
+                    {
+                        FinalPoint = startPos;
+                        result.Add(new Attack(FatherObj, startPos, Damage, damageType));
+                        break;
+                    }
                     case HitType.SwordSwing:
                     {
                         
@@ -287,7 +292,7 @@ namespace SagardCL //Class library
             Debug.DrawLine(startPos, endPos, Color.red);
             return new Vector3[] {startPos, ToPoint(startPos, FinalPoint)};
         }
-        public bool Check(){ return Checkers.Distance(startPos, endPos) < Distance & !(startPos.x == endPos.x && startPos.z == endPos.z); }
+        public bool Check(){ return Checkers.Distance(startPos, endPos) < Distance & !(startPos == endPos); }
     }
 
     [System.Serializable]

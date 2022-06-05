@@ -2461,7 +2461,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6707259267486030985}
-  m_Mesh: {fileID: 4575378312840820631, guid: 7d89cde9ed246804b8d1b07e918d0282, type: 3}
+  m_Mesh: {fileID: 3105627889080158241, guid: 142fce80744e1ac44806ef01fe584c25, type: 3}
 --- !u!23 &3365077605926260911
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2545,8 +2545,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6828420722621915725}
-  - component: {fileID: 760492574079706140}
   - component: {fileID: 6881626030716744344}
+  - component: {fileID: 767628153501358312}
   m_Layer: 6
   m_Name: Unit
   m_TagString: Figure
@@ -2571,7 +2571,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &760492574079706140
+--- !u!64 &6881626030716744344
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6828420722621915729}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3298800115395149385, guid: 9a2987d1167ec8d46a626199ac05bb1b, type: 3}
+--- !u!114 &767628153501358312
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2580,7 +2594,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6828420722621915729}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c80335e3a8ec26459f05797da32df4e, type: 3}
+  m_Script: {fileID: 11500000, guid: 70a8d8cbdd4f8e548bb517023fd88cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Team: {r: 0, g: 0, b: 0, a: 0}
@@ -2596,34 +2610,50 @@ MonoBehaviour:
     IsDead: 0
     WalkDistance: 5
     AvailableSkills:
-    - Name: Pow
+    - Name: 
       Description: 
+      VeryBigDescription: 
       image: {fileID: 0}
       From:
         Planer: {fileID: 0}
       To:
         Planer: {fileID: 0}
-      Type: 6
-      damageType: 2
-      Distance: 8
-      Damage: 5
-      Level: 4
+      Type: 0
+      damageType: 0
+      Distance: 0
+      Damage: 0
+      Piercing: 0
+      Exploding: 0
+      Level: 0
+      debuff:
+        Name: 
+        Description: 
+        VeryBigDescription: 
+        image: {fileID: 0}
       NoWalking: 0
       WaitAStep: 0
       DeleteWhenLowAmmo: 0
-    - Name: Pew Pew
+    - Name: 
       Description: 
+      VeryBigDescription: 
       image: {fileID: 0}
       From:
         Planer: {fileID: 0}
       To:
         Planer: {fileID: 0}
-      Type: 4
-      damageType: 2
-      Distance: 8
-      Damage: 5
-      Level: 4
-      NoWalking: 0
+      Type: 5
+      damageType: 1
+      Distance: 6
+      Damage: 7
+      Piercing: 1
+      Exploding: 1
+      Level: 2
+      debuff:
+        Name: 
+        Description: 
+        VeryBigDescription: 
+        image: {fileID: 0}
+      NoWalking: 1
       WaitAStep: 0
       DeleteWhenLowAmmo: 0
     Resists: []
@@ -2637,20 +2667,6 @@ MonoBehaviour:
     Stamina: 0
     HP: 0
     Sanity: 0
---- !u!64 &6881626030716744344
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6828420722621915729}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -3298800115395149385, guid: 9a2987d1167ec8d46a626199ac05bb1b, type: 3}
 --- !u!1 &6871638595594809548
 GameObject:
   m_ObjectHideFlags: 0
