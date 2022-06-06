@@ -14,17 +14,16 @@ public class DebugLogsPrint : MonoBehaviour
          float fps = 1.0f / deltaTime;
          fpsText.text = Mathf.Ceil (fps).ToString ();
     }
-    
-    void LateUpdate()
-    {
-        FigureZones.text = FigureAttacksAndWalkZones();
-    }
+    void Awake () { InGameEvents.MapUpdate.AddListener(() => FigureZones.text = FigureAttacksAndWalkZones() ); }
 
+    
+    GameObject[] Figures => GameObject.FindGameObjectsWithTag("Figure");
+    
     string FigureAttacksAndWalkZones()
     {
         string result = "";
 
-        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Figure"))
+        foreach(GameObject obj in Figures)
         {
             result += "--------------[" + obj.name + "]--------------\n";
             result += " moves to position - " + obj.transform.Find("MovePlaner").transform.position.x + ":" + obj.transform.Find("MovePlaner").transform.position.z + "   \n";
@@ -32,14 +31,6 @@ public class DebugLogsPrint : MonoBehaviour
             foreach(Attack attack in obj.GetComponent<UnitController>().NowUsingSkill.DamageZone())
             {
                 result += " - " + attack.InString() + "\n";
-
-                Color DebugAttackColor()
-                {
-                    if(attack.damage >= 0) return new Color(attack.damage * 0.15f, 0, 0);
-                    return new Color(0, Mathf.Abs(attack.damage) * 0.15f, 0);
-                }
-
-                Debug.DrawLine(attack.Where, new Checkers(attack.Where, 1f), DebugAttackColor());
             }
         }
         return result;

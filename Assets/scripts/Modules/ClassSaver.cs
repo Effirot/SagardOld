@@ -5,32 +5,19 @@ using UnityEngine;
 
 namespace SagardCL //Class library
 {
-    [System.Serializable]
-    public class ParameterList
+    public class Descript
     {
-        public string ClassTAG = "";
-
+        [Space, Header("Description")]
+        public string Name;
+        public string Description;
+        public string BigDescription;
+        public Texture2D image;
+    }
+    public class LifeParameters : Descript
+    {
+        [Space, Header("Base Parameters")]
+        public Color Team;
         [Space]
-        public bool CanControll = true;
-        public bool IsDead = false;
-
-        [Space]
-
-        
-
-        public int WalkDistance;
-        [Space]
-
-        public List<Skill> AvailableSkills;
-        [Space]
-        public List<Effect> Resists;
-        public List<Effect> Debuffs;
-        [Space]
-
-
-        [Space]
-        [Space]
-        [Header("Base Parameters")]
         public int MaxStamina;
         public int MaxHP;
         public int MaxSanity;
@@ -66,6 +53,30 @@ namespace SagardCL //Class library
             ArmoreBalistic = Balistic;
             SanityShield = sanity;
         }
+        public void Damage(string damageType, int damage, Effect debuff)
+        {
+
+        }
+        public void Damage(Attack attack)
+        {
+
+        }
+    }
+
+    [System.Serializable]
+    public class PlayerControlList : LifeParameters
+    {
+        [Space, Header("Controll Settings")]
+        public bool CanControll = true;
+        [Space]        
+
+        public int WalkDistance;
+        [Space]
+
+        public List<Skill> AvailableSkills;
+        [Space]
+        public List<Effect> Resists;
+        public List<Effect> Debuffs;
 
         public void AddSkill(AllInOne from, string name, HitType type, int level, int damage)
         {
@@ -84,24 +95,13 @@ namespace SagardCL //Class library
         {
             AvailableSkills.Remove(skill);
         }
-
-
-        public void Damage(string damageType, int damage, Effect debuff)
-        {
-
-        }
-        public void Damage(Attack attack)
-        {
-
-        }
-
         public void AddRangeSkill(List<Skill> skills)
         {
             AvailableSkills.AddRange(skills);
         }
-        public static ParameterList operator +(ParameterList a, ParameterList b)
+        public static PlayerControlList operator +(PlayerControlList a, PlayerControlList b)
         {
-            ParameterList list = a;
+            PlayerControlList list = a;
             list.SetMax(a.MaxStamina + b.MaxStamina, a.MaxHP + b.MaxHP, a.MaxSanity + b.MaxSanity);
             list.SetBase(a.Stamina + b.Stamina, a.HP + b.HP, a.Sanity + b.Sanity);
             list.SetProtection(a.ArmoreClose + b.ArmoreClose, a.ArmoreBalistic + b.ArmoreBalistic, a.SanityShield + b.SanityShield);
@@ -110,9 +110,9 @@ namespace SagardCL //Class library
 
             return list;
         }
-        public static ParameterList operator -(ParameterList a, ParameterList b)
+        public static PlayerControlList operator -(PlayerControlList a, PlayerControlList b)
         {
-            ParameterList list = a;
+            PlayerControlList list = a;
             list.SetMax(a.MaxStamina - b.MaxStamina, a.MaxHP - b.MaxHP, a.MaxSanity - b.MaxSanity);
             list.SetBase(a.Stamina - b.Stamina, a.HP - b.HP, a.Sanity - b.Sanity);
             list.SetProtection(a.ArmoreClose - b.ArmoreClose, a.ArmoreBalistic - b.ArmoreBalistic, a.SanityShield - b.SanityShield);
@@ -149,13 +149,7 @@ namespace SagardCL //Class library
         Dash,
     }
     
-    public class Descript
-    {
-        public string Name;
-        public string Description;
-        public string VeryBigDescription;
-        public Texture2D image;
-    }
+
 
     [System.Serializable]
     public class Skill : Descript
@@ -376,13 +370,14 @@ namespace SagardCL //Class library
 
         public Vector3 position{ get{ return Planer.transform.position; } set{ Planer.transform.position = value; } }
         public Vector3 localPosition{ get{ return Planer.transform.localPosition; } set{ Planer.transform.localPosition = value; } }
+        public Transform Parent => Planer.transform.parent;
 
         public static implicit operator GameObject(AllInOne a) { return a.Planer; }
 
-        public GameObject Model { get{ return Planer.transform.Find("Model").gameObject; } }
-        public Material Material { get{ return Model.GetComponent<Material>(); } }
-        public Collider Collider { get{  return Planer.GetComponent<MeshCollider>(); } }
-        public Renderer Renderer { get{  return Model.GetComponent<Renderer>(); } }
+        public GameObject Model => Planer.transform.Find("Model").gameObject;
+        public Material Material => Model.GetComponent<Material>();
+        public Collider Collider => Planer.GetComponent<MeshCollider>();
+        public Renderer Renderer => Model.GetComponent<Renderer>();
 
         public LineRenderer LineRenderer { get{ return Planer.GetComponent<LineRenderer>(); } }
     }
