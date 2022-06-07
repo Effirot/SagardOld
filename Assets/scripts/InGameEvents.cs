@@ -19,7 +19,7 @@ public class InGameEvents : MonoBehaviour
             
             MapUpdate.Invoke();
             Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit);
-            MouseController.Invoke((uint)hit.collider?.gameObject.GetComponent<UnitController>()?.ID, Input.GetMouseButtonDown(1)? 1:2);
+            MouseController.Invoke((uint)hit.collider?.gameObject.GetComponent<IDgenerator>()?.ID, Input.GetMouseButtonDown(1)? 1:2);
             
             _enabledAttack = !_enabledAttack;
         }

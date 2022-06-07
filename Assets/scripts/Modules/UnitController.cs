@@ -6,7 +6,7 @@ using SagardCL;
 
 public class UnitController : MonoBehaviour
 {
-    public uint ID;
+    uint ID => GetComponent<IDgenerator>().ID;
 
     [Space(3)]
 
@@ -38,6 +38,7 @@ public class UnitController : MonoBehaviour
     
     protected bool MPlanerChecker(bool Other = true)
     {        
+        if(!Other) return false;
         bool OnOtherPlaner()
         {  
             foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
@@ -58,10 +59,8 @@ public class UnitController : MonoBehaviour
             return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, transform.position); 
         }
         
-        return Other && OnOtherPlaner() && !OnSelf() && OnDistance();
+        return OnOtherPlaner() && !OnSelf() && OnDistance();
     }
-
-    
 
     int MouseTest = 0;
     void Update()

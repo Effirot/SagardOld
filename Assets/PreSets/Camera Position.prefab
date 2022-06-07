@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4554630649988616369}
   - component: {fileID: 4554630649988616334}
-  m_Layer: 0
+  - component: {fileID: 355350897}
+  m_Layer: 2
   m_Name: Camera Position
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -50,10 +51,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f6c5034b5b664540b297f2b13dfc8bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraSpd: 15.8
-  rotSpd: 8.3
-  Camera: {fileID: 4554630650189576354}
+  cameraSpd: 21.7
+  rotSpd: 22.2
   toBase: 0
+  InCameraVision: []
+--- !u!135 &355350897
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554630649988616335}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 5.52
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4554630650189576352
 GameObject:
   m_ObjectHideFlags: 0
@@ -79,14 +93,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4554630650189576352}
-  m_LocalRotation: {x: 0.34697568, y: -0, z: -0, w: 0.93787414}
-  m_LocalPosition: {x: 0, y: 6.36, z: -4.74}
+  m_LocalRotation: {x: 0.29101264, y: -0, z: -0, w: 0.9567192}
+  m_LocalPosition: {x: 0, y: 3.83, z: -4.26}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4554630649988616369}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 40.605, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 33.837, y: 0, z: 0}
 --- !u!20 &4554630650189576354
 Camera:
   m_ObjectHideFlags: 0
@@ -96,8 +110,8 @@ Camera:
   m_GameObject: {fileID: 4554630650189576352}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.3301887, g: 0.3301887, b: 0.3301887, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -112,13 +126,13 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 70.7
+  field of view: 74.6
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 471
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0

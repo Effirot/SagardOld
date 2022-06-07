@@ -5,32 +5,21 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [Range(1, 100)]public float cameraSpd = 20, rotSpd = 20;
-    public Camera Camera;
-    float StartedFieldOfView;
-    float toFieldOfView = 0;
+    Camera Camera => transform.Find("Main Camera").GetComponent<Camera>();
+    Transform UICanvas => GameObject.Find("GameUI").transform;
+
+    public GameObject QuickUi;
 
     [SerializeField] private bool toBase = false;
-
-    void Start()
-    {
-        StartedFieldOfView = Camera.fieldOfView;
-        toFieldOfView = StartedFieldOfView;
-    }
 
     void Update()
     {
         Vector3 hor = Input.GetAxis("Horizontal") * Time.deltaTime * Vector3.right;
         Vector3 ver = Input.GetAxis("Vertical") * Time.deltaTime * Vector3.forward;
 
-        Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0);
+        Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0) * Time.deltaTime * 100;
 
-        // toFieldOfView = Mathf.Clamp(Input.GetAxis("Mouse ScrollWheel") * -60 + toFieldOfView, 15, StartedFieldOfView);
-        // Camera.fieldOfView = 
-        // Mathf.Lerp(Camera.fieldOfView, 
-        // toFieldOfView, 
-        // 0.1f);
-
-        transform.Translate((hor + ver) * cameraSpd * (Camera.fieldOfView / (StartedFieldOfView)));
+        transform.Translate(Time.deltaTime * (hor + ver) * cameraSpd * 100);
 
         if(Input.GetKeyDown("space")) toBase = true;
 
@@ -52,5 +41,16 @@ public class CameraController : MonoBehaviour
         yield return new WaitForSeconds(0.7f);
         toBase = false;
         yield break;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        GameObject obj = Instantiate(QuickUi, UICanvas);
+        obj.GetComponent<IDgenerator>().ID = other.GetComponent<IDgenerator>().ID;
+        obj.GetComponent<MoveOnUi>().Target = other.gameObject.transform;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
     }
 }
