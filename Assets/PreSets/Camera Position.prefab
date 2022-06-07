@@ -53,8 +53,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraSpd: 21.7
   rotSpd: 22.2
+  QuickUi: {fileID: 9065431717320976478, guid: 76a16215ec75fb04ab308b372d87f28a, type: 3}
   toBase: 0
-  InCameraVision: []
 --- !u!135 &355350897
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -100,7 +100,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4554630649988616369}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 33.837, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!20 &4554630650189576354
 Camera:
   m_ObjectHideFlags: 0

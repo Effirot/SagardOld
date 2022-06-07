@@ -45,6 +45,8 @@ public class CameraController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if(other.gameObject.tag != "Figure") return;
+        
         GameObject obj = Instantiate(QuickUi, UICanvas);
         obj.GetComponent<IDgenerator>().ID = other.GetComponent<IDgenerator>().ID;
         obj.GetComponent<MoveOnUi>().Target = other.gameObject.transform;

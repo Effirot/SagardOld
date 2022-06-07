@@ -281,9 +281,6 @@ namespace SagardCL //Class library
         public Vector3[] Line()
         {
             Checkers FinalPoint = (Piercing)? endPos : ToPoint(startPos, endPos);
-
-            if(!Piercing)Debug.DrawLine(startPos, ToPoint(startPos, endPos, 0.3f), Color.blue);
-            Debug.DrawLine(startPos, endPos, Color.red);
             return new Vector3[] {startPos, ToPoint(startPos, FinalPoint)};
         }
         public bool Check(){ return Checkers.Distance(startPos, endPos) < Distance & !(startPos == endPos); }

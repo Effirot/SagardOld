@@ -4,13 +4,14 @@ using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
 
+
 public class UnitController : MonoBehaviour
 {
     uint ID => GetComponent<IDgenerator>().ID;
 
     [Space(3)]
 
-    public static int SkillIndex;
+    public int SkillIndex;
     public Skill NowUsingSkill => Parameters.AvailableSkills?[SkillIndex];
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
     
@@ -18,7 +19,16 @@ public class UnitController : MonoBehaviour
     [SerializeField]private protected AllInOne MPlaner;
     [SerializeField]private protected AllInOne APlaner;
 
-    protected Checkers CursorPos(float Up = 0) => new Checkers(GameObject.Find("3DCursor").transform.position, Up);
+    private Checkers LastPose = new Checkers();
+    protected Checkers CursorPos
+    { 
+        get
+        { 
+            Checkers pos = new Checkers(GameObject.Find("3DCursor").transform.position);
+            if(LastPose != pos) { LastPose = pos; Changepos(); } 
+            return pos; 
+        } 
+    }
     [Space(3)]
     [SerializeField] protected PlayerControlList baseParameters;
     public PlayerControlList Parameters => baseParameters; 
@@ -32,40 +42,51 @@ public class UnitController : MonoBehaviour
             skill.From = MPlaner;
             skill.To = APlaner;
         }
-        InGameEvents.MapUpdate.AddListener(ParameterUpdate);
-        InGameEvents.MouseController.AddListener((a, b) => { MouseTest = a==(ID | MPlaner.Parent.GetComponent<UnitController>().ID)? b:0; });
+        InGameEvents.MapUpdate.AddListener(ParametersUpdate);
+        InGameEvents.MouseController.AddListener((a, b) => 
+        { 
+            if(a == (ID)) OnMouseTest = b; 
+            if(a == 0) OnMouseTest = 0;
+        });
     }
     
     protected bool MPlanerChecker(bool Other = true)
     {        
         if(!Other) return false;
-        bool OnOtherPlaner()
-        {  
-            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
-            { 
-                if(hit.collider.gameObject != MPlaner.Planer) { return false; }
-            }
-            return true;
-        }
-        bool OnSelf()
-        {
-            return 
-            (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(MPlaner.position.x) 
-            && 
-            (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(MPlaner.position.z);
-        }
-        bool OnDistance()
-        {
-            return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, transform.position); 
+        
+        //OnOtherPlaner
+        foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
+        { 
+            if(hit.collider.gameObject != MPlaner.Planer) { return false; }
         }
         
-        return OnOtherPlaner() && !OnSelf() && OnDistance();
+        //OnSelf
+        if(
+        (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(MPlaner.position.x) 
+        && 
+        (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(MPlaner.position.z))
+            return false;
+        
+        //OnDistance
+        return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, transform.position); 
     }
 
-    int MouseTest = 0;
+    private int MouseTest = 0;
+    protected int OnMouseTest
+    {
+        get
+        {
+            return MouseTest;
+        }
+        set
+        {
+            MouseTest = value;
+            if(value == 0) ControlChange();
+        }
+    }
+
     void Update()
     {   
-        foreach(Attack attack in AttackZone) Debug.DrawLine(attack.Where, new Checkers(attack.Where, 1f), attack.damage >= 0? new Color(attack.damage * 0.15f, 0, 0): new Color(0, Mathf.Abs(attack.damage) * 0.15f, 0) );
         switch(MouseTest)
         {
             default: Standing(); return;
@@ -78,7 +99,10 @@ public class UnitController : MonoBehaviour
     protected virtual void MovePlaning() {}
     protected virtual void AttackPlaning() {}
 
-    protected virtual void ParameterUpdate(){ }
+    protected virtual void ParametersUpdate(){  }
+
+    protected virtual void ControlChange() { ParametersUpdate(); }
+    protected virtual void Changepos() { if(OnMouseTest != 0) ParametersUpdate(); }
 }
 
 
