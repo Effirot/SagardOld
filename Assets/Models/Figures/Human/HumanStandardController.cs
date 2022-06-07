@@ -65,7 +65,7 @@ public class HumanStandardController : UnitController
 
     protected async override void ParametersUpdate()
     {
-        await Task.Delay(75);
+        await Task.Delay(2);
         // Move planner
         if (MPlanerChecker()){
             MPlaner.LineRenderer.positionCount = Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position)).Length;

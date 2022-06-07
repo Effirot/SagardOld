@@ -148,7 +148,6 @@ namespace SagardCL //Class library
         Volley, // 
         Dash,
     }
-    
 
 
     [System.Serializable]
