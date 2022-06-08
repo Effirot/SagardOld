@@ -12,7 +12,9 @@ public class UnitController : MonoBehaviour
     [Space(3)]
 
     public int SkillIndex;
-    public Skill NowUsingSkill => Parameters.AvailableSkills?[SkillIndex];
+    protected int CurrentSkillIndex { get { return SkillIndex; } set { if(value != SkillIndex) ParametersUpdate(); SkillIndex = value;} }
+
+    public Skill NowUsingSkill => Parameters.AvailableSkills?[CurrentSkillIndex];
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
     
     [SerializeField]private protected GameObject Platform;
@@ -25,7 +27,7 @@ public class UnitController : MonoBehaviour
         get
         { 
             Checkers pos = new Checkers(GameObject.Find("3DCursor").transform.position);
-            if(LastPose != pos) { LastPose = pos; Changepos(); } 
+            if(LastPose != pos) { LastPose = pos; ChangePos(); } 
             return pos; 
         } 
     }
@@ -70,7 +72,7 @@ public class UnitController : MonoBehaviour
         //OnDistance
         return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, transform.position); 
     }
-
+    
     private int MouseTest = 0;
     protected int OnMouseTest
     {
@@ -89,6 +91,15 @@ public class UnitController : MonoBehaviour
     {   
         switch(MouseTest)
         {
+            default: StandingUpd(); return;
+            case 1: MovePlaningUpd(); return;
+            case 2: AttackPlaningUpd(); return;
+        }
+    }
+    private void Tick() 
+    {
+        switch(MouseTest)
+        {
             default: Standing(); return;
             case 1: MovePlaning(); return;
             case 2: AttackPlaning(); return;
@@ -99,10 +110,15 @@ public class UnitController : MonoBehaviour
     protected virtual void MovePlaning() {}
     protected virtual void AttackPlaning() {}
 
-    protected virtual void ParametersUpdate(){  }
+
+    protected virtual void StandingUpd() {}
+    protected virtual void MovePlaningUpd() {}
+    protected virtual void AttackPlaningUpd() {}
+
+    protected virtual void ParametersUpdate(){ Tick(); }
 
     protected virtual void ControlChange() { ParametersUpdate(); }
-    protected virtual void Changepos() { if(OnMouseTest != 0) ParametersUpdate(); }
+    protected virtual void ChangePos() { if(OnMouseTest != 0) ParametersUpdate(); }
 }
 
 

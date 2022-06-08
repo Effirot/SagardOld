@@ -277,10 +277,21 @@ namespace SagardCL //Class library
             }
             return new List<Attack>();
         }
-        public Vector3[] Line()
+        public void Graphics()
         {
+            LineRenderer renderer = To.LineRenderer;
+            
+            if(Type == (HitType.Empty & HitType.OnSelf & HitType.SwordSwing & HitType.Constant)) 
+            { renderer.enabled = false; return; }
+            
+            renderer.enabled = true;
+            renderer.endColor = (Check())? Color.red : Color.grey;
+
             Checkers FinalPoint = (Piercing)? endPos : ToPoint(startPos, endPos);
-            return new Vector3[] {startPos, ToPoint(startPos, FinalPoint)};
+
+            renderer.positionCount = 2;
+            renderer.SetPositions(new Vector3[] {startPos, ToPoint(startPos, FinalPoint)});
+            
         }
         public bool Check(){ return Checkers.Distance(startPos, endPos) < Distance & !(startPos == endPos); }
     }
@@ -288,7 +299,6 @@ namespace SagardCL //Class library
     [System.Serializable]
     public class Item : Descript
     {
-
     }
 
     [System.Serializable]

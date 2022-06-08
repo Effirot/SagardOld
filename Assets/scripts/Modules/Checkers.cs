@@ -49,7 +49,7 @@ public struct Checkers
         return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
     }
 
-    public Vector3 ToVector3{ get{ return new Vector3(X, UP, Z);} }
+    public Vector3 ToVector3{ get{ return new Vector3(x, up, z);} }
 
     public static bool CheckCoords(Checkers Coordinats) 
     {

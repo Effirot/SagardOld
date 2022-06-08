@@ -24,10 +24,10 @@ public class Generation : MonoBehaviour
             for(int z = 0; z < map.ZScale; z++)
             {
                 PlatformVisual NowPlatform = Platform[map.GetModifier(x, z)];
-                if(!map.GetExist(x, z)){
+                if(map.GetLet(x, z) >= 0){
                     GameObject obj = Instantiate(
                     NowPlatform.Platform, 
-                    new Vector3(x, map.GetUp(x, z), z), new Quaternion(), transform);
+                    new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(new Vector3(0, Random.Range(0, 3) * 90, 0)), transform);
 
                     obj.tag = "Map";
                     if(NowPlatform.Meshes!= null) obj.GetComponent<MeshFilter>().mesh = NowPlatform.Meshes[Random.Range(0, NowPlatform.Meshes.Length)];
@@ -50,9 +50,9 @@ public class Map
     {
         public int Modifier;
         public float Up;
-        public bool Let = false;
+        public int Let = 0;
         
-        public MapCell(int Mod, float up, bool let = false)
+        public MapCell(int Mod, float up, int let = 0)
         { Modifier = Mod; Up = up; Let = let; }
     }
 
@@ -60,57 +60,57 @@ public class Map
     [SerializeField] int scaleX, scaleZ;
     [SerializeField] static uint key;
 
+    MapCell[,] PlatformMatrix = new MapCell[,] {};
+    public delegate float MapFormula(int x, int y, uint key);
 
-    MapCell[,] MapPlatformParameters = new MapCell[,] {};
-
-    public Map(uint Key, Vector2 Scale)
+    public Map(MapFormula Formula, uint Key, Vector2 Scale)
     {
         scaleX = (int)Scale.x; scaleZ = (int)Scale.y; key = Key; 
-        MapPlatformParameters = GenerateRelief();
+        PlatformMatrix = GenerateRelief(Formula);
     }
-    public Map(int PlayerNum, uint Key)
+    public Map(MapFormula Formula, int PlayerNum, uint Key)
     {
         scaleX = PlayerNum * 9 + (((int)key / 23)%7); scaleZ = PlayerNum * 9 + (((int)key / 14)%7); 
         key = Key;
-        MapPlatformParameters = GenerateRelief();
+        PlatformMatrix = GenerateRelief(Formula);
     }
-    public Map(int PlayerNum)
+    public Map(MapFormula Formula, int PlayerNum)
     {
         scaleX = PlayerNum * 9 + (((int)key / 23)%7); scaleZ = PlayerNum * 9 + (((int)key / 14)%7); 
         key = (uint)Random.Range(0, 99999999);
-        MapPlatformParameters = GenerateRelief();
+        PlatformMatrix = GenerateRelief(Formula);
+    }
+    public Map(MapFormula Formula)
+    {
+        key = (uint)Random.Range(0, 99999999);
+        scaleX = 2 * 9 + (((int)key / 23)%7); scaleZ = 2 * 9 + (((int)key / 14)%7); 
+        PlatformMatrix = GenerateRelief(Formula);
     }
     public Map()
     {
-        scaleX = 2 * 9 + (((int)key / 23)%7); scaleZ = 2 * 9 + (((int)key / 14)%7); 
         key = (uint)Random.Range(0, 99999999);
-        MapPlatformParameters = GenerateRelief();
+        scaleX = 2 * 9 + (((int)key / 23)%7); scaleZ = 2 * 9 + (((int)key / 14)%7); 
+        PlatformMatrix = GenerateRelief((a, b, c) => 0);
     }
     
     
     public int XScale { get{ return scaleX; } }
     public int ZScale { get{ return scaleZ; } }
 
-    private MapCell[,] GenerateRelief()
+    private MapCell[,] GenerateRelief(MapFormula _formula)
     {
         MapCell[,] result = new MapCell[scaleX, scaleZ];
         for(int x = 0; x < scaleX; x++)
         {
             for(int z = 0; z < scaleZ; z++)
             {   
-                float noise = 0;
-                // //Mathf.Round(Mathf.PerlinNoise(
-                //     200 / (float)(x + 1) + (float)key / 45,
-                //     200 / (float)(z + 1) + (float)key / 31)
-                //     * 10) / 10;
-                result[x, z] = new MapCell(0, noise);
+                result[x, z] = new MapCell(0, _formula(x, z, key));
             }
         }
         return result;
     }
 
-    public int GetModifier(int x, int z) { return MapPlatformParameters[x, z].Modifier; }
-    public float GetUp(int x, int z) { return MapPlatformParameters[x, z].Up; }
-    public bool GetLet(int x, int z) { return MapPlatformParameters[x, z].Let; }
-    public bool GetExist(int x, int z) { return MapPlatformParameters[x, z] == null; }
+    public int GetModifier(int x, int z) { return PlatformMatrix[x, z].Modifier; }
+    public float GetUp(int x, int z) { return PlatformMatrix[x, z].Up; }
+    public int GetLet(int x, int z) { return PlatformMatrix[x, z].Let; }
 }
