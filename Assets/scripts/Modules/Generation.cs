@@ -4,16 +4,21 @@ using UnityEngine;
 
 public class Generation : MonoBehaviour
 {
+    [System.Serializable]
     protected class PlatformVisual
     {
-        static GameObject platform;
-        static Mesh[] MeshVariants;
+        [SerializeField]GameObject platform;
+        [SerializeField]Mesh[] MeshVariants;
 
         public PlatformVisual(GameObject Platform) { platform = Platform; MeshVariants = null; }
         public PlatformVisual(GameObject Platform, Mesh Mesh) { platform = Platform; MeshVariants = new Mesh[] { Mesh }; }
         public PlatformVisual(GameObject Platform, Mesh[] Meshes) { platform = Platform; MeshVariants = Meshes; }
 
-        public GameObject Platform { get{ return platform; } }
+        public GameObject Platform { get{ 
+            // if(MeshVariants != null) platform.GetComponent<MeshFilter>().mesh = MeshVariants[Random.Range(0, MeshVariants.Length)];
+            return platform; 
+            
+            } }
         public Mesh[] Meshes { get{ return MeshVariants; } }
     }
 
@@ -23,14 +28,15 @@ public class Generation : MonoBehaviour
         {
             for(int z = 0; z < map.ZScale; z++)
             {
-                PlatformVisual NowPlatform = Platform[map.GetModifier(x, z)];
+                PlatformVisual NowPlatform = Platform[map.GetModifier(x, z) % Platform.Length];
                 if(map.GetLet(x, z) >= 0){
                     GameObject obj = Instantiate(
                     NowPlatform.Platform, 
-                    new Vector3(x, map.GetUp(x, z), z), Quaternion.Euler(new Vector3(0, Random.Range(0, 3) * 90, 0)), transform);
+                    new Vector3(x, map.GetUp(x, z), z), 
+                    Quaternion.Euler(new Vector3(0, Random.Range(0, 3) * 90, 0)), 
+                    transform);
 
                     obj.tag = "Map";
-                    if(NowPlatform.Meshes!= null) obj.GetComponent<MeshFilter>().mesh = NowPlatform.Meshes[Random.Range(0, NowPlatform.Meshes.Length)];
                 }
             }
         }
@@ -46,7 +52,7 @@ public class Generation : MonoBehaviour
 [System.Serializable]
 public class Map
 {
-    private class MapCell
+    public class MapCell
     {
         public int Modifier;
         public float Up;
@@ -61,7 +67,7 @@ public class Map
     [SerializeField] static uint key;
 
     MapCell[,] PlatformMatrix = new MapCell[,] {};
-    public delegate float MapFormula(int x, int y, uint key);
+    public delegate MapCell MapFormula(int x, int y, uint key);
 
     public Map(MapFormula Formula, uint Key, Vector2 Scale)
     {
@@ -90,21 +96,21 @@ public class Map
     {
         key = (uint)Random.Range(0, 99999999);
         scaleX = 2 * 9 + (((int)key / 23)%7); scaleZ = 2 * 9 + (((int)key / 14)%7); 
-        PlatformMatrix = GenerateRelief((a, b, c) => 0);
+        PlatformMatrix = GenerateRelief((a, b, c) => new MapCell(0, 0));
     }
     
     
     public int XScale { get{ return scaleX; } }
     public int ZScale { get{ return scaleZ; } }
 
-    private MapCell[,] GenerateRelief(MapFormula _formula)
+    protected MapCell[,] GenerateRelief(MapFormula _formula)
     {
         MapCell[,] result = new MapCell[scaleX, scaleZ];
         for(int x = 0; x < scaleX; x++)
         {
             for(int z = 0; z < scaleZ; z++)
             {   
-                result[x, z] = new MapCell(0, _formula(x, z, key));
+                result[x, z] = new MapCell(_formula(x, z, key).Modifier, _formula(x, z, key).Up, _formula(x, z, key).Let);
             }
         }
         return result;

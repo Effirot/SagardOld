@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8852195858568665852}
   - component: {fileID: 3613032716110953468}
   m_Layer: 7
-  m_Name: Platform
+  m_Name: GrassPlatform
   m_TagString: Map
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41,7 +41,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7050857232321542953}
-  m_Mesh: {fileID: 8734759013150694005, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
+  m_Mesh: {fileID: 26996053533450876, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
 --- !u!23 &8852195858568665852
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 70133345cc2407e4c9f6e17049aa88f5, type: 2}
+  - {fileID: 2100000, guid: 773d881e966fc874295211ce10fa1af6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
