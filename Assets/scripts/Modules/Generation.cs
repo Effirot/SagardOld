@@ -33,7 +33,7 @@ public class Generation : MonoBehaviour
                     GameObject obj = Instantiate(
                     NowPlatform.Platform, 
                     new Vector3(x, map.GetUp(x, z), z), 
-                    Quaternion.Euler(new Vector3(0, Random.Range(0, 3) * 90, 0)), 
+                    Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), 
                     transform);
 
                     obj.tag = "Map";

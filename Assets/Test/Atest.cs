@@ -7,17 +7,15 @@ public class Atest : Generation
     [SerializeField] PlatformVisual[] PlatformPreset;
     void Start()
     {
+        Regenerate();
+    }
+    public void Regenerate()
+    {
         Letsgenerate(
             new Map((x, z, key) => new Map.MapCell(
             (int)Mathf.Round((Mathf.PerlinNoise(200 / (float)(x + 1) + (float)key / 45, 200 / (float)(z + 1) + (float)key / 31) * 10) / 5),
-            Mathf.Round(Mathf.PerlinNoise(200 / (float)(x + 1) + (float)key / 45, 200 / (float)(z + 1) + (float)key / 31) * 10) / 10,
+            Mathf.Round(Mathf.PerlinNoise(200 / (float)(x + 1) + (float)key / 45, 200 / (float)(z + 1) + (float)key / 31) * 10 + x*1.5f + z*1.5f) / 10,
             0)), 
             PlatformPreset);
     }
-
-
-
-    
-
-
 }

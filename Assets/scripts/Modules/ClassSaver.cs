@@ -174,11 +174,11 @@ namespace SagardCL //Class library
         public bool WaitAStep;
         public bool DeleteWhenLowAmmo;        
 
-        private Checkers startPos{ get{ return new Checkers(From.position, 0.3f); } set { From.position = value; } }
+        private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
         private Checkers endPos{ get{ return new Checkers(To.position, 0f); } }
         private int endPosRotate{ get { return (int)Mathf.Round(Quaternion.LookRotation(cursor.transform.InverseTransformPoint(From.position)).eulerAngles.y) / 90; } }
 
-        private int distanceMod(float dist) { return (int)Mathf.Round((dist / 2)); }
+        private static int distanceMod(float dist) { return (int)Mathf.Round((dist / 2.3f)); }
 
         private Checkers cursorPos{ get { return new Checkers(GameObject.Find("3DCursor").transform.position); }}
         private GameObject cursor{ get { return GameObject.Find("3DCursor"); }}
@@ -231,7 +231,7 @@ namespace SagardCL //Class library
                             Checkers.Distance(startPos, FinalPoint), 
                             LayerMask.GetMask("Map")))
                         {
-                            result.Add(new Attack(FatherObj, new Checkers(hit.point), Damage - distanceMod((int)Checkers.Distance(startPos, new Checkers(hit.point))), damageType));
+                            result.Add(new Attack(FatherObj, new Checkers(hit.point), Damage / ((int)Checkers.Distance(startPos, new Checkers(hit.point))), damageType));
                         }
                         result.Add(new Attack(FatherObj, FinalPoint, Damage, damageType));
                         break;
@@ -372,7 +372,11 @@ namespace SagardCL //Class library
     public class AllInOne
     {
         public GameObject Planer;
-        public AllInOne(GameObject planer) { Planer = planer; }
+        public GameObject Model;
+        public AllInOne(GameObject planer) { Planer = planer; if(Model == null) Model = Planer.transform.Find("Model").gameObject; }
+        
+
+
 
         public Vector3 position{ get{ return Planer.transform.position; } set{ Planer.transform.position = value; } }
         public Vector3 localPosition{ get{ return Planer.transform.localPosition; } set{ Planer.transform.localPosition = value; } }
@@ -380,7 +384,7 @@ namespace SagardCL //Class library
 
         public static implicit operator GameObject(AllInOne a) { return a.Planer; }
 
-        public GameObject Model => Planer.transform.Find("Model").gameObject;
+        
         public Material Material => Model.GetComponent<Material>();
         public Collider Collider => Planer.GetComponent<MeshCollider>();
         public Renderer Renderer => Model.GetComponent<Renderer>();

@@ -6,46 +6,40 @@ using System.Threading.Tasks;
 
 public class HumanStandardController : UnitController
 {
+    void OnEnable() { ParametersUpdate(); }
+
     protected override void StandingUpd() // Calling(void Update), when you no planing
     {
         //Base model
-        position = Vector3.MoveTowards(position, new Checkers(position), 2.5f * Time.deltaTime);
+        MPlaner.Renderer.enabled = MPlanerChecker();
         
         //Move planner
-        MPlaner.position = (!MPlanerChecker())?
-        position :
-        MPlaner.position;
+        if(!MPlanerChecker())MPlaner.position = position;
 
-        MPlaner.Renderer.enabled = MPlanerChecker();
         MPlaner.Collider.enabled = true;
     
         //Attack planner
-        APlaner.position = (!NowUsingSkill.Check())?
-        MPlaner.position :
-        APlaner.position;
+        if(!NowUsingSkill.Check()) APlaner.position = MPlaner.position;
 
         APlaner.Renderer.enabled = NowUsingSkill.Check();
     }
     protected override void MovePlaningUpd() // Calling(void Update), when you planing your moving
     {
-        //Base model
-        position = new Checkers(position, 0.7f);
-        //Platform.transform.eulerAngles = new Vector3(0, Quaternion.LookRotation(MPlaner.pos - transform.position, -Vector3.up).eulerAngles.y + 180, 0);
+        MPlaner.Renderer.enabled = true;
         
         if(NowUsingSkill.NoWalking) APlaner.position = new Checkers(MPlaner.position);
-        APlaner.position = new Checkers(APlaner.position, 0.7f);
+        APlaner.position = new Checkers(APlaner.position);
 
         //Move planner
-        MPlaner.position = new Checkers(CursorPos, 0.7f);
-        
-        MPlaner.Renderer.enabled = true;
+        MPlaner.position = new Checkers(CursorPos);
         MPlaner.Collider.enabled = false;
         
     }
     protected override void AttackPlaningUpd() // Calling(void Update), when you planing your attacks
     {
-        //Base model
-        position = new Checkers(position, 0.7f);
+        position = new Checkers(position);
+
+        
 
         //Move planner
         if(NowUsingSkill.NoWalking)
@@ -56,7 +50,7 @@ public class HumanStandardController : UnitController
         }
 
         //Attack planner
-        APlaner.position = new Checkers(CursorPos, 0.7f);
+        APlaner.position = new Checkers(CursorPos);
 
         //Mouse Scroll
         CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, Parameters.AvailableSkills.Count - 1);
@@ -65,6 +59,9 @@ public class HumanStandardController : UnitController
     protected async override void ParametersUpdate()
     {
         await Task.Delay(1);
+        
+        position = new Checkers(position);
+
         // Move planner
         if (MPlanerChecker()){
             MPlaner.LineRenderer.positionCount = Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position)).Length;
@@ -80,11 +77,13 @@ public class HumanStandardController : UnitController
         NowUsingSkill.Graphics();        
 
         AttackZone = NowUsingSkill.DamageZone();
+        AttackVisualization();
     }
 
     protected override void ControlChange() // Calling, when global event change control mode 
     {
         ParametersUpdate();
     }
+
 
 }

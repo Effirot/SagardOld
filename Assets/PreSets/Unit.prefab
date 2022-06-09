@@ -1039,7 +1039,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4747291919557899644}
+  - {fileID: 1892631942462364634}
   - {fileID: 8261764584354182334}
   m_Father: {fileID: 6828420722621915725}
   m_RootOrder: 1
@@ -2251,7 +2251,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2017180247765613572}
+  m_Father: {fileID: 6828420722621915725}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3142096255115337034
@@ -2337,7 +2337,7 @@ Transform:
   m_Children:
   - {fileID: 3627501531998821921}
   - {fileID: 4192407430028218179}
-  m_Father: {fileID: 6828420722621915725}
+  m_Father: {fileID: 2017180247765613572}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8213664327963018437
@@ -2615,7 +2615,7 @@ Transform:
   m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
   m_ConstrainProportionsScale: 1
   m_Children:
-  - {fileID: 1892631942462364634}
+  - {fileID: 4747291919557899644}
   - {fileID: 2017180247765613572}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -2680,8 +2680,10 @@ MonoBehaviour:
   Platform: {fileID: 6578298447475953083}
   MPlaner:
     Planer: {fileID: 3247773065290817402}
+    Model: {fileID: 6533158161002452622}
   APlaner:
     Planer: {fileID: 6390476027061664742}
+    Model: {fileID: 6707259267486030985}
   baseParameters:
     Name: 
     Description: 
@@ -2706,8 +2708,10 @@ MonoBehaviour:
       image: {fileID: 0}
       From:
         Planer: {fileID: 0}
+        Model: {fileID: 0}
       To:
         Planer: {fileID: 0}
+        Model: {fileID: 0}
       Type: 0
       damageType: 0
       Distance: 0
@@ -2729,8 +2733,10 @@ MonoBehaviour:
       image: {fileID: 0}
       From:
         Planer: {fileID: 0}
+        Model: {fileID: 0}
       To:
         Planer: {fileID: 0}
+        Model: {fileID: 0}
       Type: 5
       damageType: 1
       Distance: 6
