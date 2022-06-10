@@ -389,6 +389,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1429024227}
     m_Modifications:
+    - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
+      propertyPath: baseParameters.AvailableSkills.Array.data[1].Distance
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
+      propertyPath: baseParameters.AvailableSkills.Array.data[1].Exploding
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
+      propertyPath: baseParameters.AvailableSkills.Array.data[1].SkillLevel
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 6828420722621915725, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: m_RootOrder
       value: 2
@@ -1088,7 +1100,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[2].Damage
-      value: 10
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[3].Damage
@@ -1123,12 +1135,20 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
+      propertyPath: baseParameters.AvailableSkills.Array.data[2].SkillLevel
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[2].damageType
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[3].damageType
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
+      propertyPath: baseParameters.AvailableSkills.Array.data[1].Debuff.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2590295471781954881, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: ID

@@ -78,18 +78,9 @@ namespace SagardCL //Class library
         public List<Effect> Resists;
         public List<Effect> Debuffs;
 
-        public void AddSkill(AllInOne from, string name, HitType type, int level, int damage)
-        {
-            AvailableSkills.Add(new Skill(from, name, type, level, damage));
-        }
         public void AddSkill(Skill skill)
         {
             AvailableSkills.Add(skill);
-        }
-
-        public void RemoveSkill(AllInOne from, string name, HitType type, int level, int damage)
-        {
-            AvailableSkills.Remove(new Skill(from, name, type, level, damage));
         }
         public void RemoveSkill(Skill skill)
         {
@@ -149,57 +140,49 @@ namespace SagardCL //Class library
         Dash,
     }
 
-
     [System.Serializable]
     public class Skill : Descript
     {
         //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
         [Header("Contollers")]
         public AllInOne From;
-        GameObject FatherObj{ get{ return From.Planer.transform.parent.gameObject; }}
+        GameObject FatherObj{ get{ return From.Planer.transform.parent.gameObject; } }
         public AllInOne To;
         
         [Space(2)]
         [Header("Parameters")]
         public HitType Type;
         [SerializeField] DamageType damageType;
+        [SerializeField] DamageType secondaryDamageType;
         [Space]
         [Range(0, 40)]public int Distance;
         [Range(0, 20)]public int Damage;
         [SerializeField] bool Piercing;
-        [SerializeField] bool Exploding;
-        [Range(0, 15)]public int Level;
-        public Effect debuff;
+        [Range(0, 15)]public int Exploding;
+        
+        public Effect[] Debuff;
         public bool NoWalking;
-        public bool WaitAStep;
-        public bool DeleteWhenLowAmmo;        
+
+        public object Other1;
+        public object Other2;
 
         private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
         private Checkers endPos{ get{ return new Checkers(To.position, 0f); } }
         private int endPosRotate{ get { return (int)Mathf.Round(Quaternion.LookRotation(cursor.transform.InverseTransformPoint(From.position)).eulerAngles.y) / 90; } }
 
-        private static int distanceMod(float dist) { return (int)Mathf.Round((dist / 2.3f)); }
-
         private Checkers cursorPos{ get { return new Checkers(GameObject.Find("3DCursor").transform.position); }}
         private GameObject cursor{ get { return GameObject.Find("3DCursor"); }}
         //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
-
-        
-        // Overloads
-        public Skill(AllInOne from, string name, HitType type, int level, int damage, bool noWlaking = false, bool waitAStep = false)
-        { From = from; Name = name; Type = type; Level = level; Damage = damage; NoWalking = noWlaking; WaitAStep = waitAStep; }
         
         public override string ToString()
         { return FatherObj?.name + " type: " + Type + " damageMod: " + Damage + " distanceBuff: " + Distance; }
 
-        public static Skill Empty() { return new Skill(null, "null", HitType.Empty, 0, 0); }
+        public static Skill Empty() { return new Skill {From = null, Name = "null", Type = HitType.Empty, Distance = 0, Damage = 0}; }
 
         private Checkers ToPoint(Vector3 f, Vector3 t, float Up = 0)
         {
             if(Physics.Raycast(f, t - f, out RaycastHit hit, Vector3.Distance(f, t), LayerMask.GetMask("Object", "Map")))
-            { 
                 return new Checkers(hit.point, Up);
-            }
             return t; 
         }
 
@@ -223,6 +206,12 @@ namespace SagardCL //Class library
 
                         break;
                     }
+                    case HitType.BraveSwordSwing:
+                    {
+
+                        break;
+                    }
+
                     case HitType.Shot:
                     {
                         foreach(RaycastHit hit in Physics.RaycastAll(
@@ -231,7 +220,7 @@ namespace SagardCL //Class library
                             Checkers.Distance(startPos, FinalPoint), 
                             LayerMask.GetMask("Map")))
                         {
-                            result.Add(new Attack(FatherObj, new Checkers(hit.point), Damage / ((int)Checkers.Distance(startPos, new Checkers(hit.point))), damageType));
+                            result.Add(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(Damage / (Checkers.Distance(startPos, new Checkers(hit.point)) * 0.08f)), damageType));
                         }
                         result.Add(new Attack(FatherObj, FinalPoint, Damage, damageType));
                         break;
@@ -244,9 +233,9 @@ namespace SagardCL //Class library
                             Checkers.Distance(startPos, FinalPoint), 
                             LayerMask.GetMask("Map")))
                         {
-                            result.Add(new Attack(FatherObj, new Checkers(hit.point), Damage + (distanceMod((int)Checkers.Distance(startPos, new Checkers(hit.point))) / 2), damageType));
-                        }
-                        result.Add(new Attack(FatherObj, FinalPoint, 1 + Damage + (distanceMod((int)Checkers.Distance(startPos, FinalPoint)) / 2), damageType));
+                            result.Add(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), damageType));
+                        } 
+                        result.Add(new Attack(FatherObj, FinalPoint, 1 + Damage + (int)Mathf.Round(Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), damageType));
                         break;
                     }
                     case HitType.Volley:
@@ -255,23 +244,26 @@ namespace SagardCL //Class library
                         break;
                     }
                 }
+                if(Exploding == 0) return result;
+                
                 // --------------------Explode------------------
-                if(Exploding){
-                    for(int x = -Level; x < 1 + Level; x++)
+                for(int x = -Mathf.Abs(Exploding); x < 1 + Mathf.Abs(Exploding); x++)
+                {
+                    for(int z = -Mathf.Abs(Exploding); z <= Mathf.Abs(Exploding); z++)
                     {
-                        for(int z = -Mathf.Abs(Level); z <= Mathf.Abs(Level); z++)
-                        {
-                            if(Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)) > Mathf.Abs(Level) - 0.5f)
-                                continue;
-                            if(FinalPoint == FinalPoint + new Checkers(x, z))
-                                continue;
-                            result.Add(new Attack(FatherObj, 
-                            new Checkers(FinalPoint + new Checkers(x, z)), 
-                            Damage - distanceMod(Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z))) * 2, 
-                            damageType));
-                        }
-                    } 
-                }
+                        if(Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)) > Mathf.Abs(Exploding) - 0.9f)
+                            continue;
+                        if(Physics.Raycast(new Checkers(FinalPoint, 1), FinalPoint + new Checkers(x, z) - FinalPoint, Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)), LayerMask.GetMask("Map")))
+                            continue;
+
+                        result.Remove(result.Find((a) => a.Where == FinalPoint + new Checkers(x, z)));
+
+                        result.Add(new Attack(FatherObj, 
+                        new Checkers(FinalPoint + new Checkers(x, z)), 
+                        (int)Mathf.Round(Damage / (Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z), Checkers.mode.Height) * 0.5f)), 
+                        damageType));
+                    }
+                } 
                 
                 return result;
             }
