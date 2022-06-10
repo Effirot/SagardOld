@@ -395,7 +395,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[1].Exploding
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[1].SkillLevel
