@@ -10,37 +10,16 @@ public class CameraController : MonoBehaviour
 
     public GameObject QuickUi;
 
-    [SerializeField] private bool toBase = false;
-
-    void Update()
+    void FixedUpdate()
     {
-        Vector3 hor = Input.GetAxis("Horizontal") * Time.deltaTime * Vector3.right;
-        Vector3 ver = Input.GetAxis("Vertical") * Time.deltaTime * Vector3.forward;
+        Vector3 hor = Input.GetAxis("Horizontal") * Vector3.right;
+        Vector3 ver = Input.GetAxis("Vertical") * Vector3.forward;
 
-        Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0) * Time.deltaTime * 100;
+        Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0);
 
-        transform.Translate(Time.deltaTime * (hor + ver) * cameraSpd * 100);
+        transform.Translate((hor + ver) * cameraSpd / 100);
+        transform.eulerAngles -= rot * (rotSpd / 10);
 
-        if(Input.GetKeyDown("space")) toBase = true;
-
-        if(toBase)
-        { 
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(0, 0, 0), 0.17f); 
-
-            StartCoroutine(WaitASecond());
-        }
-        else
-        {
-            transform.eulerAngles -= rot * (rotSpd / 10);
-        }
-
-    }
-
-    IEnumerator WaitASecond()
-    {
-        yield return new WaitForSeconds(0.7f);
-        toBase = false;
-        yield break;
     }
 
     private void OnTriggerEnter(Collider other)

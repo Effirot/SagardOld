@@ -37,10 +37,6 @@ public class HumanStandardController : UnitController
     }
     protected override void AttackPlaningUpd() // Calling(void Update), when you planing your attacks
     {
-        position = new Checkers(position);
-
-        
-
         //Move planner
         if(NowUsingSkill.NoWalking)
         {
@@ -59,7 +55,12 @@ public class HumanStandardController : UnitController
     protected async override void ParametersUpdate()
     {
         await Task.Delay(1);
-        
+
+        foreach(Skill skill in Parameters.AvailableSkills)
+        {
+            skill.From = MPlaner;
+            skill.To = APlaner;
+        }
         position = new Checkers(position);
 
         // Move planner
@@ -78,12 +79,12 @@ public class HumanStandardController : UnitController
 
         AttackZone = NowUsingSkill.DamageZone();
         AttackVisualization();
+
+        DebugLogsPrint.LogEvent.Invoke();
     }
 
     protected override void ControlChange() // Calling, when global event change control mode 
     {
         ParametersUpdate();
     }
-
-
 }

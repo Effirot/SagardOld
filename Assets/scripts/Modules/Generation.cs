@@ -22,7 +22,7 @@ public class Generation : MonoBehaviour
         public Mesh[] Meshes { get{ return MeshVariants; } }
     }
 
-    protected void Letsgenerate(Map map, PlatformVisual[] Platform){
+    protected void LetsGenerate(Map map, PlatformVisual[] Platform){
         ClearMap();
         for(int x = 0; x < map.XScale; x++)
         {

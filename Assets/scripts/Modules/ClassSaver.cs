@@ -220,6 +220,7 @@ namespace SagardCL //Class library
                             Checkers.Distance(startPos, FinalPoint), 
                             LayerMask.GetMask("Map")))
                         {
+                            
                             result.Add(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(Damage / (Checkers.Distance(startPos, new Checkers(hit.point)) * 0.08f)), damageType));
                         }
                         result.Add(new Attack(FatherObj, FinalPoint, Damage, damageType));
@@ -255,8 +256,8 @@ namespace SagardCL //Class library
                             continue;
                         if(Physics.Raycast(new Checkers(FinalPoint, 1), FinalPoint + new Checkers(x, z) - FinalPoint, Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)), LayerMask.GetMask("Map")))
                             continue;
-
-                        result.Remove(result.Find((a) => a.Where == FinalPoint + new Checkers(x, z)));
+                        if(result.Find((a) => a.Where == FinalPoint + new Checkers(x, z)).Where == FinalPoint + new Checkers(x, z))
+                            continue;
 
                         result.Add(new Attack(FatherObj, 
                         new Checkers(FinalPoint + new Checkers(x, z)), 

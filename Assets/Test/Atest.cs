@@ -11,6 +11,6 @@ public class Atest : Generation
     }
     public void Regenerate()
     {
-        Letsgenerate(new Map(), PlatformPreset);
+        LetsGenerate(new Map(), PlatformPreset);
     }
 }

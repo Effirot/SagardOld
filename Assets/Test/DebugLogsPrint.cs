@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using SagardCL;
+using UnityEngine.Events;
 
 public class DebugLogsPrint : MonoBehaviour
 {
+    public static UnityEvent LogEvent = new UnityEvent();
+
+    void Awake(){ LogEvent.AddListener(() => FigureZones.text = FigureAttacksAndWalkZones()); }
+    
     public Text DidActive, FigureZones, fpsText;
     float deltaTime;
  
@@ -13,10 +18,7 @@ public class DebugLogsPrint : MonoBehaviour
         deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
         float fps = 1.0f / deltaTime;
         fpsText.text = Mathf.Ceil (fps).ToString ();
-
-        FigureZones.text =  FigureAttacksAndWalkZones();
     }
-    //void Awake () { InGameEvents.MapUpdate.AddListener(() => FigureZones.text = FigureAttacksAndWalkZones() ); }
     
     string FigureAttacksAndWalkZones()
     {

@@ -43,7 +43,7 @@ public class InGameEvents : MonoBehaviour
         {            
             _enabledAttack = !_enabledAttack; 
             if(CursorController.ObjectOnMap & _enabledAttack) 
-                {MouseController.Invoke(CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID, 2); return; }
+                {MouseController.Invoke(CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID, 2); return; } 
             MouseController.Invoke(0, 0);
             
         }

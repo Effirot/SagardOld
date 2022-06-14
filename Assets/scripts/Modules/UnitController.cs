@@ -13,8 +13,8 @@ public class UnitController : MonoBehaviour
     [Space(3)]
 
     [SerializeField]protected GameObject AttackVisualizer;
-    public int SkillIndex;
-    protected int CurrentSkillIndex { get { return SkillIndex; } set { if(value != SkillIndex) ParametersUpdate(); SkillIndex = value;} }
+    private protected int SkillIndex;
+    public int CurrentSkillIndex { get { return SkillIndex; } set { if(value != SkillIndex) ParametersUpdate(); SkillIndex = value;} }
 
     public Skill NowUsingSkill => Parameters.AvailableSkills?[CurrentSkillIndex];
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
@@ -35,11 +35,10 @@ public class UnitController : MonoBehaviour
         } 
     }
     [Space(3)]
-    [SerializeField] protected PlayerControlList baseParameters;
-    public PlayerControlList Parameters => baseParameters; 
+    [SerializeField] private PlayerControlList baseParameters;
+    public PlayerControlList Parameters => baseParameters ; 
 
-    public List<Attack> AttackZone = new List<Attack>();
-
+    protected List<Attack> AttackZone = new List<Attack>();
     private List<GameObject> attackPointsVisuals = new List<GameObject>();
     
     protected void AttackVisualization()
@@ -71,8 +70,16 @@ public class UnitController : MonoBehaviour
         InGameEvents.MapUpdate.AddListener(ParametersUpdate);
         InGameEvents.MouseController.AddListener((a, b) => 
         { 
-            if(a == (ID)) OnMouseTest = b; 
-            if(a == 0) OnMouseTest = 0;
+            if(a == (ID)) 
+            {
+                OnMouseTest = b;
+                switch(b){
+                    default: StandingIn(); return;
+                    case 1: MovePlaningIn(); return;
+                    case 2: AttackPlaningIn(); return;
+                }
+            }
+            else OnMouseTest = 0;
         });
         InGameEvents.StepSystem.AddListener((a) => 
         { 
@@ -128,6 +135,10 @@ public class UnitController : MonoBehaviour
     protected virtual void StandingUpd() {}
     protected virtual void MovePlaningUpd() {}
     protected virtual void AttackPlaningUpd() {}
+    
+    protected virtual void StandingIn() { CurrentSkillIndex = 0; }
+    protected virtual void MovePlaningIn() {}
+    protected virtual void AttackPlaningIn() {}
 
     protected virtual void ParametersUpdate(){ }
 
