@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using UnityEngine.Events;
 using SagardCL;
 
@@ -10,9 +9,10 @@ public class UnitController : MonoBehaviour
 {
     uint ID => GetComponent<IDgenerator>().ID;
 
+
     [Space(3)]
 
-    protected GameObject AttackVisualizer;
+    [SerializeField]protected GameObject AttackVisualizer;
     public int SkillIndex;
     protected int CurrentSkillIndex { get { return SkillIndex; } set { if(value != SkillIndex) ParametersUpdate(); SkillIndex = value;} }
 
@@ -41,6 +41,7 @@ public class UnitController : MonoBehaviour
     public List<Attack> AttackZone = new List<Attack>();
 
     private List<GameObject> attackPointsVisuals = new List<GameObject>();
+    
     protected void AttackVisualization()
     {   
         AttackVsualizationClear();
@@ -62,7 +63,6 @@ public class UnitController : MonoBehaviour
 
     void Awake()
     {
-        AttackVisualizer = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Models/Gizmos/Attack/AttackVisualizer.prefab") as GameObject;
         foreach(Skill skill in Parameters.AvailableSkills)
         {
             skill.From = MPlaner;
@@ -74,6 +74,18 @@ public class UnitController : MonoBehaviour
             if(a == (ID)) OnMouseTest = b; 
             if(a == 0) OnMouseTest = 0;
         });
+        InGameEvents.StepSystem.AddListener((a) => 
+        { 
+            ParametersUpdate(); 
+            switch(a)
+            {
+                case 1: Walking(); return;
+                case 2: PriorityAttacking(); return;
+                case 3: Attacking(); return;
+                case 4: Dead(); return;
+                case 5: Rest(); return;
+            }
+        } );
     }
     
     protected bool MPlanerChecker(bool Other = true)
@@ -112,28 +124,22 @@ public class UnitController : MonoBehaviour
             case 2: AttackPlaningUpd(); return;
         }
     }
-    private void Tick() 
-    {
-        switch(MouseTest)
-        {
-            default: Standing(); return;
-            case 1: MovePlaning(); return;
-            case 2: AttackPlaning(); return;
-        }
-    }
-
-    protected virtual void Standing() {}
-    protected virtual void MovePlaning() {}
-    protected virtual void AttackPlaning() {}
-
+    
     protected virtual void StandingUpd() {}
     protected virtual void MovePlaningUpd() {}
     protected virtual void AttackPlaningUpd() {}
 
-    protected virtual void ParametersUpdate(){ Tick(); }
+    protected virtual void ParametersUpdate(){ }
 
     protected virtual void ControlChange() { ParametersUpdate(); }
     protected virtual void ChangePos() { if(OnMouseTest != 0) ParametersUpdate(); }
+
+
+    protected virtual void Walking() { Debug.Log("I walked"); }
+    protected virtual void PriorityAttacking() {  Debug.Log("I did it"); }
+    protected virtual void Attacking( ) { Debug.Log("I attacked"); AttackZone.Clear(); APlaner.position = MPlaner.position; ParametersUpdate(); }
+    protected virtual void Dead() { Debug.Log("I'm dead, not big surprise"); }
+    protected virtual void Rest() { Debug.Log("I'm resting"); }
 }
 
 

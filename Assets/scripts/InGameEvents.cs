@@ -8,11 +8,16 @@ public class InGameEvents : MonoBehaviour
     public static Transform AttackFolders;
     public static Transform Figures;
 
+    private class isClicked{ public uint ID; public bool Check = false; }
+
+    [SerializeField] List<isClicked> UnitLogSaver = new List<isClicked>();
 
     void Awake() 
     {
         AttackFolders = GameObject.Find("Attacks").transform;
         Figures = GameObject.Find("Figures").transform;
+
+        UnitLog.AddListener((a) => UnitLogSaver.Add(new isClicked() { ID = a }));
     }
 
     public static UnityEvent MapUpdate = new UnityEvent();
@@ -20,9 +25,20 @@ public class InGameEvents : MonoBehaviour
     public static UnityEvent<int> StepSystem = new UnityEvent<int>();
     public static UnityEvent<SagardCL.Attack> OnAttack = new UnityEvent<SagardCL.Attack>();
 
+    public static UnityEvent<uint> UnitLog = new UnityEvent<uint>();
+    
     private bool _enabledAttack = false;
-    void Update(){
+    private bool _canControl = true;
+    public bool canControl { get { return _canControl; } set { if(value != _canControl) WalkModeSwitch(); _canControl = value; } }
 
+    void Update(){
+        if(canControl) MouseControl();
+        if(canControl & Input.GetKeyDown(KeyCode.Return)) WalkModeSwitch(); 
+   
+    }
+
+    void MouseControl()
+    {
         if(Input.GetMouseButtonDown(0)) 
         {            
             _enabledAttack = !_enabledAttack; 
@@ -40,5 +56,18 @@ public class InGameEvents : MonoBehaviour
         }
 
         if (Input.GetMouseButtonUp(1)) MouseController.Invoke(0, 0); 
+    }
+
+    async void WalkModeSwitch()
+    {
+        _canControl = false;
+
+        for(int i = 1; i <= 5; i++){
+            MapUpdate.Invoke();
+            StepSystem.Invoke(i);
+            await System.Threading.Tasks.Task.Delay(1200);
+        }
+        
+        _canControl = true;
     }
 }

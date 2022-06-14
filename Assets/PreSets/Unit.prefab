@@ -1020,7 +1020,7 @@ GameObject:
   - component: {fileID: 2590295471781954881}
   - component: {fileID: 2271661659818051281}
   - component: {fileID: 7498429861219601888}
-  m_Layer: 8
+  m_Layer: 6
   m_Name: MovePlaner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2596,7 +2596,7 @@ GameObject:
   - component: {fileID: 6881626030716744344}
   - component: {fileID: 3720153552075079766}
   - component: {fileID: 767628153501358312}
-  m_Layer: 6
+  m_Layer: 2
   m_Name: Unit
   m_TagString: Figure
   m_Icon: {fileID: 2974397684917235467, guid: 0000000000000000d000000000000000, type: 0}
@@ -2644,7 +2644,7 @@ MeshCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6828420722621915729}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
   m_Convex: 1
@@ -2676,8 +2676,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a8d8cbdd4f8e548bb517023fd88cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AttackVisualizer: {fileID: 3444611428397808923, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
   SkillIndex: 0
-  Platform: {fileID: 6578298447475953083}
   MPlaner:
     Planer: {fileID: 3247773065290817402}
     Model: {fileID: 6533158161002452622}
@@ -2714,19 +2714,13 @@ MonoBehaviour:
         Model: {fileID: 0}
       Type: 0
       damageType: 0
+      secondaryDamageType: 0
       Distance: 0
       Damage: 0
       Piercing: 0
       Exploding: 0
-      Level: 0
-      debuff:
-        Name: 
-        Description: 
-        BigDescription: 
-        image: {fileID: 0}
+      Debuff: []
       NoWalking: 0
-      WaitAStep: 0
-      DeleteWhenLowAmmo: 0
     - Name: 
       Description: 
       BigDescription: 
@@ -2739,19 +2733,13 @@ MonoBehaviour:
         Model: {fileID: 0}
       Type: 5
       damageType: 1
-      Distance: 6
+      secondaryDamageType: 0
+      Distance: 10
       Damage: 7
       Piercing: 1
-      Exploding: 1
-      Level: 2
-      debuff:
-        Name: 
-        Description: 
-        BigDescription: 
-        image: {fileID: 0}
+      Exploding: 5
+      Debuff: []
       NoWalking: 0
-      WaitAStep: 0
-      DeleteWhenLowAmmo: 0
     Resists: []
     Debuffs: []
   AttackZone: []

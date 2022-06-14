@@ -4,10 +4,9 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Cursore
   - Map
   - Figure
-  - Planer
+  - Cursore
   layers:
   - Default
   - TransparentFX
@@ -15,9 +14,9 @@ TagManager:
   - 
   - Water
   - UI
-  - Cursor
-  - Map
   - Object
+  - Map
+  - 
   - 
   - 
   - 

@@ -12,6 +12,8 @@ public class IDgenerator : MonoBehaviour
             { IDset(); }
         else { ID = lastID;
         lastID++; }
+
+        InGameEvents.UnitLog.Invoke(ID);
     }
 
     async void IDset() { await Task.Delay(2);  ID = ParentID.ID; }
