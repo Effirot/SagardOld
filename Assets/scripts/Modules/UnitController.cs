@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
-
+using System.Threading.Tasks;
 
 public class UnitController : MonoBehaviour
 {
@@ -146,11 +146,11 @@ public class UnitController : MonoBehaviour
     protected virtual void ChangePos() { if(OnMouseTest != 0) ParametersUpdate(); }
 
 
-    protected virtual void Walking() { Debug.Log("I walked"); }
-    protected virtual void PriorityAttacking() {  Debug.Log("I did it"); }
-    protected virtual void Attacking( ) { Debug.Log("I attacked"); AttackZone.Clear(); APlaner.position = MPlaner.position; ParametersUpdate(); }
-    protected virtual void Dead() { Debug.Log("I'm dead, not big surprise"); }
-    protected virtual void Rest() { Debug.Log("I'm resting"); }
+    protected virtual async Task Walking() { Debug.Log("I walked"); }
+    protected virtual async Task PriorityAttacking() {  Debug.Log("I did it"); }
+    protected virtual async Task Attacking( ) { Debug.Log("I attacked"); AttackZone.Clear(); APlaner.position = MPlaner.position; ParametersUpdate(); }
+    protected virtual async Task Dead() { Debug.Log("I'm dead, not big surprise"); }
+    protected virtual async Task Rest() { Debug.Log("I'm resting"); }
 }
 
 

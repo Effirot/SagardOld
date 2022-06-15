@@ -186,7 +186,7 @@ namespace SagardCL //Class library
             return t; 
         }
 
-        public List<Attack> DamageZone()
+        public Task<List<Attack>> DamageZone()
         {
             if(Check()){
                 List<Attack> result = new List<Attack>();
