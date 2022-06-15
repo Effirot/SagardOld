@@ -38,7 +38,6 @@ public class UnitController : MonoBehaviour
     
     protected void AttackVisualization()
     {   
-        AttackVsualizationClear();
         foreach(Attack attack in AttackZone)
         {
             if(attack.damage == 0) continue;
@@ -48,8 +47,6 @@ public class UnitController : MonoBehaviour
 
             attackPointsVisuals.Add(obj);
         }   
-        
-
     }
     protected void AttackVsualizationClear()
     {
@@ -77,16 +74,16 @@ public class UnitController : MonoBehaviour
             }
             else OnMouseTest = 0;
         });
-        InGameEvents.StepSystem.AddListener((a) => 
+        InGameEvents.StepSystem.AddListener(async (a) => 
         { 
             ParametersUpdate(); 
             switch(a)
             {
-                case 1: Walking(); return;
-                case 2: PriorityAttacking(); return;
-                case 3: Attacking(); return;
-                case 4: Dead(); return;
-                case 5: Rest(); return;
+                case 1: await Walking(); return;
+                case 2: await PriorityAttacking(); return;
+                case 3: await Attacking(); return;
+                case 4: await Dead(); return;
+                case 5: await Rest(); return;
             }
         } );
     }
