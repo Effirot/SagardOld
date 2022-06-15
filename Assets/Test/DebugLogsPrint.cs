@@ -9,7 +9,7 @@ public class DebugLogsPrint : MonoBehaviour
 {
     public static UnityEvent LogEvent = new UnityEvent();
 
-    void Awake(){ LogEvent.AddListener(() => FigureZones.text = FigureAttacksAndWalkZones()); }
+    void Awake(){ LogEvent.AddListener(async() => FigureZones.text = await FigureAttacksAndWalkZones()); }
     
     public Text DidActive, FigureZones, fpsText;
     float deltaTime;
@@ -20,7 +20,7 @@ public class DebugLogsPrint : MonoBehaviour
         fpsText.text = Mathf.Ceil (fps).ToString ();
     }
     
-    string FigureAttacksAndWalkZones()
+    async System.Threading.Tasks.Task<string> FigureAttacksAndWalkZones()
     {
         string result = "";
 
@@ -29,7 +29,7 @@ public class DebugLogsPrint : MonoBehaviour
             result += "--------------[" + obj.name + "()]--------------\n";
             result += " moves to position - " + obj.transform.Find("MovePlaner").transform.position.x + ":" + obj.transform.Find("MovePlaner").transform.position.z + "   \n";
             if(obj.GetComponent<UnitController>().NowUsingSkill != null) result += " Use skills" + obj.GetComponent<UnitController>().NowUsingSkill.ToString() + "\n";
-            foreach(Attack attack in obj.GetComponent<UnitController>().NowUsingSkill.DamageZone())
+            foreach(Attack attack in await obj.GetComponent<UnitController>().NowUsingSkill.DamageZone())
             {
                 result += " - " + attack.InString() + "\n";
             }

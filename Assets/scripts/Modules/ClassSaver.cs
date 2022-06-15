@@ -186,7 +186,7 @@ namespace SagardCL //Class library
             return t; 
         }
 
-        public Task<List<Attack>> DamageZone()
+        public async Task<List<Attack>> DamageZone()
         {
             if(Check()){
                 List<Attack> result = new List<Attack>();
@@ -215,8 +215,8 @@ namespace SagardCL //Class library
                     case HitType.Shot:
                     {
                         foreach(RaycastHit hit in Physics.RaycastAll(
-                            new Checkers(startPos, -1), 
-                            ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
+                            new Checkers(startPos, -4), 
+                            ToPoint(startPos, endPos, -4f) - new Checkers(startPos, -4f), 
                             Checkers.Distance(startPos, FinalPoint), 
                             LayerMask.GetMask("Map")))
                         {
@@ -229,8 +229,8 @@ namespace SagardCL //Class library
                     case HitType.InvertShot:
                     {
                         foreach(RaycastHit hit in Physics.RaycastAll(
-                            new Checkers(startPos, -1), 
-                            ToPoint(startPos, endPos, -0.3f) - new Checkers(startPos, -0.3f), 
+                            new Checkers(startPos, -4), 
+                            ToPoint(startPos, endPos, -4f) - new Checkers(startPos, -4f), 
                             Checkers.Distance(startPos, FinalPoint), 
                             LayerMask.GetMask("Map")))
                         {
@@ -264,7 +264,7 @@ namespace SagardCL //Class library
                         (int)Mathf.Round(Damage / (Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z), Checkers.mode.Height) * 0.5f)), 
                         damageType));
                     }
-                } 
+                }
                 
                 return result;
             }

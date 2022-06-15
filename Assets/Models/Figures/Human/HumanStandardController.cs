@@ -77,7 +77,9 @@ public class HumanStandardController : UnitController
         APlaner.Renderer.material.color = (!NowUsingSkill.Check())? Color.green : Color.red;
         NowUsingSkill.Graphics();        
 
-        AttackZone = await Task<List<Attack>>.Factory.StartNew(() => NowUsingSkill.DamageZone());
+
+        AttackVsualizationClear();
+        AttackZone = await NowUsingSkill.DamageZone();
         AttackVisualization();
 
         DebugLogsPrint.LogEvent.Invoke();

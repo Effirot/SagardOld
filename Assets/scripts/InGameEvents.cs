@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,24 +9,17 @@ public class InGameEvents : MonoBehaviour
     public static Transform AttackFolders;
     public static Transform Figures;
 
-    private class isClicked{ public uint ID; public bool Check = false; }
-
-    [SerializeField] List<isClicked> UnitLogSaver = new List<isClicked>();
-
     void Awake() 
     {
         AttackFolders = GameObject.Find("Attacks").transform;
         Figures = GameObject.Find("Figures").transform;
 
-        UnitLog.AddListener((a) => UnitLogSaver.Add(new isClicked() { ID = a }));
     }
 
     public static UnityEvent MapUpdate = new UnityEvent();
     public static UnityEvent<uint, int> MouseController = new UnityEvent<uint, int>();
     public static UnityEvent<int> StepSystem = new UnityEvent<int>();
     public static UnityEvent<SagardCL.Attack> OnAttack = new UnityEvent<SagardCL.Attack>();
-
-    public static UnityEvent<uint> UnitLog = new UnityEvent<uint>();
     
     private bool _enabledAttack = false;
     private bool _canControl = true;

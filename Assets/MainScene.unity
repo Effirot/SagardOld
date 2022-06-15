@@ -1033,6 +1033,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 1429024227}
     m_Modifications:
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
+      propertyPath: baseParameters.WalkDistance
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.size
       value: 4
       objectReference: {fileID: 0}
@@ -1086,7 +1090,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[2].Exploding
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 767628153501358312, guid: 374a24b03bd248c4394a7040ca735d7d, type: 3}
       propertyPath: baseParameters.AvailableSkills.Array.data[3].Exploding
@@ -1185,7 +1189,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!114 &1521680026
 MonoBehaviour:
@@ -1200,10 +1204,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlatformPreset:
-  - platform: {fileID: 7050857232321542953, guid: 03aa77b2844fe90469d3c931f0f0cb5d, type: 3}
-    MeshVariants: []
-  - platform: {fileID: 7050857232321542953, guid: 7d5bd9840fabed845bc288d8ea44db7b, type: 3}
-    MeshVariants: []
+  - platform: {fileID: 7050857232321542953, guid: d37056bb2fb60a64fa889c391ab91445, type: 3}
+    MeshVariants:
+    - {fileID: 26996053533450876, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
+    - {fileID: 4159284838942501684, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
+    MaterialVariants:
+    - {fileID: 2100000, guid: 773d881e966fc874295211ce10fa1af6, type: 2}
+  - platform: {fileID: 7050857232321542953, guid: d37056bb2fb60a64fa889c391ab91445, type: 3}
+    MeshVariants:
+    - {fileID: -8495433742444736037, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
+    MaterialVariants:
+    - {fileID: 2100000, guid: f6a3c0e39c4877544a9361e586eb0b5f, type: 2}
 --- !u!4 &1521680027
 Transform:
   m_ObjectHideFlags: 0

@@ -9,7 +9,6 @@ public class UnitController : MonoBehaviour
 {
     uint ID => GetComponent<IDgenerator>().ID;
 
-
     [Space(3)]
 
     [SerializeField]protected GameObject AttackVisualizer;
@@ -26,14 +25,10 @@ public class UnitController : MonoBehaviour
 
     private Checkers LastPose = new Checkers();
     protected Checkers CursorPos
-    { 
-        get
-        { 
+    { get { 
             Checkers pos = new Checkers(GameObject.Find("3DCursor").transform.position);
             if(LastPose != pos) { LastPose = pos; ChangePos(); } 
-            return pos; 
-        } 
-    }
+            return pos; } }
     [Space(3)]
     [SerializeField] private PlayerControlList baseParameters;
     public PlayerControlList Parameters => baseParameters ; 
@@ -54,10 +49,11 @@ public class UnitController : MonoBehaviour
             attackPointsVisuals.Add(obj);
         }   
         
-        void AttackVsualizationClear()
-        {
-            foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); }
-        }
+
+    }
+    protected void AttackVsualizationClear()
+    {
+        foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); }
     }
 
     void Awake()
@@ -142,15 +138,15 @@ public class UnitController : MonoBehaviour
 
     protected virtual void ParametersUpdate(){ }
 
-    protected virtual void ControlChange() { ParametersUpdate(); }
+    protected virtual void ControlChange() { }
     protected virtual void ChangePos() { if(OnMouseTest != 0) ParametersUpdate(); }
 
 
-    protected virtual async Task Walking() { Debug.Log("I walked"); }
-    protected virtual async Task PriorityAttacking() {  Debug.Log("I did it"); }
-    protected virtual async Task Attacking( ) { Debug.Log("I attacked"); AttackZone.Clear(); APlaner.position = MPlaner.position; ParametersUpdate(); }
-    protected virtual async Task Dead() { Debug.Log("I'm dead, not big surprise"); }
-    protected virtual async Task Rest() { Debug.Log("I'm resting"); }
+    protected virtual async Task Walking() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I walked"); }
+    protected virtual async Task PriorityAttacking() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I did it"); }
+    protected virtual async Task Attacking( ) { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I attacked"); AttackZone.Clear(); APlaner.position = MPlaner.position; ParametersUpdate(); }
+    protected virtual async Task Dead() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm dead, not big surprise"); }
+    protected virtual async Task Rest() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm resting"); }
 }
 
 
