@@ -44,7 +44,7 @@ namespace SagardCL //Class library
         public int Sanity;
         public int SanityShield;
 
-        
+
         [Space] // Stamina parameters
         public int MaxStamina;
         public  int Stamina;
@@ -223,7 +223,7 @@ namespace SagardCL //Class library
                     {
                         if(Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)) > Mathf.Abs(Exploding) - 0.9f)
                             continue;
-                        if(Physics.Raycast(new Checkers(FinalPoint, 1), FinalPoint + new Checkers(x, z) - FinalPoint, Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)), LayerMask.GetMask("Map")))
+                        if(Physics.Raycast(new Checkers(FinalPoint, 0.2f), FinalPoint + new Checkers(x, z) - FinalPoint, Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)), LayerMask.GetMask("Map")))
                             continue;
 
 

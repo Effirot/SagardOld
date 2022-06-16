@@ -12,14 +12,12 @@ public class CameraController : MonoBehaviour
 
     void FixedUpdate()
     {
-        Vector3 hor = Input.GetAxis("Horizontal") * Vector3.right;
-        Vector3 ver = Input.GetAxis("Vertical") * Vector3.forward;
+        Vector3 hor = Input.GetAxis("Horizontal") * transform.right;
+        Vector3 ver = Input.GetAxis("Vertical") * transform.forward;
+        transform.position += ((hor + ver) * cameraSpd / 100);
 
         Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0);
-
-        transform.Translate((hor + ver) * cameraSpd / 100);
         transform.eulerAngles -= rot * (rotSpd / 10);
-
     }
 
     private void OnTriggerEnter(Collider other)

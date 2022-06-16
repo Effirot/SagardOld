@@ -47,9 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraSpd: 21.7
-  rotSpd: 22.2
+  rotSpd: 46.7
   QuickUi: {fileID: 9065431717320976478, guid: 76a16215ec75fb04ab308b372d87f28a, type: 3}
-  toBase: 0
 --- !u!135 &355350897
 SphereCollider:
   m_ObjectHideFlags: 0
