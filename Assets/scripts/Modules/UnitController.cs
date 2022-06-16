@@ -33,23 +33,18 @@ public class UnitController : MonoBehaviour
     [SerializeField] private PlayerControlList baseParameters;
     public PlayerControlList Parameters => baseParameters ; 
 
-    protected List<Attack> AttackZone = new List<Attack>();
+
     private List<GameObject> attackPointsVisuals = new List<GameObject>();
-    
-    protected void AttackVisualization()
+    protected void AttackVisualization(List<Attack> AttackZone)
     {   
-        AttackVsualizationClear();
         foreach(Attack attack in AttackZone)
         {
             if(attack.damage == 0) continue;
             GameObject obj = Instantiate(AttackVisualizer, attack.Where, AttackVisualizer.transform.rotation, InGameEvents.AttackFolders);
-
-            obj.GetComponent<SpriteRenderer>().color = (attack.damage > 0)? new Color(attack.damage * 0.07f, 0, 0.05f) : new Color(0, -attack.damage * 0.07f, 0.05f, 0.3f);
-
             attackPointsVisuals.Add(obj);
-        }   
-        
-
+            
+            obj.GetComponent<SpriteRenderer>().color = (attack.damage > 0)? new Color(attack.damage * 0.07f, 0, 0.05f) : new Color(0, -attack.damage * 0.07f, 0.05f, 0.3f);
+        }         
     }
     protected void AttackVsualizationClear()
     {
@@ -77,18 +72,19 @@ public class UnitController : MonoBehaviour
             }
             else OnMouseTest = 0;
         });
-        InGameEvents.StepSystem.AddListener((a) => 
-        { 
-            ParametersUpdate(); 
-            switch(a)
-            {
-                case 1: Walking(); return;
-                case 2: PriorityAttacking(); return;
-                case 3: Attacking(); return;
-                case 4: Dead(); return;
-                case 5: Rest(); return;
-            }
-        } );
+        InGameEvents.StepSystem.Add(Summon);
+
+
+    }
+    async Task Summon(int id){ 
+        switch(id)
+        {
+            case 1: await Walking(); return;
+            case 2: await PriorityAttacking(); return;
+            case 3: await Attacking(); return;
+            case 4: await Dead(); return;
+            case 5: await Rest(); return;
+        }
     }
     
     protected bool MPlanerChecker(bool Other = true)
@@ -144,7 +140,7 @@ public class UnitController : MonoBehaviour
 
     protected virtual async Task Walking() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I walked"); }
     protected virtual async Task PriorityAttacking() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I did it"); }
-    protected virtual async Task Attacking( ) { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I attacked"); AttackZone.Clear(); APlaner.position = MPlaner.position; ParametersUpdate(); }
+    protected virtual async Task Attacking( ) { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I attacked"); }
     protected virtual async Task Dead() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm dead, not big surprise"); }
     protected virtual async Task Rest() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm resting"); }
 }

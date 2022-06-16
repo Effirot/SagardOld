@@ -13,12 +13,15 @@ public class InGameEvents : MonoBehaviour
     {
         AttackFolders = GameObject.Find("Attacks").transform;
         Figures = GameObject.Find("Figures").transform;
-
     }
+
+    public static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
+    public delegate Task TaskStepStage(int StepStage);
+
 
     public static UnityEvent MapUpdate = new UnityEvent();
     public static UnityEvent<uint, int> MouseController = new UnityEvent<uint, int>();
-    public static UnityEvent<int> StepSystem = new UnityEvent<int>();
+    
     public static UnityEvent<SagardCL.Attack> OnAttack = new UnityEvent<SagardCL.Attack>();
     
     private bool _enabledAttack = false;
@@ -28,7 +31,6 @@ public class InGameEvents : MonoBehaviour
     void Update(){
         if(canControl) MouseControl();
         if(canControl & Input.GetKeyDown(KeyCode.Return)) WalkModeSwitch(); 
-   
     }
 
     void MouseControl()
@@ -54,12 +56,15 @@ public class InGameEvents : MonoBehaviour
 
     async void WalkModeSwitch()
     {
-        _canControl = false;
-
+        _canControl = false;   
+        
         for(int i = 1; i <= 5; i++){
             MapUpdate.Invoke();
-            StepSystem.Invoke(i);
-            await System.Threading.Tasks.Task.Delay(1200);
+            List<Task> task = new List<Task>();
+            foreach(TaskStepStage summon in StepSystem) { task.Add(summon(i)); }
+
+            await Task.WhenAll(task.ToArray());
+            await Task.Delay(500);
         }
         
         _canControl = true;
