@@ -16,51 +16,42 @@ namespace SagardCL //Class library
     public class LifeParameters : Descript
     {
         [Space, Header("Base Parameters")]
-        public Color Team;
-        [Space]
-        public int MaxStamina;
+        public Color Team;        
+        [Space] // health parameters
         public int MaxHP;
-        public int MaxSanity;
-        [Space]
-        public int ArmoreClose;
-        public int ArmoreBalistic;
-        public int SanityShield;
-        [Space]
-        public  int Stamina;
         public int HP;
-        public int Sanity;
+        public int ArmorMelee;
+        public int ArmorRange;
 
-        public void Rest(int StaminaAdd)
-        {
-            Stamina = Mathf.Clamp(Stamina + StaminaAdd, 0, MaxStamina);
-        }
-
-        public void SetMax(int Stamina, int HP, int Sanity)
-        {
-            MaxStamina = Stamina;
-            MaxHP = HP;
-            MaxSanity = Sanity;
-        }
-        public void SetBase(int stamina, int hp, int sanity)
-        {
-            Stamina = Mathf.Clamp(stamina, 0, MaxStamina);
-            HP = Mathf.Clamp(hp, 0, MaxHP);
-            Sanity = Mathf.Clamp(sanity, -5, MaxSanity);
-        }
-        public void SetProtection(int Close, int Balistic, int sanity)
-        {
-            ArmoreClose = Close;
-            ArmoreBalistic = Balistic;
-            SanityShield = sanity;
-        }
-        public void Damage(string damageType, int damage, Effect debuff)
-        {
-
-        }
         public void Damage(Attack attack)
         {
+            switch(attack.damageType)
+            {
+                case DamageType.Pure: HP -= attack.damage; break;
+                case DamageType.Melee: HP -= attack.damage - ArmorMelee; break;
+                case DamageType.Range: HP -= attack.damage - ArmorRange; break;
+                case DamageType.Rezo: HP -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
+                case DamageType.Terra: HP -= attack.damage / 4; break;
 
+                case DamageType.Sanity: Sanity -= attack.damage - SanityShield; break;
+
+                case DamageType.Heal: HP += attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.1f); break;
+            }
         }
+
+        [Space] // sanity parameters
+        public int MaxSanity;
+        public int Sanity;
+        public int SanityShield;
+
+        
+        [Space] // Stamina parameters
+        public int MaxStamina;
+        public  int Stamina;
+        [SerializeField] int RestEffectivity;
+        [SerializeField] int WalkUseStamina;
+
+        public void Rest(){ if(RestEffectivity == 0){ Stamina = MaxStamina; return; } Stamina += Mathf.Clamp(Stamina + RestEffectivity * 2, 0, MaxStamina); }
     }
 
     [System.Serializable]
@@ -90,32 +81,6 @@ namespace SagardCL //Class library
         {
             AvailableSkills.AddRange(skills);
         }
-        public static PlayerControlList operator +(PlayerControlList a, PlayerControlList b)
-        {
-            PlayerControlList list = a;
-            list.SetMax(a.MaxStamina + b.MaxStamina, a.MaxHP + b.MaxHP, a.MaxSanity + b.MaxSanity);
-            list.SetBase(a.Stamina + b.Stamina, a.HP + b.HP, a.Sanity + b.Sanity);
-            list.SetProtection(a.ArmoreClose + b.ArmoreClose, a.ArmoreBalistic + b.ArmoreBalistic, a.SanityShield + b.SanityShield);
-
-            if(b.AvailableSkills != null) list.AddRangeSkill(b.AvailableSkills);
-
-            return list;
-        }
-        public static PlayerControlList operator -(PlayerControlList a, PlayerControlList b)
-        {
-            PlayerControlList list = a;
-            list.SetMax(a.MaxStamina - b.MaxStamina, a.MaxHP - b.MaxHP, a.MaxSanity - b.MaxSanity);
-            list.SetBase(a.Stamina - b.Stamina, a.HP - b.HP, a.Sanity - b.Sanity);
-            list.SetProtection(a.ArmoreClose - b.ArmoreClose, a.ArmoreBalistic - b.ArmoreBalistic, a.SanityShield - b.SanityShield);
-
-            foreach(Skill skill in b.AvailableSkills)
-            {
-                list.RemoveSkill(skill);
-            }
-
-            return list;
-        }
-
     }
 
     public enum DamageType
@@ -123,8 +88,10 @@ namespace SagardCL //Class library
         Melee,
         Range,
         Rezo,
+        Sanity,
         Terra,
-        Pure
+        Pure,
+        Heal,
     }        
     public enum HitType
     {
@@ -137,7 +104,7 @@ namespace SagardCL //Class library
         InvertShot, //
         ShotgunShot,
         Volley, // 
-        Dash,
+        Dash, 
     }
 
     [System.Serializable]
@@ -186,18 +153,18 @@ namespace SagardCL //Class library
             return t; 
         }
 
-        public async Task<List<Attack>> DamageZone()
+        public async IAsyncEnumerable<Attack> DamageZone()
         {
             if(Check()){
-                List<Attack> result = new List<Attack>();
+                await Task.Delay(120);
                 Checkers FinalPoint = (Piercing)? endPos : ToPoint(startPos, endPos);
                 switch(Type)
                 {
-                    default: return new List<Attack>();
+                    default: yield break;
                     case HitType.OnSelf:
                     {
                         FinalPoint = startPos;
-                        result.Add(new Attack(FatherObj, startPos, Damage, damageType));
+                        yield return(new Attack(FatherObj, startPos, Damage, damageType));
                         break;
                     }
                     case HitType.SwordSwing:
@@ -211,7 +178,6 @@ namespace SagardCL //Class library
 
                         break;
                     }
-
                     case HitType.Shot:
                     {
                         foreach(RaycastHit hit in Physics.RaycastAll(
@@ -221,9 +187,10 @@ namespace SagardCL //Class library
                             LayerMask.GetMask("Map")))
                         {
                             
-                            result.Add(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(Damage / (Checkers.Distance(startPos, new Checkers(hit.point)) * 0.08f)), damageType));
+                            yield return(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(Damage / (Checkers.Distance(startPos, new Checkers(hit.point)) * 0.08f)), damageType));
                         }
-                        result.Add(new Attack(FatherObj, FinalPoint, Damage, damageType));
+                        yield return(new Attack(FatherObj, FinalPoint, Damage, damageType));
+
                         break;
                     }
                     case HitType.InvertShot:
@@ -234,18 +201,20 @@ namespace SagardCL //Class library
                             Checkers.Distance(startPos, FinalPoint), 
                             LayerMask.GetMask("Map")))
                         {
-                            result.Add(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), damageType));
+                            yield return(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), damageType));
                         } 
-                        result.Add(new Attack(FatherObj, FinalPoint, 1 + Damage + (int)Mathf.Round(Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), damageType));
+                        yield return(new Attack(FatherObj, FinalPoint, 1 + Damage + (int)Mathf.Round(Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), damageType));
+                        
                         break;
                     }
                     case HitType.Volley:
                     {
-                        result.Add(new Attack(FatherObj, FinalPoint, Damage, damageType));
+                        yield return(new Attack(FatherObj, FinalPoint, Damage, damageType));
+                        
                         break;
                     }
                 }
-                if(Exploding == 0) return result;
+                if(Exploding == 0) yield break;
                 
                 // --------------------Explode------------------
                 for(int x = -Mathf.Abs(Exploding); x < 1 + Mathf.Abs(Exploding); x++)
@@ -256,19 +225,18 @@ namespace SagardCL //Class library
                             continue;
                         if(Physics.Raycast(new Checkers(FinalPoint, 1), FinalPoint + new Checkers(x, z) - FinalPoint, Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)), LayerMask.GetMask("Map")))
                             continue;
-                        if(result.Find((a) => a.Where == FinalPoint + new Checkers(x, z)).Where == FinalPoint + new Checkers(x, z))
-                            continue;
 
-                        result.Add(new Attack(FatherObj, 
+
+                        yield return(new Attack(FatherObj, 
                         new Checkers(FinalPoint + new Checkers(x, z)), 
                         (int)Mathf.Round(Damage / (Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z), Checkers.mode.Height) * 0.5f)), 
                         damageType));
                     }
                 }
                 
-                return result;
+               yield break;
             }
-            return new List<Attack>();
+            yield return new Attack();
         }
         public void Graphics()
         {
@@ -311,8 +279,8 @@ namespace SagardCL //Class library
         [SerializeField]int Damage;
         public int damage { get { return Damage; } }
 
-        [SerializeField]DamageType damageType;
-        [SerializeField]Effect[] Debuff;
+        public DamageType damageType;
+        public Effect[] Debuff;
 
 
 
@@ -345,14 +313,14 @@ namespace SagardCL //Class library
             Debuff = new Effect[] { };
         }
 
-        public string InString()
+        public override string ToString()
         { 
             string effects = "";
             foreach(Effect effect in Debuff)
             {
                 effects += effect.Name + ", ";
             }
-            return "Attack from " + WhoAttack.transform.parent.name + 
+            return "Attack from " + WhoAttack?.transform.parent.name + 
                     " to " + WhereAttack.x + 
                     ":" + WhereAttack.z + 
                     " (" + damageType.ToString() +

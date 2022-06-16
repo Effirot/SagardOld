@@ -2677,7 +2677,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AttackVisualizer: {fileID: 3444611428397808923, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
-  SkillIndex: 0
   MPlaner:
     Planer: {fileID: 3247773065290817402}
     Model: {fileID: 6533158161002452622}
@@ -2742,7 +2741,6 @@ MonoBehaviour:
       NoWalking: 0
     Resists: []
     Debuffs: []
-  AttackZone: []
 --- !u!1 &6871638595594809548
 GameObject:
   m_ObjectHideFlags: 0
