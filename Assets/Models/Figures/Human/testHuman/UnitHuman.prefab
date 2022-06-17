@@ -251,17 +251,21 @@ MonoBehaviour:
     Description: 
     BigDescription: 
     image: {fileID: 0}
-    Team: {r: 0, g: 0, b: 0, a: 0}
-    MaxStamina: 0
-    MaxHP: 0
-    MaxSanity: 0
-    ArmoreClose: 0
-    ArmoreBalistic: 0
+    Team: {r: 0, g: 1, b: 0.61279464, a: 0}
+    MaxHP: 16
+    HP: 16
+    ArmorMelee: 2
+    ArmorRange: 3
+    MaxSanity: 9
+    Sanity: 9
     SanityShield: 0
-    Stamina: 0
-    HP: 0
-    Sanity: 0
-    CanControll: 1
+    MaxStamina: 6
+    Stamina: 6
+    RestEffectivity: 4
+    WalkUseStamina: 1
+    Resists: []
+    Debuff: []
+    CanControl: 1
     WalkDistance: 5
     AvailableSkills:
     - Name: 
@@ -302,8 +306,6 @@ MonoBehaviour:
       Exploding: 5
       Debuff: []
       NoWalking: 0
-    Resists: []
-    Debuffs: []
 --- !u!1 &270387941299697432
 GameObject:
   m_ObjectHideFlags: 0
@@ -855,7 +857,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 718965663002120444}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3209,8 +3211,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.027450979, g: 1, b: 0.17134766, a: 0}
-      key1: {r: 0, g: 1, b: 0.08543229, a: 0.6901961}
+      key0: {r: 0.027450979, g: 0.5202314, b: 1, a: 0}
+      key1: {r: 0, g: 0.3507347, b: 1, a: 0.6901961}
       key2: {r: 0, g: 1, b: 0.08543229, a: 0}
       key3: {r: 0.13679248, g: 1, b: 0.93905216, a: 0}
       key4: {r: 0.13679248, g: 1, b: 0.93905216, a: 0}

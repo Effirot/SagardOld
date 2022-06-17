@@ -22,11 +22,11 @@ public class InGameEvents : MonoBehaviour
     public static UnityEvent MapUpdate = new UnityEvent();
     public static UnityEvent<uint, int> MouseController = new UnityEvent<uint, int>();
     
-    public static UnityEvent<SagardCL.Attack> OnAttack = new UnityEvent<SagardCL.Attack>();
+    public static UnityEvent<List<SagardCL.Attack>> AttackTransporter = new UnityEvent<List<SagardCL.Attack>>();
     
     private bool _enabledAttack = false;
-    private bool _canControl = true;
-    public bool canControl { get { return _canControl; } set { if(value != _canControl) WalkModeSwitch(); _canControl = value; } }
+    private static bool _canControl = true;
+    public static bool canControl { get { return _canControl; } set { _canControl = value; } }
 
     void Update(){
         if(canControl) MouseControl();
@@ -56,7 +56,7 @@ public class InGameEvents : MonoBehaviour
 
     async void WalkModeSwitch()
     {
-        _canControl = false;   
+        canControl = false;   
         
         for(int i = 1; i <= 5; i++){
             MapUpdate.Invoke();
@@ -67,6 +67,6 @@ public class InGameEvents : MonoBehaviour
             await Task.Delay(500);
         }
         
-        _canControl = true;
+        canControl = true;
     }
 }

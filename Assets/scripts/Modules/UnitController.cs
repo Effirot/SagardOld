@@ -12,7 +12,7 @@ public class UnitController : MonoBehaviour
     [Space(3)]
 
     [SerializeField]protected GameObject AttackVisualizer;
-    private protected int SkillIndex;
+    private int SkillIndex;
     public int CurrentSkillIndex { get { return SkillIndex; } set { if(value != SkillIndex) ParametersUpdate(); SkillIndex = value;} }
 
     public Skill NowUsingSkill => Parameters.AvailableSkills?[CurrentSkillIndex];
@@ -30,8 +30,8 @@ public class UnitController : MonoBehaviour
             if(LastPose != pos) { LastPose = pos; ChangePos(); } 
             return pos; } }
     [Space(3)]
-    [SerializeField] private PlayerControlList baseParameters;
-    public PlayerControlList Parameters => baseParameters ; 
+    [SerializeField] private PlayerControl baseParameters;
+    public PlayerControl Parameters => baseParameters ; 
 
 
     private List<GameObject> attackPointsVisuals = new List<GameObject>();
@@ -43,13 +43,10 @@ public class UnitController : MonoBehaviour
             GameObject obj = Instantiate(AttackVisualizer, attack.Where, AttackVisualizer.transform.rotation, InGameEvents.AttackFolders);
             attackPointsVisuals.Add(obj);
             
-            obj.GetComponent<SpriteRenderer>().color = (attack.damage > 0)? new Color(attack.damage * 0.07f, 0, 0.05f) : new Color(0, -attack.damage * 0.07f, 0.05f, 0.3f);
+            obj.GetComponent<SpriteRenderer>().color = (attack.damageType != DamageType.Heal)? new Color(attack.damage * 0.07f, 0, 0.1f, 0.9f) : new Color(0, attack.damage * 0.07f, 0.1f, 0.9f);
         }         
     }
-    protected void AttackVsualizationClear()
-    {
-        foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); }
-    }
+    protected void AttackVsualizationClear() { foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); } }
 
     void Awake()
     {
@@ -73,6 +70,7 @@ public class UnitController : MonoBehaviour
             else OnMouseTest = 0;
         });
         InGameEvents.StepSystem.Add(Summon);
+        InGameEvents.AttackTransporter.AddListener(GetDamage);
 
 
     }
@@ -143,6 +141,8 @@ public class UnitController : MonoBehaviour
     protected virtual async Task Attacking( ) { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I attacked"); }
     protected virtual async Task Dead() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm dead, not big surprise"); }
     protected virtual async Task Rest() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm resting"); }
+
+    protected virtual async void GetDamage(List<Attack> attack) { await Task.Delay(Random.Range(0, 2300)); Debug.Log("i got a damage!"); }
 }
 
 

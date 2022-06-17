@@ -22,6 +22,8 @@ namespace SagardCL //Class library
         public int HP;
         public int ArmorMelee;
         public int ArmorRange;
+        
+
 
         public void Damage(Attack attack)
         {
@@ -35,8 +37,10 @@ namespace SagardCL //Class library
 
                 case DamageType.Sanity: Sanity -= attack.damage - SanityShield; break;
 
-                case DamageType.Heal: HP += attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.1f); break;
+                case DamageType.Heal: HP = Mathf.Clamp(HP + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.1f), 0, MaxHP); break;
             }
+
+            if(attack.Debuff != null) { foreach(Effect effect in attack.Debuff) { if(Resists.Find((a) => a == effect) != effect) Debuff.Add(effect); } }
         }
 
         [Space] // sanity parameters
@@ -44,30 +48,30 @@ namespace SagardCL //Class library
         public int Sanity;
         public int SanityShield;
 
-
         [Space] // Stamina parameters
         public int MaxStamina;
         public  int Stamina;
         [SerializeField] int RestEffectivity;
         [SerializeField] int WalkUseStamina;
+        
+        [Space] // Debuff's parameters
+        public List<Effect> Resists;
+        public List<Effect> Debuff;
 
-        public void Rest(){ if(RestEffectivity == 0){ Stamina = MaxStamina; return; } Stamina += Mathf.Clamp(Stamina + RestEffectivity * 2, 0, MaxStamina); }
+        public void Rest(){ if(RestEffectivity == 0){ Stamina = MaxStamina; return; } Stamina += Mathf.Clamp(Stamina + RestEffectivity * 2, 0, MaxStamina); } 
     }
 
     [System.Serializable]
-    public class PlayerControlList : LifeParameters
+    public class PlayerControl : LifeParameters
     {
-        [Space, Header("Controll Settings")]
-        public bool CanControll = true;
+        [Space, Header("Control Settings")]
+        public bool CanControl = true;
         [Space]        
 
         public int WalkDistance;
         [Space]
 
         public List<Skill> AvailableSkills;
-        [Space]
-        public List<Effect> Resists;
-        public List<Effect> Debuffs;
 
         public void AddSkill(Skill skill)
         {
@@ -140,9 +144,6 @@ namespace SagardCL //Class library
         private Checkers cursorPos{ get { return new Checkers(GameObject.Find("3DCursor").transform.position); }}
         private GameObject cursor{ get { return GameObject.Find("3DCursor"); }}
         //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
-        
-        public override string ToString()
-        { return FatherObj?.name + " type: " + Type + " damageMod: " + Damage + " distanceBuff: " + Distance; }
 
         public static Skill Empty() { return new Skill {From = null, Name = "null", Type = HitType.Empty, Distance = 0, Damage = 0}; }
 
@@ -156,7 +157,7 @@ namespace SagardCL //Class library
         public async IAsyncEnumerable<Attack> DamageZone()
         {
             if(Check()){
-                await Task.Delay(120);
+                await Task.Delay(0);
                 Checkers FinalPoint = (Piercing)? endPos : ToPoint(startPos, endPos);
                 switch(Type)
                 {

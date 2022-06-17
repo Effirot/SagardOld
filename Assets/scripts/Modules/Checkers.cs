@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Collections;
 using System.Linq;
 
@@ -40,7 +41,7 @@ public struct Checkers
     public enum mode{ NoHeight, Height }
     public static float Distance(Checkers a, Checkers b, mode Mode = mode.NoHeight)
     {
-        if(Mode == mode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3.y - b.ToVector3.y, 2) + Mathf.Pow(a.z - b.z, 2));
+        if(Mode == mode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
         return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
     }
     public static float Distance(Vector3 a, Vector3 b, mode Mode = mode.NoHeight)
@@ -49,11 +50,23 @@ public struct Checkers
         return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
     }
 
-    public Vector3 ToVector3{ get{ return new Vector3(x, up, z);} }
+    public Vector3 ToVector3(){ return new Vector3(x, up, z); }
+    public static List<Vector3> ToVector3List(List<Checkers> checkers) 
+    { 
+        List<Vector3> list = new List<Vector3>();
+        foreach(Checkers checker in checkers){ list.Add(checker.ToVector3()); }
+        return list;        
+    }
+    public static List<Checkers> ToCheckersList(List<Vector3> vector3, float up = 0) 
+    { 
+        List<Checkers> list = new List<Checkers>();
+        foreach(Checkers vector in vector3){ list.Add(new Checkers(vector, up)); }
+        return list;        
+    }
 
-    public static bool CheckCoords(Checkers Coordinats) 
+    public static bool CheckCoords(Checkers Coordinates) 
     {
-        return Physics.Raycast(new Vector3(Coordinats.x, 1000, Coordinats.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+        return Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
     }
     public static bool CheckCoords(int x, int z) 
     {
@@ -66,8 +79,7 @@ public struct Checkers
 
     public class PatchWay
     {
-        public static Checkers[] WayTo(Checkers a, Checkers b) { return new Checkers[] { a, b }; }
-        public static Vector3[] WayTo(Vector3 a, Vector3 b) { return new Vector3[] { a, b }; }
+        public static async IAsyncEnumerable<Checkers> WayTo(Checkers a, Checkers b) { await Task.Delay(0); yield return a; yield return b; }
     
         private class PathNode
         {
