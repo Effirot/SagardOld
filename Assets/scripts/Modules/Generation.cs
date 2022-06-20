@@ -57,11 +57,11 @@ public class Generation : MonoBehaviour
 [System.Serializable]
 public class Map
 {
-    public class MapCell
+    public struct MapCell
     {
         public int Modifier;
         public float Up;
-        public int Let = 0;
+        public int Let;
         
         public MapCell(int Mod, float up, int let = 0)
         { Modifier = Mod; Up = Mathf.Clamp(up, 0, 4); Let = let; }

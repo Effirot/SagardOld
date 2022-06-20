@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using SagardCL;
 using System.Threading.Tasks;
 
-public class UnitController : MonoBehaviour
+public abstract class UnitController : MonoBehaviour
 {
     protected uint ID => GetComponent<IDgenerator>().ID;
     
@@ -114,20 +114,18 @@ public class UnitController : MonoBehaviour
         }
     }
     
-    protected virtual void StandingUpd() {}
-    protected virtual void MovePlaningUpd() {}
-    protected virtual void AttackPlaningUpd() {}
-    
+    protected abstract void StandingUpd();
+    protected abstract void MovePlaningUpd();
+    protected abstract void AttackPlaningUpd();
 
-    protected virtual void StandingIn() { }
-    protected virtual void MovePlaningIn() {}
-    protected virtual void AttackPlaningIn() {}
+    protected abstract void StandingIn();
+    protected abstract void MovePlaningIn();
+    protected abstract void AttackPlaningIn();
 
-    protected virtual void ParametersUpdate(){ }
+    protected abstract void ParametersUpdate();
 
-    protected virtual void ChangePos() { if(MouseTest != 0) ParametersUpdate(); }
-    protected virtual void MouseWheelTurn() { }
-
+    protected abstract void ChangePos();
+    protected abstract void MouseWheelTurn();
 
     protected virtual async Task Walking() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I walked"); }
     protected virtual async Task PriorityAttacking() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I did it"); }
@@ -137,5 +135,3 @@ public class UnitController : MonoBehaviour
 
     protected virtual async void GetDamage(List<Attack> attack) { await Task.Delay(Random.Range(0, 2300)); Debug.Log("i got a damage!"); }
 }
-
-

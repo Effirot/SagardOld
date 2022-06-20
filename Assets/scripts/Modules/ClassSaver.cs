@@ -27,11 +27,23 @@ namespace SagardCL //Class library
         Dash, 
     }
 
-    public struct CustomBar
+
+
+    public abstract class StateBar{
+        public string BarName;
+        public Color Color;
+        public int MaxParam;
+        public int MinParam;
+
+        private protected int _Param;
+
+        public int State { get{ return _Param; } set{ _Param = Mathf.Clamp(value, MinParam, MaxParam); } }
+    }
+
+    [System.Serializable]
+    public class CustomBar : StateBar
     {
-        string BarName;
-        int MaxParam;
-        int Param;
+        
     }
 
     [System.Serializable]
@@ -87,7 +99,6 @@ namespace SagardCL //Class library
         public Skill SkillRealizer;
     }
     
-    
     [System.Serializable]
     public struct Attack
     {
@@ -137,10 +148,6 @@ namespace SagardCL //Class library
     {
         public GameObject Planer;
         public GameObject Model;
-        public AllInOne(GameObject planer) { Planer = planer; if(Model == null) Model = Planer.transform.Find("Model").gameObject; }
-        
-
-
 
         public Vector3 position{ get{ return Planer.transform.position; } set{ Planer.transform.position = value; } }
         public Vector3 localPosition{ get{ return Planer.transform.localPosition; } set{ Planer.transform.localPosition = value; } }
