@@ -11,12 +11,12 @@ public class UnitUIController : MonoBehaviour
 
     
     [Space(2), SerializeField] GameObject BarSerializationPrefab;
-    private GameObject BarMenu => transform.Find("Bars").gameObject;
+    [SerializeField] private GameObject BarMenu;
     public List<CustomBar> SerializableCustomBarList;
 
 
     [Space(2), SerializeField] GameObject SkillSerializationPrefab;
-    private GameObject SkillMenu => transform.Find("Skills").gameObject;
+    [SerializeField] private GameObject SkillMenu;
     List<BaseSkill> SerializableSkillList => LifeParams.SkillRealizer.AvailbleBaseSkills;
 
 
@@ -28,17 +28,10 @@ public class UnitUIController : MonoBehaviour
     private async void OnEnable() {
         await Task.Delay(1);
 
-
-
-
-
-
-
-
         int number = 0;
         foreach(BaseSkill skill in SerializableSkillList)
         {
-            GameObject obj = Instantiate(SkillSerializationPrefab, SkillMenu.transform);
+            GameObject obj = Instantiate(SkillSerializationPrefab, SkillMenu.transform) as GameObject;
 
             obj.name = number.ToString();
             obj.transform.Find("Ico").GetComponent<Image>().sprite = skill.image;

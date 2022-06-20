@@ -114,7 +114,7 @@ GameObject:
   - component: {fileID: -5721805414729699740}
   m_Layer: 5
   m_Name: AttackMenu
-  m_TagString: Untagged
+  m_TagString: UnitUI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -155,7 +155,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BarSerializationPrefab: {fileID: 6867865859717448150, guid: a7ebe7b71ef3da048b681f5f99214df5, type: 3}
+  BarMenu: {fileID: 8904231435637024618}
+  SerializableCustomBarList: []
   SkillSerializationPrefab: {fileID: 6546885335653142607, guid: 1f67af6d47161fe44b2f16156e36e6e6, type: 3}
+  SkillMenu: {fileID: 7407837267057441783}
   ItemSerializationPrefab: {fileID: 0}
 --- !u!114 &-5721805414729699740
 MonoBehaviour:

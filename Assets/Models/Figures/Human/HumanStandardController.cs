@@ -55,6 +55,7 @@ public class HumanStandardController : UnitController
 
     protected override void StandingIn()
     {
+        RemoveMenu();
         ParametersUpdate();
     }
     protected async override void MovePlaningIn()
@@ -68,9 +69,9 @@ public class HumanStandardController : UnitController
     }
 
 
-
     protected async override void MouseWheelTurn(){ await AttackPlannerUpdate();  }
     protected async override void ChangePos() {  if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
+
     
     protected async override void ParametersUpdate()
     {
@@ -100,6 +101,7 @@ public class HumanStandardController : UnitController
         APlaner.position = new Checkers(APlaner.position);
         // Attack planner
         AttackZone.Clear();
+        if(NowUsingSkill.NowUsing.NoWalking) await MovePlannerUpdate();
         await foreach(Attack attack in NowUsingSkill.Realize())
         {
             AttackZone.Add(attack);
@@ -156,6 +158,9 @@ public class HumanStandardController : UnitController
         GameObject obj = Instantiate(UiPreset, GameObject.Find("GameUI").transform);
         obj.GetComponent<UnitUIController>().LifeParams = Parameters;
         obj.GetComponent<MoveOnUi>().Target = MPlaner.Planer.transform;
+    }    
+    private void RemoveMenu(){
+        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("UnitUI")) { if(obj) Destroy(obj); }
     }
 
 }

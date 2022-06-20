@@ -22,6 +22,7 @@ namespace SagardCL //Class library
         Constant, 
         Shot, //
         InvertShot, //
+        ConstantShot, //
         ShotgunShot,
         Volley, // 
         Dash, 

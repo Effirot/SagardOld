@@ -174,7 +174,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 170862959113201029}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4, y: 0.96000004, z: 5}
+  m_LocalPosition: {x: 12, y: 0.96000004, z: 9}
   m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -227,17 +227,17 @@ MonoBehaviour:
   MouseTest: 0
   Parameters:
     Team: {r: 0, g: 0, b: 0, a: 0}
-    MaxHP: 0
-    HP: 0
-    ArmorMelee: 0
-    ArmorRange: 0
-    MaxSanity: 0
-    Sanity: 0
+    MaxHP: 16
+    HP: 16
+    ArmorMelee: 13
+    ArmorRange: 13
+    MaxSanity: 8
+    Sanity: 8
     SanityShield: 0
-    MaxStamina: 0
-    Stamina: 0
-    RestEffectivity: 0
-    WalkUseStamina: 0
+    MaxStamina: 9
+    Stamina: 9
+    RestEffectivity: 6
+    WalkUseStamina: 1
     CanControl: 1
     WalkDistance: 6
     Resists: []
@@ -253,6 +253,7 @@ MonoBehaviour:
       AvailbleBaseSkills:
       - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
       - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
+      - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
 --- !u!1 &270387941299697432
 GameObject:
   m_ObjectHideFlags: 0
@@ -3039,7 +3040,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8182480761862019246}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4, y: 0.96000004, z: 5}
+  m_LocalPosition: {x: 12, y: 0.96000004, z: 9}
   m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
   m_ConstrainProportionsScale: 0
   m_Children:

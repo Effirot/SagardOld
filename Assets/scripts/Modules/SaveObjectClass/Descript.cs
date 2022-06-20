@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-[CreateAssetMenu(fileName = "Descript", menuName = "SagardCL objects/Description", order = 51)]
-public class Descript : ScriptableObject
+public abstract class Descript : ScriptableObject
 {
     [Space, Header("Description")]
     public string Name;

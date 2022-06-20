@@ -26,11 +26,11 @@ public class BaseSkill : Descript
     public int UsingStamina;
 
     public bool DeleteWhenLowAmmo = false;
-    public Ammo AmmoType;
 }
 
 [System.Serializable]
 public class Skill{
+    
     //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
     [Header("Controllers")]  
     public AllInOne From;
@@ -104,6 +104,20 @@ public class Skill{
                     
                     break;
                 }
+                case HitType.ConstantShot:
+                {
+                    foreach(RaycastHit hit in Physics.RaycastAll(
+                        new Checkers(startPos, -4), 
+                        new Checkers(FinalPoint, -4) - new Checkers(startPos, -4f), 
+                        Checkers.Distance(startPos, FinalPoint), 
+                        LayerMask.GetMask("Map")))
+                    {
+                        yield return(new Attack(FatherObj, new Checkers(hit.point), NowUsing.Damage, NowUsing.damageType));
+                    } 
+                    yield return(new Attack(FatherObj, FinalPoint, 1 + NowUsing.Damage, NowUsing.damageType));
+                    
+                    break;
+                }
                 case HitType.Volley:
                 {
                     yield return(new Attack(FatherObj, FinalPoint, NowUsing.Damage, NowUsing.damageType));
@@ -161,10 +175,4 @@ public class SkillBuff
     [Header("Buff by ")]
     public DamageType ByDamageType;
     public HitType ByHitType;
-}
-
-
-public class Ammo
-{
-    
 }
