@@ -5,12 +5,11 @@ using SagardCL;
 using System.Threading.Tasks;
 
 public class HumanStandardController : UnitController
-{
+{    
     List<Attack> AttackZone = new List<Attack>();
     List<Checkers> WalkWay = new List<Checkers>();
 
-
-    void OnEnable() { ParametersUpdate(); }
+    async void Start(){ await Task.Delay(1); position = new Checkers(position); }
 
     protected override void StandingUpd() // Calling(void Update), when you no planing
     {
@@ -23,15 +22,13 @@ public class HumanStandardController : UnitController
     
         //Attack planner
         if(!NowUsingSkill.Check()) APlaner.position = MPlaner.position;
-
         APlaner.Renderer.enabled = NowUsingSkill.Check();
     }
     protected override void MovePlaningUpd() // Calling(void Update), when you planing your moving
     {
         MPlaner.Renderer.enabled = true;
         
-        if(NowUsingSkill.NoWalking) APlaner.position = new Checkers(MPlaner.position);
-        APlaner.position = new Checkers(APlaner.position);
+        if(NowUsingSkill.NowUsing.NoWalking) APlaner.position = new Checkers(MPlaner.position);
 
         //Move planner
         MPlaner.position = new Checkers(CursorPos);
@@ -40,8 +37,9 @@ public class HumanStandardController : UnitController
     }
     protected override void AttackPlaningUpd() // Calling(void Update), when you planing your attacks
     {
+
         //Move planner
-        if(NowUsingSkill.NoWalking)
+        if(NowUsingSkill.NowUsing.NoWalking)
         {
             MPlaner.position = position;
             MPlaner.Renderer.enabled = false;
@@ -52,34 +50,38 @@ public class HumanStandardController : UnitController
         APlaner.position = new Checkers(CursorPos);
 
         //Mouse Scroll
-        CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, Parameters.AvailableSkills.Count - 1);
+        CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, Parameters.SkillRealizer.AvailbleBaseSkills.Count - 1);
     }
 
-    protected override async void ChangePos() {  if(OnMouseTest == 2) await AttackPlannerUpdate(); if(OnMouseTest == 1) await MovePlannerUpdate(); }
-    protected override async void ControlChange() // Calling, when global event change control mode 
-    { await AttackPlannerUpdate(); }
+    protected override void StandingIn()
+    {
+        ParametersUpdate();
+    }
+    protected async override void MovePlaningIn()
+    {
+        await MovePlannerUpdate();
+    }
+    protected async override void AttackPlaningIn()
+    {
+        SummonMenu();
+        await AttackPlannerUpdate();
+    }
+
+
+
+    protected async override void MouseWheelTurn(){ await AttackPlannerUpdate();  }
+    protected async override void ChangePos() {  if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
     
     protected async override void ParametersUpdate()
     {
-        await Task.Delay(1);
-        position = new Checkers(position);
-
-        foreach(Skill skill in Parameters.AvailableSkills)
-        {
-            skill.From = MPlaner;
-            skill.To = APlaner;
-        }
-
-
         await MovePlannerUpdate();
         await AttackPlannerUpdate();
-
-        DebugLogsPrint.LogEvent.Invoke();
     }
-
+    
     private async Task MovePlannerUpdate()
     {
         await Task.Delay(1);
+
         // Move planner
         if(!MPlanerChecker()) { MPlaner.LineRenderer.enabled = false; return;}
         MPlaner.LineRenderer.enabled = true;
@@ -91,29 +93,24 @@ public class HumanStandardController : UnitController
             MPlaner.LineRenderer.positionCount = WalkWay.Count;
             MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
         }
-        
     }
-
     private async Task AttackPlannerUpdate()
     {
         await Task.Delay(1);
+        APlaner.position = new Checkers(APlaner.position);
         // Attack planner
         AttackZone.Clear();
-        await foreach(Attack attack in NowUsingSkill.DamageZone())
+        await foreach(Attack attack in NowUsingSkill.Realize())
         {
             AttackZone.Add(attack);
         }
         AttackVsualizationClear();
         AttackVisualization(AttackZone);
 
-        APlaner.Renderer.enabled = APlaner.position != position & APlaner.position !=  MPlaner.position & NowUsingSkill.Type != (HitType.Empty & HitType.OnSelf & HitType.SwordSwing & HitType.Constant);
+        APlaner.Renderer.enabled = APlaner.position != position & APlaner.position !=  MPlaner.position & NowUsingSkill.NowUsing.Type != (HitType.Empty & HitType.OnSelf & HitType.SwordSwing & HitType.Constant);
         APlaner.Renderer.material.color = (!NowUsingSkill.Check())? Color.green : Color.red;
         NowUsingSkill.Graphics(); 
     }
-
-
-
-
 
     protected async override Task Walking()
     {
@@ -150,8 +147,15 @@ public class HumanStandardController : UnitController
         Attack thisAttack = attacks.Find((a) => a.Where == new Checkers(position));
         if(attacks.Find((a) => a.Where == new Checkers(position)).Where == new Checkers(position))
         {
-            Parameters.Damage(thisAttack);
+            Parameters.GetDamage(thisAttack);
         }
+    }
+
+
+    private void SummonMenu(){
+        GameObject obj = Instantiate(UiPreset, GameObject.Find("GameUI").transform);
+        obj.GetComponent<UnitUIController>().LifeParams = Parameters;
+        obj.GetComponent<MoveOnUi>().Target = MPlaner.Planer.transform;
     }
 
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class InGameEvents : MonoBehaviour
 {
@@ -29,32 +30,39 @@ public class InGameEvents : MonoBehaviour
     public static bool canControl { get { return _canControl; } set { _canControl = value; } }
 
     void Update(){
+        if(EventSystem.current.IsPointerOverGameObject()) return;
+
         if(canControl) MouseControl();
-        if(canControl & Input.GetKeyDown(KeyCode.Return)) WalkModeSwitch(); 
+        if(canControl & Input.GetKeyDown(KeyCode.Return)) CompleteModeSwitch(); 
     }
 
+    uint ID = 0;
     void MouseControl()
     {
         if(Input.GetMouseButtonDown(0)) 
-        {            
+        {        
+            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID;
+            if(ID == 0) { _enabledAttack = false; return; } 
+
             _enabledAttack = !_enabledAttack; 
-            if(CursorController.ObjectOnMap & _enabledAttack) 
-                {MouseController.Invoke(CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID, 2); return; } 
-            MouseController.Invoke(0, 0);
+            if(_enabledAttack) 
+                {MouseController.Invoke(ID, 2); return; } 
+            MouseController.Invoke(ID, 0); ID = 0;
             
         }
-        if ((Input.GetMouseButtonDown(1)))
+        if (Input.GetMouseButtonDown(1))
         {
+            ID = CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID;
             if(CursorController.ObjectOnMap)
-            MouseController.Invoke(CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID, 1);
+            MouseController.Invoke(ID, 1);
             
             _enabledAttack = false;
         }
 
-        if (Input.GetMouseButtonUp(1)) MouseController.Invoke(0, 0); 
+        if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(ID, 0); ID = 0; }
     }
 
-    async void WalkModeSwitch()
+    async void CompleteModeSwitch()
     {
         canControl = false;   
         

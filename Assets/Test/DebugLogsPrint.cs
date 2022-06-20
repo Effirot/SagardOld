@@ -6,9 +6,7 @@ using SagardCL;
 using UnityEngine.Events;
 
 public class DebugLogsPrint : MonoBehaviour
-{
-    public static UnityEvent LogEvent = new UnityEvent();
-    
+{   
     public Text DidActive, fpsText;
     float deltaTime;
  

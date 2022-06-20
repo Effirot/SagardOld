@@ -7,20 +7,24 @@ using System.Threading.Tasks;
 
 public class UnitController : MonoBehaviour
 {
-    uint ID => GetComponent<IDgenerator>().ID;
-
+    protected uint ID => GetComponent<IDgenerator>().ID;
+    
     [Space(3)]
 
     [SerializeField]protected GameObject AttackVisualizer;
-    private int SkillIndex;
-    public int CurrentSkillIndex { get { return SkillIndex; } set { if(value != SkillIndex) ParametersUpdate(); SkillIndex = value;} }
+    [SerializeField]protected GameObject UiPreset;
 
-    public Skill NowUsingSkill => Parameters.AvailableSkills?[CurrentSkillIndex];
+    public int CurrentSkillIndex { get { return NowUsingSkill.SkillIndex; } set { if(value != NowUsingSkill.SkillIndex) MouseWheelTurn(); NowUsingSkill.SkillIndex = value;} }
+    [SerializeField]protected int MouseTest = 0;
+
+    [SerializeField]public LifeParameters Parameters;
+    public Skill NowUsingSkill => Parameters.SkillRealizer;
+
+    [SerializeField]private protected AllInOne MPlaner { get{ return NowUsingSkill.From; } set { NowUsingSkill.From = value; } }
+    [SerializeField]private protected AllInOne APlaner { get{ return NowUsingSkill.To; } set { NowUsingSkill.To = value; } }
+
+
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
-    
-    [SerializeField]private protected AllInOne MPlaner;
-    [SerializeField]private protected AllInOne APlaner;
-
     protected Collider Collider => GetComponent<MeshCollider>();
 
     private Checkers LastPose = new Checkers();
@@ -30,8 +34,8 @@ public class UnitController : MonoBehaviour
             if(LastPose != pos) { LastPose = pos; ChangePos(); } 
             return pos; } }
     [Space(3)]
-    [SerializeField] private PlayerControl baseParameters;
-    public PlayerControl Parameters => baseParameters ; 
+
+
 
 
     private List<GameObject> attackPointsVisuals = new List<GameObject>();
@@ -48,27 +52,24 @@ public class UnitController : MonoBehaviour
     }
     protected void AttackVsualizationClear() { foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); } }
 
+
+
     void Awake()
     {
-        foreach(Skill skill in Parameters.AvailableSkills)
-        {
-            skill.From = MPlaner;
-            skill.To = APlaner;
-        }
+
         InGameEvents.MapUpdate.AddListener(ParametersUpdate);
-        InGameEvents.MouseController.AddListener((a, b) => 
+        InGameEvents.MouseController.AddListener((UnityAction<uint, int>)((id, b) => 
         { 
-            if(a == (ID)) 
+            if(id == ID) { MouseTest = b; }
+            else MouseTest = 0;
+            switch(MouseTest)
             {
-                OnMouseTest = b;
-                switch(b){
-                    default: StandingIn(); return;
-                    case 1: MovePlaningIn(); return;
-                    case 2: AttackPlaningIn(); return;
-                }
+                default: StandingIn(); return;
+                case 1: MovePlaningIn(); return;
+                case 2: AttackPlaningIn(); return;
             }
-            else OnMouseTest = 0;
-        });
+            
+        }));
         InGameEvents.StepSystem.Add(Summon);
         InGameEvents.AttackTransporter.AddListener(GetDamage);
 
@@ -96,20 +97,11 @@ public class UnitController : MonoBehaviour
         }
         
         //OnSelf
-        if(
-        (int)Mathf.Round(transform.position.x) == (int)Mathf.Round(MPlaner.position.x) 
-        && 
-        (int)Mathf.Round(transform.position.z) == (int)Mathf.Round(MPlaner.position.z))
+        if(new Checkers(position) == new Checkers(MPlaner.position))
             return false;
         
         //OnDistance
-        return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, transform.position); 
-    }
-    
-    private int MouseTest = 0;
-    protected int OnMouseTest {
-        get { return MouseTest; }
-        set { MouseTest = value; if(value == 0) ControlChange(); }
+        return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
     }
 
     void Update()
@@ -126,14 +118,15 @@ public class UnitController : MonoBehaviour
     protected virtual void MovePlaningUpd() {}
     protected virtual void AttackPlaningUpd() {}
     
-    protected virtual void StandingIn() { CurrentSkillIndex = 0; }
+
+    protected virtual void StandingIn() { }
     protected virtual void MovePlaningIn() {}
     protected virtual void AttackPlaningIn() {}
 
     protected virtual void ParametersUpdate(){ }
 
-    protected virtual void ControlChange() { }
-    protected virtual void ChangePos() { if(OnMouseTest != 0) ParametersUpdate(); }
+    protected virtual void ChangePos() { if(MouseTest != 0) ParametersUpdate(); }
+    protected virtual void MouseWheelTurn() { }
 
 
     protected virtual async Task Walking() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I walked"); }
