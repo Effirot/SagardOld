@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using UnityEngine;
 using SagardCL;
+using System;
 
-
-public abstract class StateBar
+public interface StateBar
 {
-    Color BarColor{ get; }
+    public Color BarColor{ get; }
 
-    int State;
-    int Max;  
+    public int State { get; set; }
+    public int Max { get; set; }  
 }
-public interface HealthBar
+
+public interface HealthBar : StateBar
 {
-    int ArmorMelee { get; set; } 
-    int ArmorRange {get; set; }
+    public int ArmorMelee { get; set; } 
+    public int ArmorRange {get; set; }
 
     public void GetDamage(Attack attack);
 }
@@ -37,11 +38,11 @@ public interface AmmoBar
 
 // ================================================================= Health Bar ===========================================================================================================
 
-public class Health : StateBar, HealthBar
+[Serializable]public class Health : StateBar, HealthBar
 {
     [XmlArrayAttribute]
-    public int State;
-    public int Max;
+    public int State { get; set; }
+    public int Max { get; set; }
 
     public int ArmorMelee{ get; set; }
     public int ArmorRange{ get; set; }
@@ -62,11 +63,11 @@ public class Health : StateBar, HealthBar
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
 
-public class HealthOver : HealthBar
+public class HealthOver : StateBar, HealthBar
 {
     [XmlArrayAttribute]
-    public int State;
-    public int Max;
+    public int State { get; set; }
+    public int Max { get; set; }
     public int OverMax = 3;
 
     public int ArmorMelee{ get; set; }

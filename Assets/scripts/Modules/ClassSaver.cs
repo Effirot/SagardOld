@@ -49,7 +49,7 @@ namespace SagardCL //Class library
         [Space] 
         // health parameters
 
-        public HealthBar Health = new Health();
+        public Health Health = new Health();
         // sanity parameters
         public SanityBar Sanity;
         // Stamina parameters
