@@ -50,12 +50,12 @@ public class HumanStandardController : UnitController
         APlaner.position = new Checkers(CursorPos);
 
         //Mouse Scroll
-        CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, Parameters.SkillRealizer.AvailbleBaseSkills.Count - 1);
+        CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, Parameters.SkillRealizer.AvailbleSkills.Count - 1);
     }
 
     protected override void StandingIn()
     {
-        RemoveMenu();
+        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Close, gameObject, Parameters);
         ParametersUpdate();
     }
     protected async override void MovePlaningIn()
@@ -64,7 +64,7 @@ public class HumanStandardController : UnitController
     }
     protected async override void AttackPlaningIn()
     {
-        SummonMenu();
+        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Open, MPlaner.Planer, Parameters);
         await AttackPlannerUpdate();
     }
 
@@ -149,18 +149,8 @@ public class HumanStandardController : UnitController
         Attack thisAttack = attacks.Find((a) => a.Where == new Checkers(position));
         if(attacks.Find((a) => a.Where == new Checkers(position)).Where == new Checkers(position))
         {
-            Parameters.GetDamage(thisAttack);
+            Parameters.Health.GetDamage(thisAttack);
         }
-    }
-
-
-    private void SummonMenu(){
-        GameObject obj = Instantiate(UiPreset, GameObject.Find("GameUI").transform);
-        obj.GetComponent<UnitUIController>().LifeParams = Parameters;
-        obj.GetComponent<MoveOnUi>().Target = MPlaner.Planer.transform;
-    }    
-    private void RemoveMenu(){
-        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("UnitUI")) { if(obj) Destroy(obj); }
     }
 
 }

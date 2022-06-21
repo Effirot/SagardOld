@@ -110,7 +110,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7407837266454244161}
-  - component: {fileID: 7445237949063219107}
   - component: {fileID: -5721805414729699740}
   m_Layer: 5
   m_Name: AttackMenu
@@ -142,24 +141,6 @@ RectTransform:
   m_AnchoredPosition: {x: -4.799988, y: 6.0999756}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &7445237949063219107
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7407837266454244160}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd21884724c36a140988303f8b0dde9a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  BarSerializationPrefab: {fileID: 6867865859717448150, guid: a7ebe7b71ef3da048b681f5f99214df5, type: 3}
-  BarMenu: {fileID: 8904231435637024618}
-  SerializableCustomBarList: []
-  SkillSerializationPrefab: {fileID: 6546885335653142607, guid: 1f67af6d47161fe44b2f16156e36e6e6, type: 3}
-  SkillMenu: {fileID: 7407837267057441783}
-  ItemSerializationPrefab: {fileID: 0}
 --- !u!114 &-5721805414729699740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,7 +153,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6493422c4ad15f34496ad11f2aa73462, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Target: {fileID: 0}
 --- !u!1 &7407837267057441783
 GameObject:
   m_ObjectHideFlags: 0
@@ -210,7 +190,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -192.09998, y: 139.79996}
-  m_SizeDelta: {x: 220, y: 203.0342}
+  m_SizeDelta: {x: 220, y: 89.6}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &7407837267057441786
 CanvasRenderer:

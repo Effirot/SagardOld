@@ -38,8 +38,10 @@ public class Skill{
     public AllInOne To;
 
     public int SkillIndex = 0;
-    public List<BaseSkill> AvailbleBaseSkills;
-    public BaseSkill NowUsing => AvailbleBaseSkills[Mathf.Clamp(SkillIndex, 0, AvailbleBaseSkills.Count - 1)];
+    [SerializeField] private List<BaseSkill> AvailbleBaseSkills;
+    public List<BaseSkill> AvailbleSkills => AvailbleBaseSkills;
+
+    public BaseSkill NowUsing => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
 
     private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
     private Checkers endPos{ get{ return new Checkers(To.position, 0f); } }

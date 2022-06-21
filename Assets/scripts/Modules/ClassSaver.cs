@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using UnityEngine;
 
 namespace SagardCL //Class library
@@ -28,8 +29,6 @@ namespace SagardCL //Class library
         Dash, 
     }
 
-
-
     public abstract class StateBar{
         public string BarName;
         public Color Color;
@@ -42,50 +41,23 @@ namespace SagardCL //Class library
     }
 
     [System.Serializable]
-    public class CustomBar : StateBar
-    {
-        
-    }
-
-    [System.Serializable]
     public class LifeParameters
     {
         [Space, Header("Base Parameters")]
-        public Color Team;        
-        [Space] // health parameters
-        public int MaxHP;
-        public int HP;
-        public int ArmorMelee;
-        public int ArmorRange;
-        
-        public void GetDamage(Attack attack)
-        {
-            switch(attack.damageType)
-            {
-                case DamageType.Pure: HP -= attack.damage; break;
-                case DamageType.Melee: HP -= attack.damage - ArmorMelee; break;
-                case DamageType.Range: HP -= attack.damage - ArmorRange; break;
-                case DamageType.Rezo: HP -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-                case DamageType.Terra: HP -= attack.damage / 4; break;
+        public Color Team;
 
-                case DamageType.Sanity: Sanity -= attack.damage - SanityShield; break;
+        [Space] 
+        // health parameters
 
-                case DamageType.Heal: HP = Mathf.Clamp(HP + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, MaxHP); break;
-            }
+        public HealthBar Health = new Health();
+        // sanity parameters
+        public SanityBar Sanity;
+        // Stamina parameters
+        public StaminaBar Stamina;
 
-            if(attack.Debuff != null) { foreach(Effect effect in attack.Debuff) { if(Resists.Find((a) => a == effect) != effect) Debuff.Add(effect); } }
-        }
 
-        [Space] // sanity parameters
-        public int MaxSanity;
-        public int Sanity;
-        public int SanityShield;
 
-        [Space] // Stamina parameters
-        public int MaxStamina;
-        public int Stamina;
-        [Range(0, 30)] public int RestEffectivity;
-        public void Rest(){ if(RestEffectivity == 0){ Stamina = MaxStamina; return; } Stamina = Mathf.Clamp(Stamina + RestEffectivity, 0, MaxStamina); } 
+        public void Rest(){  } 
         [SerializeField] int WalkUseStamina;
 
         public bool CanControl = true;
