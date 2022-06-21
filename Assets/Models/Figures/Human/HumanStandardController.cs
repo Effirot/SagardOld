@@ -21,14 +21,14 @@ public class HumanStandardController : UnitController
         if(!MPlanerChecker() & InGameEvents.canControl) MPlaner.position = position;
     
         //Attack planner
-        if(!NowUsingSkill.Check()) APlaner.position = MPlaner.position;
-        APlaner.Renderer.enabled = NowUsingSkill.Check();
+        if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
+        APlaner.Renderer.enabled = SkillRealizer.Check();
     }
     protected override void MovePlaningUpd() // Calling(void Update), when you planing your moving
     {
         MPlaner.Renderer.enabled = true;
         
-        if(NowUsingSkill.NowUsing.NoWalking) APlaner.position = new Checkers(MPlaner.position);
+        if(SkillRealizer.NowUsing.NoWalking) APlaner.position = new Checkers(MPlaner.position);
 
         //Move planner
         MPlaner.position = new Checkers(CursorPos);
@@ -39,7 +39,7 @@ public class HumanStandardController : UnitController
     {
 
         //Move planner
-        if(NowUsingSkill.NowUsing.NoWalking)
+        if(SkillRealizer.NowUsing.NoWalking)
         {
             MPlaner.position = position;
             MPlaner.Renderer.enabled = false;
@@ -50,12 +50,12 @@ public class HumanStandardController : UnitController
         APlaner.position = new Checkers(CursorPos);
 
         //Mouse Scroll
-        CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, Parameters.SkillRealizer.AvailbleSkills.Count - 1);
+        CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, SkillRealizer.AvailbleSkills.Count - 1);
     }
 
     protected override void StandingIn()
     {
-        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Close, gameObject, Parameters);
+        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Close, gameObject, this);
         ParametersUpdate();
     }
     protected async override void MovePlaningIn()
@@ -64,7 +64,7 @@ public class HumanStandardController : UnitController
     }
     protected async override void AttackPlaningIn()
     {
-        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Open, MPlaner.Planer, Parameters);
+        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Open, MPlaner.Planer, this);
         await AttackPlannerUpdate();
     }
 
@@ -101,17 +101,17 @@ public class HumanStandardController : UnitController
         APlaner.position = new Checkers(APlaner.position);
         // Attack planner
         AttackZone.Clear();
-        if(NowUsingSkill.NowUsing.NoWalking) await MovePlannerUpdate();
-        await foreach(Attack attack in NowUsingSkill.Realize())
+        if(SkillRealizer.NowUsing.NoWalking) await MovePlannerUpdate();
+        await foreach(Attack attack in SkillRealizer.Realize())
         {
             AttackZone.Add(attack);
         }
         AttackVsualizationClear();
         AttackVisualization(AttackZone);
 
-        APlaner.Renderer.enabled = APlaner.position != position & APlaner.position !=  MPlaner.position & NowUsingSkill.NowUsing.Type != (HitType.Empty & HitType.OnSelf & HitType.SwordSwing & HitType.Constant);
-        APlaner.Renderer.material.color = (!NowUsingSkill.Check())? Color.green : Color.red;
-        NowUsingSkill.Graphics(); 
+        APlaner.Renderer.enabled = APlaner.position != position & APlaner.position !=  MPlaner.position & SkillRealizer.NowUsing.Type != (HitType.Empty & HitType.OnSelf & HitType.SwordSwing & HitType.Constant);
+        APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;
+        SkillRealizer.Graphics(); 
     }
 
     protected async override Task Walking()
@@ -149,7 +149,7 @@ public class HumanStandardController : UnitController
         Attack thisAttack = attacks.Find((a) => a.Where == new Checkers(position));
         if(attacks.Find((a) => a.Where == new Checkers(position)).Where == new Checkers(position))
         {
-            Parameters.Health.GetDamage(thisAttack);
+            Health.GetDamage(thisAttack);
         }
     }
 

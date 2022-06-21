@@ -28,51 +28,8 @@ namespace SagardCL //Class library
         Volley, // 
         Dash, 
     }
+   
 
-    public abstract class StateBar{
-        public string BarName;
-        public Color Color;
-        public int MaxParam;
-        public int MinParam;
-
-        private protected int _Param;
-
-        public int State { get{ return _Param; } set{ _Param = Mathf.Clamp(value, MinParam, MaxParam); } }
-    }
-
-    [System.Serializable]
-    public class LifeParameters
-    {
-        [Space, Header("Base Parameters")]
-        public Color Team;
-
-        [Space] 
-        // health parameters
-
-        public Health Health = new Health();
-        // sanity parameters
-        public SanityBar Sanity;
-        // Stamina parameters
-        public StaminaBar Stamina;
-
-
-
-        public void Rest(){  } 
-        [SerializeField] int WalkUseStamina;
-
-        public bool CanControl = true;
-        public int WalkDistance;
-
-        [Space] // Debuff's parameters
-        public List<Effect> Resists;
-        public List<Effect> Debuff;
-
-        // Skills parameters
-        [Space]
-        public Skill SkillRealizer;
-    }
-    
-    [System.Serializable]
     public struct Attack
     {
         public GameObject WhoAttack;

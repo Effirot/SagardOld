@@ -16,7 +16,7 @@ public class UnitUIController : MonoBehaviour
     [Space] 
     public MoveOnUi MoveOnCanvas;
 
-    public static UnityEvent<WhatUiDo, GameObject, LifeParameters> UiEvent = new UnityEvent<WhatUiDo, GameObject, LifeParameters>();
+    public static UnityEvent<WhatUiDo, GameObject, UnitController> UiEvent = new UnityEvent<WhatUiDo, GameObject, UnitController>();
     public enum WhatUiDo
     {
         Open,
@@ -35,7 +35,7 @@ public class UnitUIController : MonoBehaviour
 
     private List<GameObject> UIelements = new List<GameObject>();
 
-    private async void Open(GameObject Summoner, LifeParameters lifeParameters)
+    private async void Open(GameObject Summoner, UnitController lifeParameters)
     {
         await System.Threading.Tasks.Task.Delay(1);
         UI.SetActive(true);
@@ -43,7 +43,7 @@ public class UnitUIController : MonoBehaviour
         UpdateUi(Summoner, lifeParameters);
     }
 
-    private void UpdateUi(GameObject Summoner, LifeParameters lifeParameters)
+    private void UpdateUi(GameObject Summoner, UnitController lifeParameters)
     {
         foreach (GameObject element in UIelements) { Destroy(element); }
         

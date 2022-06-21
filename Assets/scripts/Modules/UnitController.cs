@@ -14,14 +14,12 @@ public abstract class UnitController : MonoBehaviour
     [SerializeField]protected GameObject AttackVisualizer;
     [SerializeField]protected GameObject UiPreset;
 
-    public int CurrentSkillIndex { get { return NowUsingSkill.SkillIndex; } set { if(value != NowUsingSkill.SkillIndex) MouseWheelTurn(); NowUsingSkill.SkillIndex = value;} }
+    public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value;} }
     [SerializeField]protected int MouseTest = 0;
 
-    [SerializeField]public LifeParameters Parameters;
-    public Skill NowUsingSkill => Parameters.SkillRealizer;
 
-    [SerializeField]private protected AllInOne MPlaner { get{ return NowUsingSkill.From; } set { NowUsingSkill.From = value; } }
-    [SerializeField]private protected AllInOne APlaner { get{ return NowUsingSkill.To; } set { NowUsingSkill.To = value; } }
+    [SerializeField]private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
+    [SerializeField]private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
 
 
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
@@ -34,6 +32,36 @@ public abstract class UnitController : MonoBehaviour
             if(LastPose != pos) { LastPose = pos; ChangePos(); } 
             return pos; } }
     [Space(3)]
+
+    [Space, Header("Base Parameters")]
+    public Color Team;
+    [Space]
+    public bool CanControl = true;
+    public int WalkDistance;
+    [Space] 
+    [SerializeReference] public HealthBar Health = new Health();  // health parameters
+    [SerializeReference] public StaminaBar Stamina = new Stamina(); // Stamina parameters
+    [SerializeReference] public SanityBar Sanity = new Sanity(); // sanity parameters
+    [Space(3)]
+    [SerializeReference] public List<StateBar> OtherStates = new List<StateBar>();
+
+    [Space] // Debuff's parameters
+    public List<Effect> Resists;
+    public List<Effect> Debuff;
+
+    // Skills parameters
+    [Space]
+    public Skill SkillRealizer;
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -101,7 +129,7 @@ public abstract class UnitController : MonoBehaviour
             return false;
         
         //OnDistance
-        return Parameters.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
+        return WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
     }
 
     void Update()

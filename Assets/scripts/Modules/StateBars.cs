@@ -7,45 +7,47 @@ using System;
 
 public interface StateBar
 {
-    public Color BarColor{ get; }
+    Color BarColor{ get; }
 
-    public int State { get; set; }
-    public int Max { get; set; }  
+    int State { get; set; }
+    int Max { get; set; }  
 }
 
 public interface HealthBar : StateBar
 {
-    public int ArmorMelee { get; set; } 
-    public int ArmorRange {get; set; }
+    int ArmorMelee { get; set; } 
+    int ArmorRange {get; set; }
 
-    public void GetDamage(Attack attack);
+    void GetDamage(Attack attack);
 }
-public interface StaminaBar
+public interface StaminaBar : StateBar
 {
     int RestEffectivity{ get; set; }
     void Rest();
 }
-public interface SanityBar
+public interface SanityBar : StateBar
 {
-    
+    int SanityShield { get; set; } 
 }
 
-public interface AmmoBar
+public interface AmmoBar : StateBar
 {
 
 }
 
 
 // ================================================================= Health Bar ===========================================================================================================
-
-[Serializable]public class Health : StateBar, HealthBar
+public class Health : HealthBar
 {
-    [XmlArrayAttribute]
-    public int State { get; set; }
-    public int Max { get; set; }
-
-    public int ArmorMelee{ get; set; }
-    public int ArmorRange{ get; set; }
+    [SerializeField] int _State = 0;
+    public int State { get { return _State; } set { _State = value; } }
+    [SerializeField] int _Max = 0;
+    public int Max { get { return _Max; } set { _Max = value; } }
+    [Space]
+    [SerializeField] int _ArmorMelee;
+    public int ArmorMelee{ get { return _ArmorMelee; } set { _ArmorMelee = value; } }
+    [SerializeField] int _ArmorRange;
+    public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
 
     public void GetDamage(Attack attack)
     {
@@ -62,17 +64,21 @@ public interface AmmoBar
     }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
-
-public class HealthOver : StateBar, HealthBar
+public class HealthOver : HealthBar
 {
-    [XmlArrayAttribute]
-    public int State { get; set; }
-    public int Max { get; set; }
-    public int OverMax = 3;
-
-    public int ArmorMelee{ get; set; }
-    public int ArmorRange{ get; set; }
-
+    [SerializeField] int _State = 0;
+    public int State { get { return _State; } set { _State = value; } }
+    [SerializeField] int _Max = 0;
+    public int Max { get { return _Max; } set { _Max = value; } }
+    [SerializeField] int _OverMax;
+    public int OverMax { get { return _OverMax; } set { _OverMax = value; } }
+    [Space]
+    [SerializeField] int _ArmorMelee;
+    public int ArmorMelee{ get { return _ArmorMelee; } set { _ArmorMelee = value; } }
+    [SerializeField] int _ArmorRange;
+    public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
+    
+    // public HealthOver() { InGameEvents.AddListener(); }
     public void GetDamage(Attack attack)
     {
         switch(attack.damageType)
@@ -88,5 +94,37 @@ public class HealthOver : StateBar, HealthBar
     }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
-
 // ================================================================= Stamina Bar ===========================================================================================================
+public class Stamina : StaminaBar
+{
+    [SerializeField] int _State = 0;
+    public int State { get { return _State; } set { _State = value; } }
+    [SerializeField] int _Max = 0;
+    public int Max { get { return _Max; } set { _Max = value; } }
+    [Space]
+    [SerializeField] int _RestEffect = 0;
+    public int RestEffectivity { get{ return _RestEffect; } set { _RestEffect = value; } }
+    [Space]
+    [SerializeField] int _WalkUseStamina;
+    public int WalkUseStamina { get { return _WalkUseStamina; } set { _WalkUseStamina = value; } }
+
+    public void Rest() { }
+
+
+    public Color BarColor{ get{ return new Color(1, 0, 0); } }
+
+}
+// ================================================================= Sanity Bar ============================================================================================================
+public class Sanity : SanityBar
+{
+    [SerializeField] int _State = 0;
+    public int State { get { return _State; } set { _State = value; } }
+    [SerializeField] int _Max = 0;
+    public int Max { get { return _Max; } set { _Max = value; } }
+    [Space]
+    [SerializeField] int _SanityShield = 0;
+    public int SanityShield { get { return _SanityShield; } set { _SanityShield = value; } }
+
+
+    public Color BarColor{ get{ return new Color(0.7f, 0, 0.7f); } }
+}
