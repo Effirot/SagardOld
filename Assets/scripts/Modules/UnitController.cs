@@ -192,6 +192,7 @@ public abstract class UnitController : MonoBehaviour
  
     protected async void ParametersUpdate()
     {
+        
         await MovePlannerUpdate();
         await AttackPlannerUpdate();
     }
@@ -281,11 +282,7 @@ public abstract class UnitController : MonoBehaviour
         Health.GetDamage(attack);
         
         
-        IEnumerator Recolored()
-        {
-            
-            yield break;
-        }
+
         
     }
 }
