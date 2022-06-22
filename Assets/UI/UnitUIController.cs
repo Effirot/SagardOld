@@ -52,18 +52,30 @@ public class UnitUIController : MonoBehaviour
         int count = 0;
         foreach (BaseSkill skill in skills) 
         { 
-            GameObject obj = Instantiate(SkillPreset, UI.transform.Find("Skills").transform);
-            UIelements.Add(obj); 
-            
-            obj.transform.Find("Ico").GetComponent<Image>().sprite = skill.image;
-            obj.name = count.ToString();
+            if(skill.Type != HitType.Empty){            
+                GameObject obj = Instantiate(SkillPreset, UI.transform.Find("Skills").transform);
+                UIelements.Add(obj); 
+                
+                obj.transform.Find("Ico").GetComponent<Image>().sprite = skill.image;
+                obj.name = count.ToString();
+                obj.GetComponent<Button>().onClick.AddListener(() => 
+                {
+                    lifeParameters.CurrentSkillIndex = int.Parse(obj.name);
+                    
+                    foreach(GameObject element in UIelements)
+                    {
+                        element.GetComponent<Button>().interactable = true;
+                    }
+
+                    
+                    obj.GetComponent<Button>().interactable = false;
+                });
+            }
+
+
             count++;
 
-            obj.GetComponent<Button>().onClick.AddListener(() => 
-            {
-                lifeParameters.SkillRealizer.SkillIndex = int.Parse(obj.name);
 
-            });
 
         
         }

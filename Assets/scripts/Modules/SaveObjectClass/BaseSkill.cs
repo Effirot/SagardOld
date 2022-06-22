@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using SagardCL;
 using System.Threading.Tasks;
-
+using UnityEditor;
 
 [CreateAssetMenu(fileName = "BaseSkill", menuName = "SagardCL objects/Base Skill", order = 51)]
 public class BaseSkill : Descript
 {
     [Space(2)]
     [Header("Parameters")]
+    public bool PriorityAttacking;
     public HitType Type;
     [SerializeField]public DamageType damageType;
     [SerializeField]public DamageType secondaryDamageType;
@@ -18,13 +19,17 @@ public class BaseSkill : Descript
     [Range(0, 20)]public int Damage;
     [SerializeField]public bool Piercing;
     [Range(0, 15)]public int Exploding;
+    [Range(0, 10)]public int AttackStartDistance;
     
     public Effect[] Debuff;
     public bool NoWalking;
     public bool HitSelf;
-
+    [Range(0, 10)]public int SelfDamage;
+    [Space(3)]
+    [Header("Skill Price")]
     public int UsingStamina;
-
+    [Space]
+    public StateBar Ammo;
     public bool DeleteWhenLowAmmo = false;
 }
 
@@ -66,33 +71,56 @@ public class Skill{
             switch(NowUsing.Type)
             {
                 default: yield break;
-                case HitType.OnSelf:
+                case HitType.OnSelfPoint:
                 {
                     FinalPoint = startPos;
                     break;
                 }
-                case HitType.SwordSwing:
+                case HitType.Arc:
                 {
+                    NowUsing.Exploding = 0;
+                    FinalPoint = cursorPos - startPos;
                     
+                    for(int x = -NowUsing.Distance; x < NowUsing.Distance; x++)
+                    {
+                        for(int z = -NowUsing.Distance; z <= NowUsing.Distance; z++)
+                        {
+                            if(Checkers.Distance(startPos, startPos + new Checkers(x, z)) > Mathf.Abs(NowUsing.Distance + 1) - 0.8f)
+                                continue;
+                            if(Checkers.Distance(cursorPos, startPos + new Checkers(x, z)) > Checkers.Distance(cursorPos, startPos))
+                                continue;
+                            if(startPos == startPos + new Checkers(x, z))
+                                continue;
+                            if(Checkers.Distance(startPos + new Checkers(x, z), startPos) < NowUsing.AttackStartDistance - 2.9f + (Checkers.Distance(cursorPos, startPos) - 1.5f)) 
+                                continue;
+                            if(!NowUsing.Piercing & Physics.Raycast(new Checkers(startPos, 0.2f), startPos + new Checkers(x, z) - startPos, Checkers.Distance(startPos, startPos + new Checkers(x, z)), LayerMask.GetMask("Map")))
+                                continue;
 
+                            yield return(new Attack(FatherObj, 
+                            new Checkers(startPos + new Checkers(x, z)), 
+                            (int)Mathf.Round(NowUsing.Damage + (Checkers.Distance(startPos, startPos + new Checkers(x, z), Checkers.mode.Height) * 0.5f)), 
+                            NowUsing.damageType));
+                        }
+                    }
                     break;
                 }
-                case HitType.Shot:
+                case HitType.Line:
                 {
+                    
                     foreach(RaycastHit hit in Physics.RaycastAll(
                         new Checkers(startPos, -4), 
                         new Checkers(FinalPoint, -4) - new Checkers(startPos, -4f), 
                         Checkers.Distance(startPos, FinalPoint), 
                         LayerMask.GetMask("Map")))
                     {
-                        
+                        if(Checkers.Distance(new Checkers(hit.point), startPos) < NowUsing.AttackStartDistance) continue;
                         yield return(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(NowUsing.Damage / (Checkers.Distance(startPos, new Checkers(hit.point)) * 0.08f)), NowUsing.damageType));
                     }
                     yield return(new Attack(FatherObj, FinalPoint, NowUsing.Damage, NowUsing.damageType));
 
                     break;
                 }
-                case HitType.InvertShot:
+                case HitType.InvertLine:
                 {
                     foreach(RaycastHit hit in Physics.RaycastAll(
                         new Checkers(startPos, -4), 
@@ -100,13 +128,14 @@ public class Skill{
                         Checkers.Distance(startPos, FinalPoint), 
                         LayerMask.GetMask("Map")))
                     {
+                        if(Checkers.Distance(new Checkers(hit.point), startPos) < NowUsing.AttackStartDistance) continue;
                         yield return(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(NowUsing.Damage * (Checkers.Distance(startPos, new Checkers(hit.point)) / 4)), NowUsing.damageType));
                     } 
                     yield return(new Attack(FatherObj, FinalPoint, 1 + NowUsing.Damage + (int)Mathf.Round(NowUsing.Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), NowUsing.damageType));
                     
                     break;
                 }
-                case HitType.ConstantShot:
+                case HitType.ConstantLine:
                 {
                     foreach(RaycastHit hit in Physics.RaycastAll(
                         new Checkers(startPos, -4), 
@@ -114,13 +143,14 @@ public class Skill{
                         Checkers.Distance(startPos, FinalPoint), 
                         LayerMask.GetMask("Map")))
                     {
+                        if(Checkers.Distance(new Checkers(hit.point), startPos) < NowUsing.AttackStartDistance) continue;
                         yield return(new Attack(FatherObj, new Checkers(hit.point), NowUsing.Damage, NowUsing.damageType));
                     } 
                     yield return(new Attack(FatherObj, FinalPoint, 1 + NowUsing.Damage, NowUsing.damageType));
                     
                     break;
                 }
-                case HitType.Volley:
+                case HitType.Point:
                 {
                     yield return(new Attack(FatherObj, FinalPoint, NowUsing.Damage, NowUsing.damageType));
                     
@@ -128,7 +158,7 @@ public class Skill{
                 }
             }
 
-            if(NowUsing.HitSelf) yield return(new Attack(FatherObj, new Checkers(startPos), NowUsing.Damage, NowUsing.damageType));
+            if(NowUsing.HitSelf) yield return(new Attack(FatherObj, new Checkers(startPos), NowUsing.SelfDamage, DamageType.Pure));
             if(NowUsing.Exploding == 0) yield break;
             
             // --------------------Explode------------------
@@ -136,6 +166,8 @@ public class Skill{
             {
                 for(int z = -NowUsing.Exploding - 1; z <= NowUsing.Exploding + 1; z++)
                 {
+                    if(Checkers.Distance(FinalPoint + new Checkers(x, z), startPos) < NowUsing.AttackStartDistance - 0.7f & NowUsing.Type == HitType.OnSelfPoint) 
+                        continue;
                     if(FinalPoint == FinalPoint + new Checkers(x, z))
                         continue;
                     if(Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z)) > Mathf.Abs(NowUsing.Exploding + 1) - 0.9f)
@@ -157,7 +189,7 @@ public class Skill{
     {
         LineRenderer renderer = To.LineRenderer;
         
-        if(NowUsing.Type == (HitType.Empty & HitType.OnSelf & HitType.SwordSwing & HitType.Constant)) 
+        if(NowUsing.Type == (HitType.Empty & HitType.OnSelfPoint & HitType.Arc & HitType.Constant)) 
         { renderer.enabled = false; return; }
         
         renderer.enabled = true;
@@ -169,7 +201,11 @@ public class Skill{
         renderer.SetPositions(new Vector3[] {startPos, FinalPoint});
         
     }
-    public bool Check(){ return Checkers.Distance(startPos, endPos) < NowUsing.Distance & !(startPos == endPos); }
+    public bool Check(){ 
+        if(NowUsing.Type == (HitType.OnSelfPoint)) return true;
+        return Checkers.Distance(startPos, endPos) < NowUsing.Distance & 
+               !(startPos == endPos) & 
+               Checkers.Distance(startPos, endPos) > NowUsing.AttackStartDistance - 0.7f; }
 }
 
 public class SkillBuff

@@ -18,14 +18,14 @@ namespace SagardCL //Class library
     public enum HitType
     {
         Empty, //
-        OnSelf, //
-        SwordSwing, 
+        OnSelfPoint, //
+        Arc, 
         Constant, 
-        Shot, //
-        InvertShot, //
-        ConstantShot, //
+        Line, //
+        InvertLine, //
+        ConstantLine, //
         ShotgunShot,
-        Volley, // 
+        Point, // 
         Dash, 
     }
    
