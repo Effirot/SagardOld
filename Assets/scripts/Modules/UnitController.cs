@@ -8,11 +8,6 @@ using System.Threading.Tasks;
 public abstract class UnitController : MonoBehaviour
 {
     protected uint ID => GetComponent<IDgenerator>().ID;
-    
-    [Space(3)]
-
-    [SerializeField]protected GameObject AttackVisualizer;
-    [SerializeField]protected GameObject UiPreset;
 
     public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value;} }
     [SerializeField]protected int MouseTest = 0;
@@ -57,7 +52,7 @@ public abstract class UnitController : MonoBehaviour
         foreach(Attack attack in AttackZone)
         {
             if(attack.damage == 0) continue;
-            GameObject obj = Instantiate(AttackVisualizer, attack.Where, AttackVisualizer.transform.rotation, InGameEvents.AttackFolders);
+            GameObject obj = Instantiate(PoleAttackVisualizer.Visual, attack.Where, PoleAttackVisualizer.Visual.transform.rotation, InGameEvents.AttackFolders);
             attackPointsVisuals.Add(obj);
             
             obj.GetComponent<SpriteRenderer>().color = (attack.damageType != DamageType.Heal)? new Color(attack.damage * 0.07f, 0, 0.1f, 0.9f) : new Color(0, attack.damage * 0.07f, 0.1f, 0.9f);
@@ -83,8 +78,12 @@ public abstract class UnitController : MonoBehaviour
         }));
         InGameEvents.StepSystem.Add(Summon);
         InGameEvents.AttackTransporter.AddListener((a) => { 
-            if(a.Find((a) => a.Where == new Checkers(position)).Where == new Checkers(position))
-                GetDamage(a.Find((a) => a.Where == new Checkers(position)));
+            Attack find = a.Find((a) => a.Where == new Checkers(position));
+
+            if(find.Where == new Checkers(position)){
+                if(find.damageType != DamageType.Heal)GetDamage(find);
+                else GetHeal(find);
+                }
         });
     }
     void Update()
@@ -278,14 +277,10 @@ public abstract class UnitController : MonoBehaviour
 
     protected void GetDamage(Attack attack) 
     {
+        Health.GetDamage(attack);        
+    }
+    protected virtual void GetHeal(Attack attack)
+    {
         Health.GetDamage(attack);
-        
-        
-        IEnumerator Recolored()
-        {
-            
-            yield break;
-        }
-        
     }
 }

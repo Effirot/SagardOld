@@ -222,8 +222,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a8d8cbdd4f8e548bb517023fd88cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AttackVisualizer: {fileID: 3444611428397808923, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
-  UiPreset: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
   MouseTest: 0
   Team: {r: 0, g: 1, b: 0.6915529, a: 0}
   CanControl: 1
@@ -238,6 +236,7 @@ MonoBehaviour:
   Resists: []
   Debuff: []
   SkillRealizer:
+    Unit: {fileID: 6213634045846544188}
     From:
       Planer: {fileID: 8182480761862019246}
       Model: {fileID: 447574044884308314}

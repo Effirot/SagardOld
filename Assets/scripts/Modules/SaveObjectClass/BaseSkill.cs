@@ -38,8 +38,9 @@ public class Skill{
     
     //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
     [Header("Controllers")]  
+    public UnitController Unit;
+    [Space]
     public AllInOne From;
-    GameObject FatherObj{ get{ return From.Planer.transform.parent.gameObject; } }
     public AllInOne To;
 
     public int SkillIndex = 0;
@@ -85,18 +86,18 @@ public class Skill{
                     {
                         for(int z = -NowUsing.Distance; z <= NowUsing.Distance; z++)
                         {
-                            if(Checkers.Distance(startPos, startPos + new Checkers(x, z)) > Mathf.Abs(NowUsing.Distance + 1) - 0.8f)
+                            if(Checkers.Distance(startPos, startPos + new Checkers(x, z)) > Mathf.Abs(NowUsing.Distance / 2) - 0.8f)
                                 continue;
                             if(Checkers.Distance(cursorPos, startPos + new Checkers(x, z)) > Checkers.Distance(cursorPos, startPos))
                                 continue;
                             if(startPos == startPos + new Checkers(x, z))
                                 continue;
-                            if(Checkers.Distance(startPos + new Checkers(x, z), startPos) < NowUsing.AttackStartDistance - 2.9f + (Checkers.Distance(cursorPos, startPos) - 1.5f)) 
+                            if(Checkers.Distance(startPos + new Checkers(x, z), startPos) < NowUsing.AttackStartDistance + 0.5f + ((Checkers.Distance(cursorPos, startPos) / 3) - 3f)) 
                                 continue;
                             if(!NowUsing.Piercing & Physics.Raycast(new Checkers(startPos, 0.2f), startPos + new Checkers(x, z) - startPos, Checkers.Distance(startPos, startPos + new Checkers(x, z)), LayerMask.GetMask("Map")))
                                 continue;
 
-                            yield return(new Attack(FatherObj, 
+                            yield return(new Attack(Unit, 
                             new Checkers(startPos + new Checkers(x, z)), 
                             (int)Mathf.Round(NowUsing.Damage + (Checkers.Distance(startPos, startPos + new Checkers(x, z), Checkers.mode.Height) * 0.5f)), 
                             NowUsing.damageType));
@@ -114,9 +115,9 @@ public class Skill{
                         LayerMask.GetMask("Map")))
                     {
                         if(Checkers.Distance(new Checkers(hit.point), startPos) < NowUsing.AttackStartDistance) continue;
-                        yield return(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(NowUsing.Damage / (Checkers.Distance(startPos, new Checkers(hit.point)) * 0.08f)), NowUsing.damageType));
+                        yield return(new Attack(Unit, new Checkers(hit.point), (int)Mathf.Round(NowUsing.Damage / (Checkers.Distance(startPos, new Checkers(hit.point)) * 0.08f)), NowUsing.damageType));
                     }
-                    yield return(new Attack(FatherObj, FinalPoint, NowUsing.Damage, NowUsing.damageType));
+                    yield return(new Attack(Unit, FinalPoint, NowUsing.Damage, NowUsing.damageType));
 
                     break;
                 }
@@ -129,9 +130,9 @@ public class Skill{
                         LayerMask.GetMask("Map")))
                     {
                         if(Checkers.Distance(new Checkers(hit.point), startPos) < NowUsing.AttackStartDistance) continue;
-                        yield return(new Attack(FatherObj, new Checkers(hit.point), (int)Mathf.Round(NowUsing.Damage * (Checkers.Distance(startPos, new Checkers(hit.point)) / 4)), NowUsing.damageType));
+                        yield return(new Attack(Unit, new Checkers(hit.point), (int)Mathf.Round(NowUsing.Damage * (Checkers.Distance(startPos, new Checkers(hit.point)) / 4)), NowUsing.damageType));
                     } 
-                    yield return(new Attack(FatherObj, FinalPoint, 1 + NowUsing.Damage + (int)Mathf.Round(NowUsing.Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), NowUsing.damageType));
+                    yield return(new Attack(Unit, FinalPoint, 1 + NowUsing.Damage + (int)Mathf.Round(NowUsing.Damage * (Checkers.Distance(startPos, FinalPoint) / 4)), NowUsing.damageType));
                     
                     break;
                 }
@@ -144,21 +145,21 @@ public class Skill{
                         LayerMask.GetMask("Map")))
                     {
                         if(Checkers.Distance(new Checkers(hit.point), startPos) < NowUsing.AttackStartDistance) continue;
-                        yield return(new Attack(FatherObj, new Checkers(hit.point), NowUsing.Damage, NowUsing.damageType));
+                        yield return(new Attack(Unit, new Checkers(hit.point), NowUsing.Damage, NowUsing.damageType));
                     } 
-                    yield return(new Attack(FatherObj, FinalPoint, 1 + NowUsing.Damage, NowUsing.damageType));
+                    yield return(new Attack(Unit, FinalPoint, 1 + NowUsing.Damage, NowUsing.damageType));
                     
                     break;
                 }
                 case HitType.Point:
                 {
-                    yield return(new Attack(FatherObj, FinalPoint, NowUsing.Damage, NowUsing.damageType));
+                    yield return(new Attack(Unit, FinalPoint, NowUsing.Damage, NowUsing.damageType));
                     
                     break;
                 }
             }
 
-            if(NowUsing.HitSelf) yield return(new Attack(FatherObj, new Checkers(startPos), NowUsing.SelfDamage, DamageType.Pure));
+            if(NowUsing.HitSelf) yield return(new Attack(Unit, new Checkers(startPos), NowUsing.SelfDamage, DamageType.Pure));
             if(NowUsing.Exploding == 0) yield break;
             
             // --------------------Explode------------------
@@ -176,7 +177,7 @@ public class Skill{
                         continue;
 
 
-                    yield return(new Attack(FatherObj, 
+                    yield return(new Attack(Unit, 
                     new Checkers(FinalPoint + new Checkers(x, z)), 
                     (int)Mathf.Round(NowUsing.Damage / (Checkers.Distance(FinalPoint, FinalPoint + new Checkers(x, z), Checkers.mode.Height) * 0.5f)), 
                     NowUsing.damageType));
@@ -205,7 +206,7 @@ public class Skill{
         if(NowUsing.Type == (HitType.OnSelfPoint)) return true;
         return Checkers.Distance(startPos, endPos) < NowUsing.Distance & 
                !(startPos == endPos) & 
-               Checkers.Distance(startPos, endPos) > NowUsing.AttackStartDistance - 0.7f; }
+               (NowUsing.Type != (HitType.Arc))? Checkers.Distance(startPos, endPos) > NowUsing.AttackStartDistance - 0.7f : true; }
 }
 
 public class SkillBuff

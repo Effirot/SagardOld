@@ -9,7 +9,7 @@ public interface StateBar
 {
     Color BarColor{ get; }
 
-    int State { get; set; }
+    int State { get; }
     int Max { get; set; }  
 }
 
@@ -27,6 +27,7 @@ public interface StaminaBar : StateBar
 }
 public interface SanityBar : StateBar
 {
+    new int State { get; set; }
     int SanityShield { get; set; } 
 }
 
@@ -40,7 +41,7 @@ public interface AmmoBar : StateBar
 public class Health : HealthBar
 {
     [SerializeField] int _State = 0;
-    public int State { get { return _State; } set { _State = value; } }
+    public int State { get { return _State; } }
     [SerializeField] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -53,13 +54,14 @@ public class Health : HealthBar
     {
         switch(attack.damageType)
         {
-            case DamageType.Pure: State -= attack.damage; break;
-            case DamageType.Melee: State -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: State -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: State -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: State -= attack.damage / 4; break;
+            case DamageType.Pure: _State -= attack.damage; break;
+            case DamageType.Melee: _State -= attack.damage - ArmorMelee; break;
+            case DamageType.Range: _State -= attack.damage - ArmorRange; break;
+            case DamageType.Rezo: _State -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
+            case DamageType.Terra: _State -= attack.damage / 4; break;
  
-            case DamageType.Heal: State = Mathf.Clamp(State + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
+            case DamageType.Heal: _State = Mathf.Clamp(State + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
+            case DamageType.MetalHeal: _State -= 1; break;
         }
     }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
@@ -67,7 +69,7 @@ public class Health : HealthBar
 public class HealthOver : HealthBar
 {
     [SerializeField] int _State = 0;
-    public int State { get { return _State; } set { _State = value; } }
+    public int State { get { return _State; } }
     [SerializeField] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [SerializeField] int _OverMax;
@@ -83,13 +85,13 @@ public class HealthOver : HealthBar
     {
         switch(attack.damageType)
         {
-            case DamageType.Pure: State -= attack.damage; break;
-            case DamageType.Melee: State -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: State -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: State -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: State -= attack.damage / 4; break;
+            case DamageType.Pure: _State -= attack.damage; break;
+            case DamageType.Melee: _State -= attack.damage - ArmorMelee; break;
+            case DamageType.Range: _State -= attack.damage - ArmorRange; break;
+            case DamageType.Rezo: _State -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
+            case DamageType.Terra: _State -= attack.damage / 4; break;
  
-            case DamageType.Heal: State = Mathf.Clamp(State + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
+            case DamageType.Heal: _State = Mathf.Clamp(State + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
         }
     }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
@@ -98,7 +100,7 @@ public class HealthOver : HealthBar
 public class Stamina : StaminaBar
 {
     [SerializeField] int _State = 0;
-    public int State { get { return _State; } set { _State = value; } }
+    public int State { get { return _State; } }
     [SerializeField] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]

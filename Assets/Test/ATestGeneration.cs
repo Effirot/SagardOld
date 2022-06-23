@@ -5,9 +5,11 @@ using UnityEngine;
 public class ATestGeneration : Generation
 {   
     [SerializeField] PlatformVisual[] PlatformPreset;
+
     void Start()
     {
         Regenerate();
+
     }
     public void Regenerate()
     {
@@ -23,12 +25,6 @@ public class ATestGeneration : Generation
         
         MeshCombiner combiner = GetComponent<MeshCombiner>();
 
-        combiner.CreateMultiMaterialMesh = true;
-        combiner.CombineInactiveChildren = true; 
-        combiner.DeactivateCombinedChildrenMeshRenderers = true;
         combiner.CombineMeshes(false);
-
-
-
     }
 }

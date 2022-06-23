@@ -14,6 +14,7 @@ namespace SagardCL //Class library
         Terra,
         Pure,
         Heal,
+        MetalHeal,
     }       
     public enum HitType
     {
@@ -32,7 +33,7 @@ namespace SagardCL //Class library
 
     public struct Attack
     {
-        public GameObject WhoAttack;
+        public UnitController WhoAttack;
 
         [SerializeField]Checkers WhereAttack;
         public Checkers Where { get { return WhereAttack; } }
@@ -44,7 +45,7 @@ namespace SagardCL //Class library
         public Effect[] Debuff;
 
         // Overloads
-        public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
+        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
         {
             WhoAttack = Who;
             WhereAttack = Where;
@@ -53,7 +54,7 @@ namespace SagardCL //Class library
             damageType = Type;
             Debuff = debuff;
         }
-        public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type, Effect debuff)
+        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type, Effect debuff)
         {
             WhoAttack = Who;
             WhereAttack = Where;
@@ -62,7 +63,7 @@ namespace SagardCL //Class library
             damageType = Type;
             Debuff = new Effect[] { debuff };
         }
-        public Attack(GameObject Who, Checkers Where, int Dam, DamageType Type)
+        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type)
         {
             WhoAttack = Who;
             WhereAttack = Where;
