@@ -191,6 +191,7 @@ public abstract class UnitController : MonoBehaviour
  
     protected async void ParametersUpdate()
     {
+        
         await MovePlannerUpdate();
         await AttackPlannerUpdate();
     }
