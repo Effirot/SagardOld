@@ -7,16 +7,8 @@ using UnityEngine.EventSystems;
 
 public class InGameEvents : MonoBehaviour
 {
-    public static Transform AttackFolders;
-    public static Transform Figures;
-
-    void Awake() 
-    {
-        AttackFolders = GameObject.Find("Attacks").transform;
-        Figures = GameObject.Find("Figures").transform;
-    }
-
     public static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
+    public static UnityEvent StepEnd = new UnityEvent();
     public delegate Task TaskStepStage(int StepStage);
 
 
@@ -25,7 +17,7 @@ public class InGameEvents : MonoBehaviour
     
     public static UnityEvent<List<SagardCL.Attack>> AttackTransporter = new UnityEvent<List<SagardCL.Attack>>();
     
-    private bool _enabledAttack = false;
+    private static bool _enabledAttack = false;
     private static bool _canControl = true;
     public static bool canControl { get { return _canControl; } set { _canControl = value; } }
 
@@ -52,7 +44,7 @@ public class InGameEvents : MonoBehaviour
         }
         if (Input.GetMouseButtonDown(1))
         {
-            ID = CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID;
+            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID;
             if(CursorController.ObjectOnMap)
             MouseController.Invoke(ID, 1);
             
@@ -62,7 +54,7 @@ public class InGameEvents : MonoBehaviour
         if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(ID, 0); ID = 0; }
     }
 
-    async void CompleteModeSwitch()
+    static async void CompleteModeSwitch()
     {
         canControl = false;   
         
@@ -74,6 +66,7 @@ public class InGameEvents : MonoBehaviour
             await Task.WhenAll(task.ToArray());
             await Task.Delay(500);
         }
+        StepEnd.Invoke();
         
         canControl = true;
     }

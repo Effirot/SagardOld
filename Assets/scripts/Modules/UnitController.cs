@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 public abstract class UnitController : MonoBehaviour
 {
     protected uint ID => GetComponent<IDgenerator>().ID;
+    public GameObject AttackVisual;
 
     public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value;} }
     [SerializeField]protected int MouseTest = 0;
@@ -47,18 +48,19 @@ public abstract class UnitController : MonoBehaviour
     public Skill SkillRealizer;
 
     private List<GameObject> attackPointsVisuals = new List<GameObject>();
-    protected void AttackVisualization(List<Attack> AttackZone)
+
+    async protected void AttackVisualization(List<Attack> AttackZone)
     {   
         foreach(Attack attack in AttackZone)
         {
             if(attack.damage == 0) continue;
-            GameObject obj = Instantiate(PoleAttackVisualizer.Visual, attack.Where, PoleAttackVisualizer.Visual.transform.rotation, InGameEvents.AttackFolders);
+            GameObject obj = await Task.Run(() => Instantiate(AttackVisual, attack.Where, AttackVisual.transform.rotation));
             attackPointsVisuals.Add(obj);
             
             obj.GetComponent<SpriteRenderer>().color = (attack.damageType != DamageType.Heal)? new Color(attack.damage * 0.07f, 0, 0.1f, 0.9f) : new Color(0, attack.damage * 0.07f, 0.1f, 0.9f);
         }         
     }
-    protected void AttackVsualizationClear() { foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); } }
+    protected void AttackVisualizationClear() { foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); } }
 
 
     void Awake()
@@ -223,8 +225,9 @@ public abstract class UnitController : MonoBehaviour
         {
             AttackZone.Add(attack);
         }
-        AttackVsualizationClear();
+        AttackVisualizationClear();
         AttackVisualization(AttackZone);
+        
 
         APlaner.Renderer.enabled = APlaner.position != position & APlaner.position !=  MPlaner.position & SkillRealizer.NowUsing.Type != (HitType.Empty & HitType.OnSelfPoint & HitType.Arc & HitType.Constant);
         APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;

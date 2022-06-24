@@ -10,25 +10,21 @@ public class CameraController : MonoBehaviour
 
     public GameObject QuickUi;
 
+    Vector3 TranslatePos;
     void FixedUpdate()
     {
-        Vector3 hor = Input.GetAxis("Horizontal") * transform.right;
-        Vector3 ver = Input.GetAxis("Vertical") * transform.forward;
-        transform.position += ((hor + ver) * cameraSpd / 100);
+        TranslatePos += (Input.GetAxis("Horizontal") * transform.right * cameraSpd / 100) + (Input.GetAxis("Vertical") * transform.forward * cameraSpd / 100);
+        transform.position = TranslatePos + new Vector3(0, Mathf.Lerp(transform.position.y, new Checkers(transform.position).up, 0.04f), 0);
 
         Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0);
         transform.eulerAngles -= rot * (rotSpd / 10);
     }
 
+
+
     private void OnTriggerEnter(Collider other)
     {
-        // if(other.gameObject.tag != "Figure") return;
-        
-        // GameObject obj = Instantiate(QuickUi, UICanvas);
-        // obj.GetComponent<IDgenerator>().ID = other.GetComponent<IDgenerator>().ID;
-        // obj.GetComponent<MoveOnUi>().Target = other.gameObject.transform;
     }
-
     private void OnTriggerExit(Collider other)
     {
     }

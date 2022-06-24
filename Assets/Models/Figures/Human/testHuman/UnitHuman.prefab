@@ -222,6 +222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a8d8cbdd4f8e548bb517023fd88cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AttackVisual: {fileID: 3444611428397808923, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
   MouseTest: 0
   Team: {r: 0, g: 1, b: 0.6915529, a: 0}
   CanControl: 1

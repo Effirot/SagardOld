@@ -190,16 +190,23 @@ public class Skill{
     {
         LineRenderer renderer = To.LineRenderer;
         
-        if(NowUsing.Type == (HitType.Empty & HitType.OnSelfPoint & HitType.Arc & HitType.Constant)) 
+        if(NowUsing.Type == (HitType.Empty | HitType.OnSelfPoint | HitType.Arc | HitType.Constant)) 
         { renderer.enabled = false; return; }
         
         renderer.enabled = true;
-        renderer.endColor = (Check())? Color.red : Color.grey;
+        renderer.endColor = (Check())? Color.red : Color.black;
 
         Checkers FinalPoint = (NowUsing.Piercing)? endPos : ToPoint(startPos, endPos);
 
         renderer.positionCount = 2;
-        renderer.SetPositions(new Vector3[] {startPos, FinalPoint});
+        
+        List<Vector3> points = new List<Vector3>();
+        foreach(Vector3 point in EvaluateSlerpPoints(startPos, FinalPoint, CenterOfPoints(startPos,FinalPoint)))
+        {
+            points.Add(point);
+        }
+
+        renderer.SetPositions(points.ToArray());
         
     }
     public bool Check(){ 
@@ -207,6 +214,39 @@ public class Skill{
         return Checkers.Distance(startPos, endPos) < NowUsing.Distance & 
                !(startPos == endPos) & 
                (NowUsing.Type != (HitType.Arc))? Checkers.Distance(startPos, endPos) > NowUsing.AttackStartDistance - 0.7f : true; }
+
+    public int StaminaWaste()
+    {
+        switch(NowUsing.Type)
+        {
+            default: return NowUsing.UsingStamina;
+            // case HitType.Arc: return ;
+        }
+    }
+
+
+    public Vector3 CenterOfPoints(Vector3 a, Vector3 b)
+    {
+        var Sqrt = Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow( a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
+
+        var x = a.x + (b.x - a.x) * 3 /  Sqrt;
+        var y = a.y + (b.y - a.y) * 3 /  Sqrt;
+        var z = a.z + (b.z - a.z) * 3 /  Sqrt;
+
+        return new Vector3(x, y, z);
+    }
+
+    IEnumerable<Vector3> EvaluateSlerpPoints(Vector3 start, Vector3 end, Vector3 center, int count = 10) {
+        
+        var startRelativeCenter = start - center;
+        var endRelativeCenter = end - center;
+
+        var f = 1f / count;
+
+        for (var i = 0f; i < 1 + f; i += f) {
+            yield return Vector3.Slerp(startRelativeCenter, endRelativeCenter, i) + center;
+        }
+    }
 }
 
 public class SkillBuff
