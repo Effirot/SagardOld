@@ -5,10 +5,28 @@ using UnityEngine.Events;
 using SagardCL;
 using System.Threading.Tasks;
 
+public interface ObjectOnMap
+{
+    HealthBar Health{ get; set; }
+
+    List<Effect> Resists{ get; set; }
+    List<Effect> Debuff{ get; set; }
+}
+
+public interface PlayerStats : ObjectOnMap
+{
+    
+    StaminaBar Stamina{ get; set; }
+    SanityBar Sanity{ get; set; }
+
+    List<StateBar> OtherStates{ get; set; }
+
+    List<BaseSkill> BaseSkills{ get; set; }
+}
+
 public abstract class UnitController : MonoBehaviour
 {
     protected uint ID => GetComponent<IDgenerator>().ID;
-    public GameObject AttackVisual;
 
     public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value;} }
     [SerializeField]protected int MouseTest = 0;
@@ -33,44 +51,28 @@ public abstract class UnitController : MonoBehaviour
     public bool CanControl = true;
     public int WalkDistance;
     [Space] 
-    [SerializeReference] public HealthBar Health = new HealthOver();  // health parameters
-    [SerializeReference] public StaminaBar Stamina = new Stamina(); // Stamina parameters
-    [SerializeReference] public SanityBar Sanity = new Sanity(); // sanity parameters
-    [Space(3)]
-    [SerializeReference] public List<StateBar> OtherStates = new List<StateBar>();
 
+    [SerializeReference] protected HealthBar _Health;  // health parameters
+    [SerializeReference] public  StaminaBar _Stamina; // Stamina parameters
+    [SerializeReference] protected SanityBar _Sanity; // sanity parameters
+    [Space(3)]
+    [SerializeReference] protected List<StateBar> _OtherStates = new List<StateBar>();
     [Space] // Debuff's parameters
-    public List<Effect> Resists;
-    public List<Effect> Debuff;
+    [SerializeReference] protected List<Effect> _Resists = new List<Effect>();
+    [SerializeReference] protected List<Effect> _Debuff = new List<Effect>();
 
     // Skills parameters
     [Space]
     public Skill SkillRealizer;
 
-    private List<GameObject> attackPointsVisuals = new List<GameObject>();
-
-    async protected void AttackVisualization(List<Attack> AttackZone)
-    {   
-        foreach(Attack attack in AttackZone)
-        {
-            if(attack.damage == 0) continue;
-            GameObject obj = await Task.Run(() => Instantiate(AttackVisual, attack.Where, AttackVisual.transform.rotation));
-            attackPointsVisuals.Add(obj);
-            
-            obj.GetComponent<SpriteRenderer>().color = (attack.damageType != DamageType.Heal)? new Color(attack.damage * 0.07f, 0, 0.1f, 0.9f) : new Color(0, attack.damage * 0.07f, 0.1f, 0.9f);
-        }         
-    }
-    protected void AttackVisualizationClear() { foreach(GameObject obj in attackPointsVisuals) { Destroy(obj); } }
-
-
     void Awake()
     {
-        position = new Checkers(position);
+        
         InGameEvents.MapUpdate.AddListener(ParametersUpdate);
         InGameEvents.MouseController.AddListener((UnityAction<uint, int>)((id, b) => 
         { 
-            if(id == ID) { MouseTest = b; }
-            else MouseTest = 0;
+            if(id != ID) {  MouseTest = 0; return; }
+            MouseTest = b;
             switch(MouseTest)
             {
                 default: StandingIn(); return;
@@ -95,6 +97,7 @@ public abstract class UnitController : MonoBehaviour
             default: StandingUpd(); return;
             case 1: MovePlaningUpd(); return;
             case 2: AttackPlaningUpd(); return;
+            case 4: break;
         }
     }
 
@@ -126,8 +129,8 @@ public abstract class UnitController : MonoBehaviour
         return WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
     }
 
-    List<Attack> AttackZone = new List<Attack>();
-    List<Checkers> WalkWay = new List<Checkers>();
+    protected List<Attack> AttackZone = new List<Attack>();
+    protected List<Checkers> WalkWay = new List<Checkers>();
 
 
     protected void StandingUpd() // Calling(void Update), when you no planing
@@ -175,7 +178,9 @@ public abstract class UnitController : MonoBehaviour
     protected void StandingIn()
     {
         UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Close, gameObject, this);
-        ParametersUpdate();
+        position = new Checkers(position);
+        
+        InGameEvents.MapUpdate.Invoke();
     }
     protected async void MovePlaningIn()
     {
@@ -190,7 +195,7 @@ public abstract class UnitController : MonoBehaviour
 
     protected async void MouseWheelTurn(){ await AttackPlannerUpdate();  }
     protected async void ChangePos() {  if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
- 
+
     protected async void ParametersUpdate()
     {
         
@@ -203,7 +208,7 @@ public abstract class UnitController : MonoBehaviour
         await Task.Delay(1);
 
         // Move planner
-        if(!MPlanerChecker()) { MPlaner.LineRenderer.enabled = false; return;}
+        if(!MPlanerChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
         MPlaner.LineRenderer.enabled = true;
         WalkWay.Clear();
         if (MPlanerChecker()){
@@ -225,66 +230,76 @@ public abstract class UnitController : MonoBehaviour
         {
             AttackZone.Add(attack);
         }
-        AttackVisualizationClear();
-        AttackVisualization(AttackZone);
+        Generation.DrawAttack(AttackZone, this);
         
 
-        APlaner.Renderer.enabled = APlaner.position != position & APlaner.position !=  MPlaner.position & SkillRealizer.NowUsing.Type != (HitType.Empty & HitType.OnSelfPoint & HitType.Arc & HitType.Constant);
+        APlaner.Renderer.enabled = APlaner.position !=  MPlaner.position & SkillRealizer.NowUsing.Type != (HitType.Empty & HitType.OnSelfPoint & HitType.Arc & HitType.Constant);
         APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;
         SkillRealizer.Graphics(); 
     }
 
     protected virtual async Task Walking()
     {
-        if(WalkWay == null) return;
+        if(WalkWay.Count == 0) return;
+        WillRest = false;
         await Task.Delay(10);
         IEnumerator MPlanerMove()
-        {
+        {   
+            MouseTest = 4;
             int PointNum = 1;
-            for(float i = 0.00001f; position != MPlaner.position; i *= 1.025f)
+            for(float i = 0.00001f; position != MPlaner.position; i *= 1.040f)
             {
                 position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
                 MPlaner.LineRenderer.SetPosition(0, position);
                 if(new Checkers(position) == WalkWay[PointNum] & new Checkers(position) != WalkWay[WalkWay.Count - 1]){ PointNum++; }
                 yield return null;
             }
+            MouseTest = 0;
             yield break;
         }
+        await MovePlannerUpdate();
         StartCoroutine(MPlanerMove());
         await Task.Run(MPlanerMove);
+        _Stamina.GetTired(_Stamina.WalkUseStamina);
         ParametersUpdate();
     }
     protected virtual async Task PriorityAttacking()
     {
-        if(AttackZone == null) return;
+        if(AttackZone.Count == 0) return;
         if(!SkillRealizer.NowUsing.PriorityAttacking) return;
+        WillRest = false;
         await Task.Delay(Random.Range(0, 2700));
 
         InGameEvents.AttackTransporter.Invoke(AttackZone);
         AttackZone.Clear();
-        APlaner.position = position;
+        APlaner.position = MPlaner.position;
         await AttackPlannerUpdate();
     }
     protected virtual async Task Attacking()
     {
-        if(AttackZone == null) return;
+        if(AttackZone.Count == 0) return;
         if(SkillRealizer.NowUsing.PriorityAttacking) return;
+        WillRest = false;
         await Task.Delay(Random.Range(0, 2700));
 
+
+        _Stamina.GetTired(SkillRealizer.StaminaWaste());
         InGameEvents.AttackTransporter.Invoke(AttackZone);
         AttackZone.Clear();
-        APlaner.position = position;
+        APlaner.position = MPlaner.position;
+        
         await AttackPlannerUpdate();
     }
     protected virtual async Task Dead() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm dead, not big surprise"); }
-    protected virtual async Task Rest() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm resting"); }
+    private bool WillRest = true;
+    protected virtual async Task Rest() 
+    { 
+        if(!WillRest) { WillRest = true; return;}
+        await Task.Delay(Random.Range(0, 2300)); 
+        _Stamina.Rest();
+    }
 
-    protected void GetDamage(Attack attack) 
-    {
-        Health.GetDamage(attack);        
-    }
-    protected virtual void GetHeal(Attack attack)
-    {
-        Health.GetDamage(attack);
-    }
+
+    protected abstract void GetDamage(Attack attack);
+    protected abstract void GetHeal(Attack attack);
 }

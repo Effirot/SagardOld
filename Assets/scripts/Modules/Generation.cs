@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SagardCL;
 
-public class Generation : MonoBehaviour
+public abstract class Generation : MonoBehaviour
 {
+    [SerializeField] GameObject AttackVisual;
     [System.Serializable]
     protected class PlatformVisual
     {
@@ -27,23 +29,37 @@ public class Generation : MonoBehaviour
         }
     }
 
+
+
+    private static GameObject[,] AttackVisualsRealizers;
+    private static List<Attack>[,] AllAttackZoneArchive;
     protected void LetsGenerate(Map map, PlatformVisual[] Platform){
         ClearMap();
-        for(int x = 0; x < map.XScale; x++)
-        {
-            for(int z = 0; z < map.ZScale; z++)
-            {
-                PlatformVisual NowPlatform = Platform[map.GetModifier(x, z)];
-                if(map.GetLet(x, z) >= 0){
-                    GameObject obj = Instantiate(
-                    NowPlatform.GetPlatform(), 
-                    new Vector3(x, map.GetUp(x, z), z), 
-                    Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), 
-                    transform);
 
-                    obj.tag = "Map";
-                }
+        AttackVisualsRealizers = new GameObject[map.XScale, map.ZScale];
+        AllAttackZoneArchive = new List<Attack>[map.XScale, map.ZScale];
+        
+
+        for(int x = 0; x < map.XScale - 1; x++)
+        for(int z = 0; z < map.ZScale - 1; z++)
+        {
+            PlatformVisual NowPlatform = Platform[map.GetModifier(x, z)];
+            if(map.GetLet(x, z) >= 0){
+                GameObject obj = Instantiate(
+                NowPlatform.GetPlatform(), 
+                new Vector3(x, map.GetUp(x, z), z), 
+                Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), 
+                transform);
+
+                obj.tag = "Map";
             }
+
+            AllAttackZoneArchive[x, z] = new List<Attack>();
+
+            GameObject AttackGizmo = Instantiate<GameObject>(AttackVisual, new Checkers(x, z, 0.04f), AttackVisual.transform.rotation, transform);
+            AttackVisualsRealizers[x, z] = AttackGizmo;
+            
+            AttackGizmo.SetActive(false);
         }
     }
     private void ClearMap(){
@@ -52,6 +68,50 @@ public class Generation : MonoBehaviour
             Destroy(obj);
         }
     }
+
+    public static void DrawAttack(List<Attack> AttackZone, UnitController sender)
+    {
+        foreach(List<Attack> attacks in AllAttackZoneArchive) { if(attacks != null) attacks.RemoveAll((a) => a.WhoAttack == sender); }
+        foreach(Attack attack in AttackZone) {  try{ AllAttackZoneArchive[attack.Where.x, attack.Where.z].Add(attack); } catch { }  }
+
+        CheckAllGizmos();
+    }
+    private static void CheckAllGizmos()
+    {
+        for(int x = 0; x < AllAttackZoneArchive.GetLength(0) - 1; x++)
+        for(int z = 0; z < AllAttackZoneArchive.GetLength(1) - 1; z++)
+        {
+            List<Attack> attackList = AllAttackZoneArchive[x, z];
+            if(attackList.Count == 0) { AttackVisualsRealizers[x, z].SetActive(false); continue; }
+
+            AttackVisualsRealizers[x, z].SetActive(true);
+            AttackVisualsRealizers[x, z].GetComponent<SpriteRenderer>().color = AttackPaints(attackList);
+        }
+        Color AttackPaints(List<Attack> attacks)
+        {
+            Color result = Color.black;
+            foreach (Attack attack in attacks)
+            {
+                switch (attack.damageType)
+                {
+                    default: result += Color.HSVToRGB(0.01f, 1, attack.damage * 0.06f); break;
+                    case DamageType.MetalHeal: goto case DamageType.Heal; 
+                    case DamageType.Heal: result += Color.HSVToRGB(0.42f, 1, attack.damage * 0.06f); break;
+                    case DamageType.Rezo: result += Color.HSVToRGB(67f / 360f, 1, attack.damage * 0.06f); break;
+                    case DamageType.Pure: result += Color.HSVToRGB(274f / 360f, 1, attack.damage * 0.06f); break;
+                    
+                }
+            }
+            return result;
+        }
+
+
+    }
+
+
+
+
+
 }
 
 [System.Serializable]

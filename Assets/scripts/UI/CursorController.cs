@@ -8,7 +8,7 @@ public class CursorController : MonoBehaviour
     public static GameObject ObjectOnMap;
     void Update()
     {
-        Checkers Pos = new Checkers(transform.position); 
+        Checkers Pos = new Checkers(transform.position);
         if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit)) Pos = new Checkers(hit.point);
 
         float Distance = Vector3.Distance(transform.position, Pos) / 10;

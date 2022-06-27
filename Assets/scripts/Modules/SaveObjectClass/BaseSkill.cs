@@ -17,6 +17,7 @@ public class BaseSkill : Descript
     [Space]
     [Range(0, 40)]public int Distance;
     [Range(0, 20)]public int Damage;
+    public DamageScaling DamageScalingType;
     [SerializeField]public bool Piercing;
     [Range(0, 15)]public int Exploding;
     [Range(0, 10)]public int AttackStartDistance;
@@ -45,7 +46,8 @@ public class Skill{
 
     public int SkillIndex = 0;
     [SerializeField] private List<BaseSkill> AvailbleBaseSkills;
-    public List<BaseSkill> AvailbleSkills => AvailbleBaseSkills;
+    public List<BaseSkill> AdditionBaseSkills;
+    public List<BaseSkill> AvailbleSkills => CombineLists<BaseSkill>(AvailbleBaseSkills, AdditionBaseSkills);
 
     public BaseSkill NowUsing => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
 
@@ -64,8 +66,10 @@ public class Skill{
         return t; 
     }
 
+
     public async IAsyncEnumerable<Attack> Realize()
     {
+
         if(Check()){
             await Task.Delay(0);
             Checkers FinalPoint = (NowUsing.Piercing)? endPos : ToPoint(startPos, endPos);
@@ -80,19 +84,18 @@ public class Skill{
                 case HitType.Arc:
                 {
                     NowUsing.Exploding = 0;
-                    FinalPoint = cursorPos - startPos;
                     
                     for(int x = -NowUsing.Distance; x < NowUsing.Distance; x++)
                     {
                         for(int z = -NowUsing.Distance; z <= NowUsing.Distance; z++)
                         {
-                            if(Checkers.Distance(startPos, startPos + new Checkers(x, z)) > Mathf.Abs(NowUsing.Distance / 2) - 0.8f)
+                            if(Checkers.Distance(startPos, startPos + new Checkers(x, z)) > Checkers.Distance(endPos, startPos))
                                 continue;
-                            if(Checkers.Distance(cursorPos, startPos + new Checkers(x, z)) > Checkers.Distance(cursorPos, startPos))
+                            if(Checkers.Distance(endPos, startPos + new Checkers(x, z)) > Checkers.Distance(endPos, startPos))
                                 continue;
                             if(startPos == startPos + new Checkers(x, z))
                                 continue;
-                            if(Checkers.Distance(startPos + new Checkers(x, z), startPos) < NowUsing.AttackStartDistance + 0.5f + ((Checkers.Distance(cursorPos, startPos) / 3) - 3f)) 
+                            if(Checkers.Distance(startPos + new Checkers(x, z), startPos) < NowUsing.AttackStartDistance * ((Checkers.Distance(endPos, startPos) / 8f))) 
                                 continue;
                             if(!NowUsing.Piercing & Physics.Raycast(new Checkers(startPos, 0.2f), startPos + new Checkers(x, z) - startPos, Checkers.Distance(startPos, startPos + new Checkers(x, z)), LayerMask.GetMask("Map")))
                                 continue;
@@ -199,21 +202,16 @@ public class Skill{
         Checkers FinalPoint = (NowUsing.Piercing)? endPos : ToPoint(startPos, endPos);
 
         renderer.positionCount = 2;
-        
-        List<Vector3> points = new List<Vector3>();
-        foreach(Vector3 point in EvaluateSlerpPoints(startPos, FinalPoint, CenterOfPoints(startPos,FinalPoint)))
-        {
-            points.Add(point);
-        }
 
-        renderer.SetPositions(points.ToArray());
+        renderer.SetPositions(new Vector3[] { startPos, FinalPoint });
         
     }
     public bool Check(){ 
-        if(NowUsing.Type == (HitType.OnSelfPoint)) return true;
+        //if(NowUsing.Type == (HitType.OnSelfPoint)) return true;
+        if(NowUsing.Type == HitType.Empty) return false;
         return Checkers.Distance(startPos, endPos) < NowUsing.Distance & 
                !(startPos == endPos) & 
-               (NowUsing.Type != (HitType.Arc))? Checkers.Distance(startPos, endPos) > NowUsing.AttackStartDistance - 0.7f : true; }
+               Checkers.Distance(startPos, endPos) > ((NowUsing.Type != HitType.Arc)? NowUsing.AttackStartDistance - 0.7f : 0); }
 
     public int StaminaWaste()
     {
@@ -225,28 +223,14 @@ public class Skill{
     }
 
 
-    public Vector3 CenterOfPoints(Vector3 a, Vector3 b)
+    List<T> CombineLists<T>(List<T> a, List<T> b) 
     {
-        var Sqrt = Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow( a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
-
-        var x = a.x + (b.x - a.x) * 3 /  Sqrt;
-        var y = a.y + (b.y - a.y) * 3 /  Sqrt;
-        var z = a.z + (b.z - a.z) * 3 /  Sqrt;
-
-        return new Vector3(x, y, z);
+        a.AddRange(b);
+        return a;
     }
 
-    IEnumerable<Vector3> EvaluateSlerpPoints(Vector3 start, Vector3 end, Vector3 center, int count = 10) {
-        
-        var startRelativeCenter = start - center;
-        var endRelativeCenter = end - center;
 
-        var f = 1f / count;
 
-        for (var i = 0f; i < 1 + f; i += f) {
-            yield return Vector3.Slerp(startRelativeCenter, endRelativeCenter, i) + center;
-        }
-    }
 }
 
 public class SkillBuff

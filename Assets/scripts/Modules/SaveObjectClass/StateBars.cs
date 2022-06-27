@@ -22,7 +22,10 @@ public interface HealthBar : StateBar
 }
 public interface StaminaBar : StateBar
 {
+    void GetTired(int value);
     int RestEffectivity{ get; set; }
+    int WalkUseStamina{ get; set; }
+
     void Rest();
 }
 public interface SanityBar : StateBar
@@ -80,6 +83,7 @@ public class HealthOver : HealthBar
     [SerializeField] int _ArmorRange;
     public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
     
+    public HealthOver() { Debug.Log("aa"); }
     // public HealthOver() { InGameEvents.AddListener(); }
     public void GetDamage(Attack attack)
     {
@@ -110,7 +114,9 @@ public class Stamina : StaminaBar
     [SerializeField] int _WalkUseStamina;
     public int WalkUseStamina { get { return _WalkUseStamina; } set { _WalkUseStamina = value; } }
 
-    public void Rest() { }
+    public void Rest() { _State = Mathf.Clamp(_State + RestEffectivity, 0, Max); }
+
+    public void GetTired(int value){ _State = Mathf.Clamp(State - value, 0, Max); }
 
 
     public Color BarColor{ get{ return new Color(1, 0, 0); } }

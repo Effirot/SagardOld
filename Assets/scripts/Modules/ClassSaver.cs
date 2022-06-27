@@ -29,7 +29,12 @@ namespace SagardCL //Class library
         Point, // 
         Dash, 
     }
-   
+    public enum DamageScaling 
+    {
+        Constant,
+        Descending,
+        Addition,
+    }
 
     public struct Attack
     {
@@ -54,7 +59,7 @@ namespace SagardCL //Class library
             damageType = Type;
             Debuff = debuff;
         }
-        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type, Effect debuff)
+        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type, Effect debuff = null)
         {
             WhoAttack = Who;
             WhereAttack = Where;
@@ -63,15 +68,6 @@ namespace SagardCL //Class library
             damageType = Type;
             Debuff = new Effect[] { debuff };
         }
-        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type)
-        {
-            WhoAttack = Who;
-            WhereAttack = Where;
-            Damage = Dam;
-
-            damageType = Type;
-            Debuff = new Effect[] { };
-        }    
     }
     
     [System.Serializable]
@@ -93,4 +89,7 @@ namespace SagardCL //Class library
 
         public LineRenderer LineRenderer { get{ return Planer.GetComponent<LineRenderer>(); } }
     }
+
+    
+
 }

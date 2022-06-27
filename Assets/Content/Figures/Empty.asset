@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1fa6c0c216d4d441a2764f694fac60c, type: 3}
+  m_Name: Empty
+  m_EditorClassIdentifier: 
+  Name: 
+  Description: 
+  BigDescription: 
+  image: {fileID: 0}
+  PriorityAttacking: 0
+  Type: 0
+  damageType: 0
+  secondaryDamageType: 0
+  Distance: 0
+  Damage: 0
+  Piercing: 0
+  Exploding: 0
+  AttackStartDistance: 0
+  Debuff: []
+  NoWalking: 0
+  HitSelf: 0
+  SelfDamage: 0
+  UsingStamina: 0
+  DeleteWhenLowAmmo: 0
