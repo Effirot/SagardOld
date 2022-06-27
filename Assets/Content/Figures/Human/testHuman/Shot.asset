@@ -23,7 +23,7 @@ MonoBehaviour:
   Distance: 18
   Damage: 10
   DamageScalingType: 0
-  Piercing: 1
+  Piercing: 0
   Exploding: 0
   AttackStartDistance: 2
   Debuff: []

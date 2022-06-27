@@ -158,7 +158,7 @@ GameObject:
   - component: {fileID: 170862959113201049}
   - component: {fileID: 8015502925166708610}
   - component: {fileID: 6213634045846544188}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Controller
   m_TagString: Figure
   m_Icon: {fileID: 2974397684917235467, guid: 0000000000000000d000000000000000, type: 0}
@@ -208,9 +208,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MouseTest: 0
-  Team: {r: 0, g: 1, b: 0.6915529, a: 0}
   CanControl: 1
   WalkDistance: 7
+  _Team: {r: 0, g: 0, b: 0, a: 0}
   _Health:
     rid: 1000
   _Stamina:
@@ -220,21 +220,8 @@ MonoBehaviour:
   _OtherStates: []
   _Resists: []
   _Debuff: []
-  SkillRealizer:
-    Unit: {fileID: 6213634045846544188}
-    From:
-      Planer: {fileID: 8182480761862019246}
-      Model: {fileID: 447574044884308314}
-    To:
-      Planer: {fileID: 302834733322452018}
-      Model: {fileID: 110499025132641117}
-    SkillIndex: 0
-    AvailbleBaseSkills:
-    - {fileID: 11400000, guid: c304c22ff858d26438173760aa2d6ae5, type: 2}
-    - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
-    - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
-    - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
-    AdditionBaseSkills: []
+  _Skill:
+    rid: 1003
   references:
     version: 2
     RefIds:
@@ -258,6 +245,24 @@ MonoBehaviour:
         _State: 9
         _Max: 9
         _SanityShield: 0
+    - rid: 1003
+      type: {class: Skill, ns: , asm: Assembly-CSharp}
+      data:
+        Unit: {fileID: 6213634045846544188}
+        From:
+          Planer: {fileID: 8182480761862019246}
+          Model: {fileID: 447574044884308314}
+        To:
+          Planer: {fileID: 302834733322452018}
+          Model: {fileID: 110499025132641117}
+        SkillIndex: 0
+        AvailbleBaseSkills:
+        - {fileID: 11400000, guid: c304c22ff858d26438173760aa2d6ae5, type: 2}
+        - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
+        - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
+        - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
+        - {fileID: 11400000, guid: 3fc5cb8070a00ea4b95a9cda4c28fb1e, type: 2}
+        AdditionBaseSkills: []
 --- !u!1 &270387941299697432
 GameObject:
   m_ObjectHideFlags: 0

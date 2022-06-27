@@ -61,7 +61,7 @@ public class UnitUIController : MonoBehaviour
                 obj.transform.Find("Ico").GetComponent<Image>().sprite = skill.image;
                 obj.transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text = skill.UsingStamina + "";
                 obj.name = count.ToString();
-                obj.GetComponent<Button>().interactable = lifeParameters._Stamina.State >= skill.UsingStamina;
+                obj.GetComponent<Button>().interactable = lifeParameters.Stamina.State >= skill.UsingStamina;
                 obj.GetComponent<Button>().onClick.AddListener(() => 
                 {
                     lifeParameters.CurrentSkillIndex = int.Parse(obj.name);
@@ -69,7 +69,7 @@ public class UnitUIController : MonoBehaviour
                     foreach(GameObject element in UIelements)
                     {
                         if(element)element.GetComponent<Button>().interactable = lifeParameters.SkillRealizer.AvailbleSkills
-                                    [int.Parse(transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text) - 1].UsingStamina <= lifeParameters._Stamina.State;
+                                    [int.Parse(transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text)].UsingStamina <= lifeParameters.Stamina.State;
                     }
                     obj.GetComponent<Button>().interactable = false;
                 });

@@ -20,12 +20,12 @@ MonoBehaviour:
   Type: 2
   damageType: 5
   secondaryDamageType: 2
-  Distance: 17
+  Distance: 4
   Damage: 8
   DamageScalingType: 0
   Piercing: 0
   Exploding: 0
-  AttackStartDistance: 6
+  AttackStartDistance: 3
   Debuff: []
   NoWalking: 0
   HitSelf: 0

@@ -15,55 +15,59 @@ public interface ObjectOnMap
 
 public interface PlayerStats : ObjectOnMap
 {
-    
+    Color Team{ get; set; }
+
     StaminaBar Stamina{ get; set; }
     SanityBar Sanity{ get; set; }
 
+    bool CanControl { get; set; }
+    bool Corpse { get; set; }
+    int WalkDistance { get; set; }
+
     List<StateBar> OtherStates{ get; set; }
 
-    List<BaseSkill> BaseSkills{ get; set; }
+    Skill SkillRealizer{ get; set; }
 }
 
 public abstract class UnitController : MonoBehaviour
 {
     protected uint ID => GetComponent<IDgenerator>().ID;
 
-    public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value;} }
-    [SerializeField]protected int MouseTest = 0;
-
-    [SerializeField]private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
-    [SerializeField]private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
+    private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
+    private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
 
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
     protected Collider Collider => GetComponent<MeshCollider>();
 
+    public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value;} }
+    
+    
+    protected int MouseTest = 0;
+    protected List<Attack> AttackZone = new List<Attack>();
+    protected List<Checkers> WalkWay = new List<Checkers>();
+
     private Checkers LastPose = new Checkers();
-    protected Checkers CursorPos
-    { get { 
+    protected Checkers CursorPos { get { 
             Checkers pos = new Checkers(GameObject.Find("3DCursor").transform.position);
             if(LastPose != pos) { LastPose = pos; ChangePos(); } 
-            return pos; } }
-    [Space(3)]
+            return pos; } 
+    }
 
-    [Space, Header("Base Parameters")]
-    public Color Team;
-    [Space]
-    public bool CanControl = true;
-    public int WalkDistance;
-    [Space] 
+    abstract public Color Team{ get; set; }
+    abstract public bool CanControl { get; set; }
+    abstract public bool Corpse { get; set; }
+    abstract public int WalkDistance { get; set; }
+    
+    abstract public HealthBar Health { get; set; } // health parameters
+    abstract public StaminaBar Stamina { get; set; } // Stamina parameters
+    abstract public SanityBar Sanity { get; set; } // sanity parameters
 
-    [SerializeReference] protected HealthBar _Health;  // health parameters
-    [SerializeReference] public  StaminaBar _Stamina; // Stamina parameters
-    [SerializeReference] protected SanityBar _Sanity; // sanity parameters
-    [Space(3)]
-    [SerializeReference] protected List<StateBar> _OtherStates = new List<StateBar>();
-    [Space] // Debuff's parameters
-    [SerializeReference] protected List<Effect> _Resists = new List<Effect>();
-    [SerializeReference] protected List<Effect> _Debuff = new List<Effect>();
+    abstract public List<StateBar> OtherStates { get; set; }
 
-    // Skills parameters
-    [Space]
-    public Skill SkillRealizer;
+    abstract public List<Effect> Resists { get; set; }
+    abstract public List<Effect> Debuff { get; set; }
+
+    abstract public Skill SkillRealizer { get; set; }
 
     void Awake()
     {
@@ -111,7 +115,7 @@ public abstract class UnitController : MonoBehaviour
             case 5: await Rest(); return;
         }
     }    
-    protected bool MPlanerChecker(bool Other = true)
+    protected bool WalkChecker(bool Other = true)
     {        
         if(!Other) return false;
         
@@ -125,22 +129,20 @@ public abstract class UnitController : MonoBehaviour
         if(new Checkers(position) == new Checkers(MPlaner.position))
             return false;
         
+        //OnStamina
+        if(Stamina.WalkUseStamina > Stamina.State) return false;
         //OnDistance
         return WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
     }
 
-    protected List<Attack> AttackZone = new List<Attack>();
-    protected List<Checkers> WalkWay = new List<Checkers>();
-
-
     protected void StandingUpd() // Calling(void Update), when you no planing
     {
         //Base model
-        MPlaner.Renderer.enabled = MPlanerChecker();
+        MPlaner.Renderer.enabled = WalkChecker();
         
         //Move planner
         MPlaner.Collider.enabled = true;
-        if(!MPlanerChecker() & InGameEvents.canControl) MPlaner.position = position;
+        if(!WalkChecker() & InGameEvents.canControl) MPlaner.position = position;
     
         //Attack planner
         if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
@@ -208,10 +210,10 @@ public abstract class UnitController : MonoBehaviour
         await Task.Delay(1);
 
         // Move planner
-        if(!MPlanerChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
+        if(!WalkChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
         MPlaner.LineRenderer.enabled = true;
         WalkWay.Clear();
-        if (MPlanerChecker()){
+        if (WalkChecker()){
             await foreach(Checkers step in Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position))){
                 WalkWay.Add(step);
             }
@@ -252,7 +254,7 @@ public abstract class UnitController : MonoBehaviour
                 position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
                 MPlaner.LineRenderer.SetPosition(0, position);
                 if(new Checkers(position) == WalkWay[PointNum] & new Checkers(position) != WalkWay[WalkWay.Count - 1]){ PointNum++; }
-                yield return null;
+                yield return new WaitForEndOfFrame();
             }
             MouseTest = 0;
             yield break;
@@ -260,7 +262,7 @@ public abstract class UnitController : MonoBehaviour
         await MovePlannerUpdate();
         StartCoroutine(MPlanerMove());
         await Task.Run(MPlanerMove);
-        _Stamina.GetTired(_Stamina.WalkUseStamina);
+        Stamina.GetTired(Stamina.WalkUseStamina);
         ParametersUpdate();
     }
     protected virtual async Task PriorityAttacking()
@@ -273,6 +275,7 @@ public abstract class UnitController : MonoBehaviour
         InGameEvents.AttackTransporter.Invoke(AttackZone);
         AttackZone.Clear();
         APlaner.position = MPlaner.position;
+
         await AttackPlannerUpdate();
     }
     protected virtual async Task Attacking()
@@ -283,20 +286,24 @@ public abstract class UnitController : MonoBehaviour
         await Task.Delay(Random.Range(0, 2700));
 
 
-        _Stamina.GetTired(SkillRealizer.StaminaWaste());
+        Stamina.GetTired(SkillRealizer.StaminaWaste());
         InGameEvents.AttackTransporter.Invoke(AttackZone);
         AttackZone.Clear();
         APlaner.position = MPlaner.position;
         
         await AttackPlannerUpdate();
     }
-    protected virtual async Task Dead() { await Task.Delay(Random.Range(0, 2300)); Debug.Log("I'm dead, not big surprise"); }
+    protected virtual async Task Dead() 
+    { 
+        await Task.Delay(Random.Range(10, 100)); 
+
+    }
     private bool WillRest = true;
     protected virtual async Task Rest() 
     { 
         if(!WillRest) { WillRest = true; return;}
         await Task.Delay(Random.Range(0, 2300)); 
-        _Stamina.Rest();
+        Stamina.Rest();
     }
 
 

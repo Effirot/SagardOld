@@ -225,12 +225,20 @@ public class Skill{
 
     List<T> CombineLists<T>(List<T> a, List<T> b) 
     {
-        a.AddRange(b);
-        return a;
+        List<T> result = new List<T>();
+        result.AddRange(a);
+        result.AddRange(b);
+        return result;
     }
-
-
-
+    List<T> CombineLists<T>(List<List<T>> a) 
+    {
+        List<T> result = new List<T>();
+        foreach(List<T> b in a)
+        {
+            result.AddRange(b);
+        }
+        return result;
+    }
 }
 
 public class SkillBuff
