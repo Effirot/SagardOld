@@ -20,17 +20,15 @@ public class UnitUIController : MonoBehaviour
     public static UnityEvent<WhatUiDo, GameObject, UnitController> UiEvent = new UnityEvent<WhatUiDo, GameObject, UnitController>();
     public enum WhatUiDo
     {
-        Open,
-        Close,
-        Update,
+        UnitOpen,
+        UnitClose,
     }
 
     void Start() { UiEvent.AddListener((a, b, c) => { 
         switch (a)
         {
-            case WhatUiDo.Open: Open(b, c); break;
-            case WhatUiDo.Close: Close(); break;
-            case WhatUiDo.Update: UpdateUi (c); break;
+            case WhatUiDo.UnitOpen: Open(b, c); break;
+            case WhatUiDo.UnitClose: Close(); break;
         }
     }); }
 
@@ -48,11 +46,10 @@ public class UnitUIController : MonoBehaviour
     private void UpdateUi(UnitController lifeParameters)
     {
         foreach (GameObject element in UIelements) { Destroy(element); }
-        
-        List<BaseSkill> skills = lifeParameters.SkillRealizer.AvailbleSkills;
+
         int count = 0;
         // Skill Vision
-        foreach (BaseSkill skill in skills) 
+        foreach (BaseSkill skill in lifeParameters.SkillRealizer.AvailbleSkills) 
         { 
             if(skill.Type != HitType.Empty){            
                 GameObject obj = Instantiate(SkillPreset, UI.transform.Find("Skills").transform);
@@ -61,15 +58,15 @@ public class UnitUIController : MonoBehaviour
                 obj.transform.Find("Ico").GetComponent<Image>().sprite = skill.image;
                 obj.transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text = skill.UsingStamina + "";
                 obj.name = count.ToString();
-                obj.GetComponent<Button>().interactable = lifeParameters.Stamina.State >= skill.UsingStamina;
+                obj.GetComponent<Button>().interactable = lifeParameters.Stamina.Value >= skill.UsingStamina;
                 obj.GetComponent<Button>().onClick.AddListener(() => 
                 {
                     lifeParameters.CurrentSkillIndex = int.Parse(obj.name);
                     
                     foreach(GameObject element in UIelements)
                     {
-                        if(element)element.GetComponent<Button>().interactable = lifeParameters.SkillRealizer.AvailbleSkills
-                                    [int.Parse(transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text)].UsingStamina <= lifeParameters.Stamina.State;
+                        if(element) element.GetComponent<Button>().interactable = lifeParameters.SkillRealizer.AvailbleSkills
+                                    [int.Parse(transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text)].UsingStamina <= lifeParameters.Stamina.Value;
                     }
                     obj.GetComponent<Button>().interactable = false;
                 });
@@ -78,16 +75,25 @@ public class UnitUIController : MonoBehaviour
         }
     
         // State Bar Vision
+        InstantiateBars(lifeParameters.Health);
+        InstantiateBars(lifeParameters.Sanity);
+        InstantiateBars(lifeParameters.Stamina);
+
+        foreach(StateBar stats in lifeParameters.OtherStates) { InstantiateBars(stats); }
         
+        void InstantiateBars(StateBar stateBar) {
+            GameObject obj = Instantiate(SkillPreset, UI.transform.Find("Bars").transform);
 
-    
-    }
+            var percent = stateBar.Value / stateBar.Max;
 
-    GameObject InstantiateStateBar(GameObject obj, Transform parent)
-    {
-        GameObject stateBar = Instantiate(obj, parent);
+            RectTransform rect = obj.transform.Find("Value").GetComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(rect.sizeDelta.x, rect.sizeDelta.y); 
+
+
+
+            UIelements.Add(obj);
+        }
     
-        return stateBar;
     }
 
     IEnumerator RotateTo(Vector3 ToVector, float speed = 1)

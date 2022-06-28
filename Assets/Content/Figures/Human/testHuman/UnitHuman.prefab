@@ -207,10 +207,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70a8d8cbdd4f8e548bb517023fd88cf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MouseTest: 0
-  CanControl: 1
-  WalkDistance: 7
   _Team: {r: 0, g: 0, b: 0, a: 0}
+  _CanControl: 1
+  _Corpse: 0
+  _WalkDistance: 5
   _Health:
     rid: 1000
   _Stamina:
@@ -228,21 +228,21 @@ MonoBehaviour:
     - rid: 1000
       type: {class: Health, ns: , asm: Assembly-CSharp}
       data:
-        _State: 16
+        _Value: 16
         _Max: 16
         _ArmorMelee: 2
         _ArmorRange: 3
     - rid: 1001
       type: {class: Stamina, ns: , asm: Assembly-CSharp}
       data:
-        _State: 10
+        _Value: 10
         _Max: 10
         _RestEffect: 4
         _WalkUseStamina: 1
     - rid: 1002
       type: {class: Sanity, ns: , asm: Assembly-CSharp}
       data:
-        _State: 9
+        _Value: 9
         _Max: 9
         _SanityShield: 0
     - rid: 1003

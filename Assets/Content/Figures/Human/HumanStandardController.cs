@@ -39,12 +39,6 @@ public class HumanStandardController : UnitController, PlayerStats
     public override Skill SkillRealizer { get{ return _Skill; } set { _Skill = value; } }
     [SerializeReference] Skill _Skill = new Skill();
 
-
-
-
-
-
-
     protected override void GetDamage(Attack attack) { Health.GetDamage(attack); }
     protected override void GetHeal(Attack attack) { Health.GetDamage(attack);}
 }

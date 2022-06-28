@@ -5,22 +5,27 @@ using UnityEngine;
 using SagardCL;
 using System;
 
-public abstract class StateBar
+[Serializable]public abstract class StateBar
 {
     Color BarColor{ get; }
 
-    public abstract int State { get; }
+    public abstract int Value { get; }
     public abstract int Max { get; set; }  
+
+    public StateBar() { InGameEvents.StepEnd.AddListener(EveryStepEnd); }
+    public virtual void EveryStepEnd() { }
 }
 
-public abstract class HealthBar : StateBar
+[Serializable]public abstract class HealthBar : StateBar
 {
     public abstract int ArmorMelee { get; set; } 
     public abstract int ArmorRange {get; set; }
 
     public abstract void GetDamage(Attack attack);
+
+    public HealthBar() { Debug.Log("HealthBar"); InGameEvents.StepEnd.AddListener(EveryStepEnd); }
 }
-public abstract class StaminaBar : StateBar
+[Serializable]public abstract class StaminaBar : StateBar
 {
     public abstract void GetTired(int value);
     public abstract int RestEffectivity{ get; set; }
@@ -28,22 +33,22 @@ public abstract class StaminaBar : StateBar
 
     public abstract void Rest();
 }
-public abstract class SanityBar : StateBar
+[Serializable]public abstract class SanityBar : StateBar
 {
     public abstract int SanityShield { get; set; } 
 }
 
-public abstract class AmmoBar : StateBar
+[Serializable]public abstract class AmmoBar : StateBar
 {
 
 }
 
 
 // ================================================================= Health Bar ===========================================================================================================
-public class Health : HealthBar
+[Serializable]public class Health : HealthBar
 {
-    [SerializeField, Range(0, 50)] int _State = 0;
-    public override int State { get { return _State; } }
+    [SerializeField, Range(0, 50)] int _Value = 0;
+    public override int Value { get { return _Value; } }
     [SerializeField, Range(0, 50)] int _Max = 0;
     public override int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -56,22 +61,22 @@ public class Health : HealthBar
     {
         switch(attack.damageType)
         {
-            case DamageType.Pure: _State -= attack.damage; break;
-            case DamageType.Melee: _State -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: _State -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: _State -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: _State -= attack.damage / 4; break;
+            case DamageType.Pure: _Value -= attack.damage; break;
+            case DamageType.Melee: _Value -= attack.damage - ArmorMelee; break;
+            case DamageType.Range: _Value -= attack.damage - ArmorRange; break;
+            case DamageType.Rezo: _Value -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
+            case DamageType.Terra: _Value -= attack.damage / 4; break;
  
-            case DamageType.Heal: _State = Mathf.Clamp(State + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
-            case DamageType.MetalHeal: _State -= 1; break;
+            case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
+            case DamageType.MetalHeal: _Value -= 1; break;
         }
     }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
-public class HealthOver : HealthBar
+[Serializable]public class HealthOver : HealthBar
 {
-    [SerializeField, Range(0, 50)] int _State = 0;
-    public override int State { get { return _State; } }
+    [SerializeField, Range(0, 50)] int _Value = 0;
+    public override int Value { get { return _Value; } }
     [SerializeField, Range(0, 50)] int _Max = 0;
     public override int Max { get { return _Max; } set { _Max = value; } }
     [SerializeField] int _OverMax;
@@ -81,28 +86,31 @@ public class HealthOver : HealthBar
     public override int ArmorMelee{ get { return _ArmorMelee; } set { _ArmorMelee = value; } }
     [SerializeField] int _ArmorRange;
     public override int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
-    
-    public HealthOver() { InGameEvents.StepEnd.AddListener( () => { if(_State > _Max){ _State--; Debug.Log("Health OverMax"); }} ); }
-    // public HealthOver() { InGameEvents.AddListener(); }
+
+    public override void EveryStepEnd()
+    {
+        if(Value > Max) _Value -= 1;
+    }
+
     public override void GetDamage(Attack attack)
     {
         switch(attack.damageType)
         {
-            case DamageType.Pure: _State -= attack.damage; break;
-            case DamageType.Melee: _State -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: _State -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: _State -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: _State -= attack.damage / 4; break;
+            case DamageType.Pure: _Value -= attack.damage; break;
+            case DamageType.Melee: _Value -= attack.damage - ArmorMelee; break;
+            case DamageType.Range: _Value -= attack.damage - ArmorRange; break;
+            case DamageType.Rezo: _Value -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
+            case DamageType.Terra: _Value -= attack.damage / 4; break;
  
-            case DamageType.Heal: _State = Mathf.Clamp(State + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
+            case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
         }
     }
     public Color BarColor{ get{ return new Color(1, 0.1f, 0); } }
 }
-public class HealthCorpse : HealthBar
+[Serializable]public class HealthCorpse : HealthBar
 {
-    [SerializeField, Range(0, 50)] int _State = 9;
-    public override int State { get { return _State; } }
+    [SerializeField, Range(0, 50)] int _Value = 9;
+    public override int Value { get { return _Value; } }
     [SerializeField, Range(0, 50)] int _Max = 9;
     public override int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -113,32 +121,28 @@ public class HealthCorpse : HealthBar
 
 
     private int CorpseTimer = 0;
-    public HealthCorpse() { InGameEvents.StepEnd.AddListener(() => {
-        if(CorpseTimer >= 4) { CorpseTimer = 0; _State -= 1; return; }
-        CorpseTimer++;
-        }); }
 
     public override void GetDamage(Attack attack)
     {
         switch(attack.damageType)
         {
-            case DamageType.Pure: _State -= attack.damage; break;
-            case DamageType.Melee: _State -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: _State -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: _State -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: _State -= attack.damage / 4; break;
+            case DamageType.Pure: _Value -= attack.damage; break;
+            case DamageType.Melee: _Value -= attack.damage - ArmorMelee; break;
+            case DamageType.Range: _Value -= attack.damage - ArmorRange; break;
+            case DamageType.Rezo: _Value -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
+            case DamageType.Terra: _Value -= attack.damage / 4; break;
  
-            case DamageType.Heal: _State = Mathf.Clamp(State + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
-            case DamageType.MetalHeal: _State -= 1; break;
+            case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
+            case DamageType.MetalHeal: _Value -= 1; break;
         }
     }
     public Color BarColor{ get{ return new Color(0, 0, 0); } }
 }
 // ================================================================= Stamina Bar ===========================================================================================================
-public class Stamina : StaminaBar
+[Serializable]public class Stamina : StaminaBar
 {
-    [SerializeField, Range(0, 50)] int _State = 0;
-    public override int State { get { return _State; } }
+    [SerializeField, Range(0, 50)] int _Value = 0;
+    public override int Value { get { return _Value; } }
     [SerializeField, Range(0, 50)] int _Max = 0;
     public override int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -148,19 +152,19 @@ public class Stamina : StaminaBar
     [SerializeField] int _WalkUseStamina;
     public override int WalkUseStamina { get { return _WalkUseStamina; } set { _WalkUseStamina = value; } }
 
-    public override void Rest() { _State = Mathf.Clamp(_State + RestEffectivity, 0, Max); }
+    public override void Rest() { _Value = Mathf.Clamp(_Value + RestEffectivity, 0, Max); }
 
-    public override void GetTired(int value){ _State = Mathf.Clamp(State - value, 0, Max); }
+    public override void GetTired(int value){ _Value = Mathf.Clamp(Value - value, 0, Max); }
 
 
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 
 }
 // ================================================================= Sanity Bar ============================================================================================================
-public class Sanity : SanityBar
+[Serializable]public class Sanity : SanityBar
 {
-    [SerializeField, Range(0, 50)] int _State = 0;
-    public override int State { get { return _State; } }
+    [SerializeField, Range(0, 50)] int _Value = 0;
+    public override int Value { get { return _Value; } }
     [SerializeField, Range(0, 50)] int _Max = 0;
     public override int Max { get { return _Max; } set { _Max = value; } }
     [Space]

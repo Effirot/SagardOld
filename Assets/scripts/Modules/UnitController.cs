@@ -130,7 +130,7 @@ public abstract class UnitController : MonoBehaviour
             return false;
         
         //OnStamina
-        if(Stamina.WalkUseStamina > Stamina.State) return false;
+        if(Stamina.WalkUseStamina > Stamina.Value) return false;
         //OnDistance
         return WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
     }
@@ -179,7 +179,7 @@ public abstract class UnitController : MonoBehaviour
 
     protected void StandingIn()
     {
-        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Close, gameObject, this);
+        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.UnitClose, gameObject, this);
         position = new Checkers(position);
         
         InGameEvents.MapUpdate.Invoke();
@@ -191,7 +191,7 @@ public abstract class UnitController : MonoBehaviour
     protected async void AttackPlaningIn()
     {
         CurrentSkillIndex = 0;
-        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.Open, MPlaner.Planer, this);
+        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.UnitOpen, MPlaner.Planer, this);
         await AttackPlannerUpdate();
     }
 
