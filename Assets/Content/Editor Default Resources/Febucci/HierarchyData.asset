@@ -15,7 +15,7 @@ MonoBehaviour:
   enabled: 1
   icons:
     enabled: 1
-    aligned: 0
+    aligned: 1
     pairs:
     - iconToDraw: {fileID: 2800000, guid: 015d5dc5e425fff4b904721275cc38d2, type: 3}
       targetClasses:
@@ -29,12 +29,10 @@ MonoBehaviour:
   prefabsData:
     enabled: 1
     prefabs:
-    - gameObject: {fileID: 4568249183204167093, guid: 185494576af8a64458e176409236fce2,
-        type: 3}
-      color: {r: 0.8301887, g: 0.8301887, b: 0.8301887, a: 0.15686275}
-    - gameObject: {fileID: 2711216198116367235, guid: ea5291617d7042c48a75064bda750b76,
-        type: 3}
-      color: {r: 0.64114827, g: 1, b: 0.34449756, a: 0.14901961}
+    - gameObject: {fileID: 2711216198116367235, guid: ea5291617d7042c48a75064bda750b76, type: 3}
+      color: {r: 0.05724919, g: 1, b: 0, a: 0.84313726}
+    - gameObject: {fileID: 4568249183204167093, guid: 185494576af8a64458e176409236fce2, type: 3}
+      color: {r: 1, g: 0, b: 0, a: 1}
   alternatingBackground:
     enabled: 1
     color: {r: 0, g: 0, b: 0, a: 0.08}
