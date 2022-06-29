@@ -13,7 +13,7 @@ public class InGameEvents : MonoBehaviour
     public static UnityEvent StepEnd = new UnityEvent();
 
     public static UnityEvent MapUpdate = new UnityEvent();
-    public static UnityEvent<uint, int> MouseController = new UnityEvent<uint, int>();
+    public static UnityEvent<GameObject, int> MouseController = new UnityEvent<GameObject, int>();
     
     public static UnityEvent<List<SagardCL.Attack>> AttackTransporter = new UnityEvent<List<SagardCL.Attack>>();
     
@@ -28,30 +28,30 @@ public class InGameEvents : MonoBehaviour
         if(Controllable & Input.GetKeyDown(KeyCode.Return)) CompleteModeSwitch(); 
     }
 
-    uint ID = 0;
+    GameObject ID = null;
     void MouseControl()
     {
         if(Input.GetMouseButtonDown(0)) 
         {        
-            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID;
-            if(ID == 0) { _enabledAttack = false; return; } 
+            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap;
+            if(ID == null) { _enabledAttack = false; return; } 
 
             _enabledAttack = !_enabledAttack; 
             if(_enabledAttack) 
                 {MouseController.Invoke(ID, 2); return; } 
-            MouseController.Invoke(ID, 0); ID = 0;
+            MouseController.Invoke(ID, 0); ID = null;
             
         }
         if (Input.GetMouseButtonDown(1))
         {
-            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap.GetComponent<IDgenerator>().ID;
+            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap;
             if(CursorController.ObjectOnMap)
             MouseController.Invoke(ID, 1);
             
             _enabledAttack = false;
         }
 
-        if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(ID, 0); ID = 0; }
+        if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(ID, 0); ID = null; }
     }
 
     static async void CompleteModeSwitch()
@@ -64,7 +64,6 @@ public class InGameEvents : MonoBehaviour
             foreach(TaskStepStage summon in StepSystem) { task.Add(summon(i)); }
 
             await Task.WhenAll(task.ToArray());
-            await Task.Delay(500);
         }
         StepEnd.Invoke();
         

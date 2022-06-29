@@ -31,8 +31,6 @@ public interface PlayerStats : ObjectOnMap
 
 public abstract class UnitController : MonoBehaviour
 {
-    protected uint ID => GetComponent<IDgenerator>().ID;
-
     private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
     private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
 
@@ -73,9 +71,9 @@ public abstract class UnitController : MonoBehaviour
     {
         
         InGameEvents.MapUpdate.AddListener(ParametersUpdate);
-        InGameEvents.MouseController.AddListener((UnityAction<uint, int>)((id, b) => 
+        InGameEvents.MouseController.AddListener((id, b) => 
         { 
-            if(id != ID) {  MouseTest = 0; return; }
+            if(id != MPlaner.Planer) { MouseTest = 0; return; }
             MouseTest = b;
             switch(MouseTest)
             {
@@ -83,7 +81,7 @@ public abstract class UnitController : MonoBehaviour
                 case 1: MovePlaningIn(); return;
                 case 2: AttackPlaningIn(); return;
             }
-        }));
+        });
         InGameEvents.StepSystem.Add(Summon);
         InGameEvents.AttackTransporter.AddListener((a) => { 
             Attack find = a.Find((a) => a.Where == new Checkers(position));
@@ -142,7 +140,7 @@ public abstract class UnitController : MonoBehaviour
         
         //Move planner
         MPlaner.Collider.enabled = true;
-        if(!WalkChecker() & InGameEvents.canControl) MPlaner.position = position;
+        if(!WalkChecker() & InGameEvents.Controllable) MPlaner.position = position;
     
         //Attack planner
         if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
@@ -179,19 +177,20 @@ public abstract class UnitController : MonoBehaviour
 
     protected void StandingIn()
     {
-        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.UnitClose, gameObject, this);
+        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
         position = new Checkers(position);
         
         InGameEvents.MapUpdate.Invoke();
     }
     protected async void MovePlaningIn()
     {
+        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
         await MovePlannerUpdate();
     }
     protected async void AttackPlaningIn()
     {
         CurrentSkillIndex = 0;
-        UnitUIController.UiEvent.Invoke(UnitUIController.WhatUiDo.UnitOpen, MPlaner.Planer, this);
+        UnitUIController.UiEvent.Invoke("OpenForPlayer", MPlaner.Planer, this);
         await AttackPlannerUpdate();
     }
 

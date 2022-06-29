@@ -17,18 +17,13 @@ public class UnitUIController : MonoBehaviour
     [Space] 
     public MoveOnUi MoveOnCanvas;
 
-    public static UnityEvent<WhatUiDo, GameObject, UnitController> UiEvent = new UnityEvent<WhatUiDo, GameObject, UnitController>();
-    public enum WhatUiDo
-    {
-        UnitOpen,
-        UnitClose,
-    }
+    public static UnityEvent<string, GameObject, UnitController> UiEvent = new UnityEvent<string, GameObject, UnitController>();
 
-    void Start() { UiEvent.AddListener((a, b, c) => { 
+    void Start() { UiEvent.AddListener((a, b, c) => {
         switch (a)
         {
-            case WhatUiDo.UnitOpen: Open(b, c); break;
-            case WhatUiDo.UnitClose: Close(); break;
+            case "OpenForPlayer": Open(b, c); break;
+            case "CloseForPlayer": Close(); break;
         }
     }); }
 
@@ -65,8 +60,8 @@ public class UnitUIController : MonoBehaviour
                     
                     foreach(GameObject element in UIelements)
                     {
-                        if(element) element.GetComponent<Button>().interactable = lifeParameters.SkillRealizer.AvailbleSkills
-                                    [int.Parse(transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text)].UsingStamina <= lifeParameters.Stamina.Value;
+                        if(element.GetComponent<Button>()) element.GetComponent<Button>().interactable = lifeParameters.SkillRealizer.AvailbleSkills
+                                    [int.Parse(element.transform.Find("StaminaIco/StaminaUseVisual").GetComponent<TextMeshProUGUI>().text)].UsingStamina <= lifeParameters.Stamina.Value;
                     }
                     obj.GetComponent<Button>().interactable = false;
                 });
@@ -82,12 +77,12 @@ public class UnitUIController : MonoBehaviour
         foreach(StateBar stats in lifeParameters.OtherStates) { InstantiateBars(stats); }
         
         void InstantiateBars(StateBar stateBar) {
-            GameObject obj = Instantiate(SkillPreset, UI.transform.Find("Bars").transform);
+            GameObject obj = Instantiate(StateBarPreset, UI.transform.Find("Bars").transform);
 
             var percent = stateBar.Value / stateBar.Max;
 
-            RectTransform rect = obj.transform.Find("Value").GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(rect.sizeDelta.x, rect.sizeDelta.y); 
+            // RectTransform rect = obj.transform.Find("Value").GetComponent<RectTransform>() ?? obj.transform;
+            // rect.sizeDelta = new Vector2(rect.sizeDelta.x, rect.sizeDelta.y); 
 
 
 
