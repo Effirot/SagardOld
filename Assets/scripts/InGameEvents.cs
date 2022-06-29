@@ -8,9 +8,9 @@ using UnityEngine.EventSystems;
 public class InGameEvents : MonoBehaviour
 {
     public static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
-    public static UnityEvent StepEnd = new UnityEvent();
     public delegate Task TaskStepStage(int StepStage);
-
+    
+    public static UnityEvent StepEnd = new UnityEvent();
 
     public static UnityEvent MapUpdate = new UnityEvent();
     public static UnityEvent<uint, int> MouseController = new UnityEvent<uint, int>();
@@ -18,14 +18,14 @@ public class InGameEvents : MonoBehaviour
     public static UnityEvent<List<SagardCL.Attack>> AttackTransporter = new UnityEvent<List<SagardCL.Attack>>();
     
     private static bool _enabledAttack = false;
-    private static bool _canControl = true;
-    public static bool canControl { get { return _canControl; } set { _canControl = value; } }
+    private static bool _Controllable = true;
+    public static bool Controllable { get { return _Controllable; } set { _Controllable = value; } }
 
     void Update(){
         if(EventSystem.current.IsPointerOverGameObject()) return;
 
-        if(canControl) MouseControl();
-        if(canControl & Input.GetKeyDown(KeyCode.Return)) CompleteModeSwitch(); 
+        if(Controllable) MouseControl();
+        if(Controllable & Input.GetKeyDown(KeyCode.Return)) CompleteModeSwitch(); 
     }
 
     uint ID = 0;
@@ -56,7 +56,7 @@ public class InGameEvents : MonoBehaviour
 
     static async void CompleteModeSwitch()
     {
-        canControl = false;   
+        Controllable = false;   
         
         for(int i = 1; i <= 5; i++){
             MapUpdate.Invoke();
@@ -68,6 +68,6 @@ public class InGameEvents : MonoBehaviour
         }
         StepEnd.Invoke();
         
-        canControl = true;
+        Controllable = true;
     }
 }
