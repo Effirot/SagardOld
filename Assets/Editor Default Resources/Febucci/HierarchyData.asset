@@ -35,16 +35,16 @@ MonoBehaviour:
       color: {r: 1, g: 0, b: 0, a: 1}
   alternatingBackground:
     enabled: 1
-    color: {r: 0, g: 0, b: 0, a: 0.08}
+    color: {r: 0, g: 1, b: 0.09729433, a: 0.08627451}
   separator:
     enabled: 1
-    startString: '>'
-    color: {r: 0, g: 1, b: 1, a: 0.15}
+    startString: '-'
+    color: {r: 0, g: 1, b: 0.08235288, a: 0.35686275}
   tree:
     enabled: 1
     drawOverlayOnColoredPrefabs: 1
     dividerHeigth: 1
-    baseLevelColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    baseLevelColor: {r: 0, g: 0, b: 0, a: 1}
     branches:
     - overlayColor: {r: 1, g: 0.44, b: 0.97, a: 0.04}
       colors:

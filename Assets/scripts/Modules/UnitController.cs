@@ -246,7 +246,6 @@ public abstract class UnitController : MonoBehaviour
         await Task.Delay(10);
         IEnumerator MPlanerMove()
         {   
-            MouseTest = 4;
             int PointNum = 1;
             for(float i = 0.00001f; position != MPlaner.position; i *= 1.040f)
             {
@@ -255,7 +254,6 @@ public abstract class UnitController : MonoBehaviour
                 if(new Checkers(position) == WalkWay[PointNum] & new Checkers(position) != WalkWay[WalkWay.Count - 1]){ PointNum++; }
                 yield return new WaitForEndOfFrame();
             }
-            MouseTest = 0;
             yield break;
         }
         await MovePlannerUpdate();

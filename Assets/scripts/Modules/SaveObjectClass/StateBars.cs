@@ -7,7 +7,7 @@ using System;
 
 [Serializable]public abstract class StateBar
 {
-    Color BarColor{ get; }
+    public abstract Color BarColor{ get; }
 
     public abstract int Value { get; }
     public abstract int Max { get; set; }  
@@ -71,7 +71,7 @@ using System;
             case DamageType.MetalHeal: _Value -= 1; break;
         }
     }
-    public Color BarColor{ get{ return new Color(1, 0, 0); } }
+    public override Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
 [Serializable]public class HealthOver : HealthBar
 {
@@ -105,7 +105,7 @@ using System;
             case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
         }
     }
-    public Color BarColor{ get{ return new Color(1, 0.1f, 0); } }
+    public override Color BarColor{ get{ return new Color(1, 0.1f, 0); } }
 }
 [Serializable]public class HealthCorpse : HealthBar
 {
@@ -136,7 +136,7 @@ using System;
             case DamageType.MetalHeal: _Value -= 1; break;
         }
     }
-    public Color BarColor{ get{ return new Color(0, 0, 0); } }
+    public override Color BarColor{ get{ return new Color(0, 0, 0); } }
 }
 // ================================================================= Stamina Bar ===========================================================================================================
 [Serializable]public class Stamina : StaminaBar
@@ -157,7 +157,7 @@ using System;
     public override void GetTired(int value){ _Value = Mathf.Clamp(Value - value, 0, Max); }
 
 
-    public Color BarColor{ get{ return new Color(1, 0, 0); } }
+    public override Color BarColor{ get{ return new Color(0.8f, 1f, 0); } }
 
 }
 // ================================================================= Sanity Bar ============================================================================================================
@@ -172,5 +172,5 @@ using System;
     public override int SanityShield { get { return _SanityShield; } set { _SanityShield = value; } }
 
 
-    public Color BarColor{ get{ return new Color(0.7f, 0, 0.7f); } }
+    public override Color BarColor{ get{ return new Color(0.3f, 0, 0.3f); } }
 }

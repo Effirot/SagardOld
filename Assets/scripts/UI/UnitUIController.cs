@@ -27,7 +27,7 @@ public class UnitUIController : MonoBehaviour
         }
     }); }
 
-    private List<GameObject> UIelements = new List<GameObject>();
+    
 
     private async void Open(GameObject Summoner, UnitController lifeParameters)
     {
@@ -38,6 +38,8 @@ public class UnitUIController : MonoBehaviour
         UpdateUi(lifeParameters);
     }
 
+
+    private List<GameObject> UIelements = new List<GameObject>();
     private void UpdateUi(UnitController lifeParameters)
     {
         foreach (GameObject element in UIelements) { Destroy(element); }
@@ -74,21 +76,20 @@ public class UnitUIController : MonoBehaviour
         InstantiateBars(lifeParameters.Sanity);
         InstantiateBars(lifeParameters.Stamina);
 
-        foreach(StateBar stats in lifeParameters.OtherStates) { InstantiateBars(stats); }
+        if(lifeParameters.OtherStates != null) foreach(StateBar stats in lifeParameters.OtherStates) { InstantiateBars(stats); }    
+    }
+
+    void InstantiateBars(StateBar stateBar) {
+        GameObject obj = Instantiate(StateBarPreset, UI.transform.Find("Bars").transform);
+        UIelements.Add(obj);
+
+        obj.GetComponent<Slider>().maxValue = stateBar.Max;
+        obj.GetComponent<Slider>().value = stateBar.Value;
+        obj.transform.Find("Value").GetComponent<Image>().color = stateBar.BarColor;
+        obj.transform.Find("Value/ValueNum").GetComponent<TextMeshProUGUI>().text = stateBar.Value + "";
+        obj.transform.Find("MaxNum").GetComponent<TextMeshProUGUI>().text = stateBar.Max + "";
+
         
-        void InstantiateBars(StateBar stateBar) {
-            GameObject obj = Instantiate(StateBarPreset, UI.transform.Find("Bars").transform);
-
-            var percent = stateBar.Value / stateBar.Max;
-
-            // RectTransform rect = obj.transform.Find("Value").GetComponent<RectTransform>() ?? obj.transform;
-            // rect.sizeDelta = new Vector2(rect.sizeDelta.x, rect.sizeDelta.y); 
-
-
-
-            UIelements.Add(obj);
-        }
-    
     }
 
     IEnumerator RotateTo(Vector3 ToVector, float speed = 1)
