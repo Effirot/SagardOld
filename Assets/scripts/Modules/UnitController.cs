@@ -281,7 +281,7 @@ public abstract class UnitController : MonoBehaviour
         if(SkillRealizer.NowUsing.PriorityAttacking) return;
         WillRest = false;
         await Task.Delay(Random.Range(0, 2700));
-
+        Debug.Log("Attacked " + MPlaner.Planer.name);
 
         Stamina.GetTired(SkillRealizer.StaminaWaste());
         InGameEvents.AttackTransporter.Invoke(AttackZone);
