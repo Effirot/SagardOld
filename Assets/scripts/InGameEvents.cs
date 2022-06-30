@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using SagardCL;
 
 public class InGameEvents : MonoBehaviour
 {
@@ -21,6 +22,11 @@ public class InGameEvents : MonoBehaviour
     private static bool _Controllable = true;
     public static bool Controllable { get { return _Controllable; } set { _Controllable = value; } }
 
+
+    private void UpdateAllLocalParameters() { foreach(IStateBar stateBar in IStateBar.StateList) { stateBar.Update(); } }
+
+
+    void Start() { StepEnd.AddListener(UpdateAllLocalParameters); }
     void Update(){
         if(EventSystem.current.IsPointerOverGameObject()) return;
 
@@ -28,30 +34,31 @@ public class InGameEvents : MonoBehaviour
         if(Controllable & Input.GetKeyDown(KeyCode.Return)) CompleteModeSwitch(); 
     }
 
-    GameObject ID = null;
+    GameObject TargetObject = null;
     void MouseControl()
     {
         if(Input.GetMouseButtonDown(0)) 
         {        
-            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap;
-            if(ID == null) { _enabledAttack = false; return; } 
+            
+            if(CursorController.ObjectOnMap) TargetObject = CursorController.ObjectOnMap;
+            if(TargetObject == null) { _enabledAttack = false; return; } 
 
             _enabledAttack = !_enabledAttack; 
             if(_enabledAttack) 
-                {MouseController.Invoke(ID, 2); return; } 
-            MouseController.Invoke(ID, 0); ID = null;
+                {MouseController.Invoke(TargetObject, 2); return; } 
+            MouseController.Invoke(TargetObject, 0); TargetObject = null;
             
         }
         if (Input.GetMouseButtonDown(1))
         {
-            if(CursorController.ObjectOnMap) ID = CursorController.ObjectOnMap;
+            if(CursorController.ObjectOnMap) TargetObject = CursorController.ObjectOnMap;
             if(CursorController.ObjectOnMap)
-            MouseController.Invoke(ID, 1);
+            MouseController.Invoke(TargetObject, 1);
             
             _enabledAttack = false;
         }
 
-        if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(ID, 0); ID = null; }
+        if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(TargetObject, 0); TargetObject = null; }
     }
 
     static async void CompleteModeSwitch()

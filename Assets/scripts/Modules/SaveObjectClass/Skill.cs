@@ -4,9 +4,11 @@ using UnityEngine;
 using SagardCL;
 using System.Threading.Tasks;
 using UnityEditor;
+using System.ComponentModel;
+using System;
 
 [CreateAssetMenu(fileName = "BaseSkill", menuName = "SagardCL objects/Base Skill", order = 51)]
-public class BaseSkill : Descript
+public class Skill : Descript, Sendable
 {
     [Space(2)]
     [Header("Parameters")]
@@ -30,12 +32,12 @@ public class BaseSkill : Descript
     [Header("Skill Price")]
     public int UsingStamina;
     [Space]
-    public StateBar Ammo;
+    public IStateBar Ammo;
     public bool DeleteWhenLowAmmo = false;
 }
 
 [System.Serializable]
-public class Skill{
+public class SkillCombiner{
     
     //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
     [Header("Controllers")]  
@@ -45,11 +47,11 @@ public class Skill{
     public AllInOne To;
 
     public int SkillIndex = 0;
-    [SerializeField] private List<BaseSkill> AvailbleBaseSkills;
-    public List<BaseSkill> AdditionBaseSkills;
-    public List<BaseSkill> AvailbleSkills => CombineLists<BaseSkill>(AvailbleBaseSkills, AdditionBaseSkills);
+    [SerializeField] private List<Skill> AvailbleBaseSkills;
+    public List<Skill> AdditionBaseSkills;
+    public List<Skill> AvailbleSkills => CombineLists<Skill>(AvailbleBaseSkills, AdditionBaseSkills);
 
-    public BaseSkill NowUsing => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
+    public Skill NowUsing => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
 
     private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
     private Checkers endPos{ get{ return new Checkers(To.position, 0f); } }
@@ -69,7 +71,6 @@ public class Skill{
 
     public async IAsyncEnumerable<Attack> Realize()
     {
-
         if(Check()){
             await Task.Delay(0);
             Checkers FinalPoint = (NowUsing.Piercing)? endPos : ToPoint(startPos, endPos);
@@ -221,7 +222,6 @@ public class Skill{
             // case HitType.Arc: return ;
         }
     }
-
 
     List<T> CombineLists<T>(List<T> a, List<T> b) 
     {

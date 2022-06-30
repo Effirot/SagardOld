@@ -18,16 +18,16 @@ public class HumanStandardController : UnitController, PlayerStats
     [SerializeField] int _WalkDistance = 5;
 
 
-    public override HealthBar Health { get{ return _Health; } set{ _Health = value; } }
-    [SerializeReference] HealthBar _Health = new HealthOver();
-    public override StaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
-    [SerializeReference] StaminaBar _Stamina = new Stamina();
-    public override SanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
-    [SerializeReference] SanityBar _Sanity = new Sanity();
+    public override IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
+    [SerializeReference] IHealthBar _Health = new HealthOver();
+    public override IStaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
+    [SerializeReference] IStaminaBar _Stamina = new Stamina();
+    public override ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
+    [SerializeReference] ISanityBar _Sanity = new Sanity();
     
 
-    public override List<StateBar> OtherStates { get { return _OtherStates; } set{ _OtherStates = value; }}
-    [SerializeReference] List<StateBar> _OtherStates = new List<StateBar>();
+    public override List<IStateBar> OtherStates { get { return _OtherStates; } set{ _OtherStates = value; }}
+    [SerializeReference] List<IStateBar> _OtherStates = new List<IStateBar>();
 
 
     public override List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
@@ -36,9 +36,15 @@ public class HumanStandardController : UnitController, PlayerStats
     [SerializeReference] List<Effect> _Debuff = new List<Effect>();
 
 
-    public override Skill SkillRealizer { get{ return _Skill; } set { _Skill = value; } }
-    [SerializeReference] Skill _Skill = new Skill();
+    public override SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
+    [SerializeReference] SkillCombiner _SkillRealizer = new SkillCombiner();
 
     protected override void GetDamage(Attack attack) { Health.GetDamage(attack); }
-    protected override void GetHeal(Attack attack) { Health.GetDamage(attack);}
+    protected override void GetHeal(Attack attack) { Health.GetDamage(attack); }
+
+    public Skill TestPerishableSkill;
+    
+    void Start() {
+        if(TestPerishableSkill) SkillRealizer.AdditionBaseSkills.Add(new Perishable<Skill>(TestPerishableSkill, 1));
+    }
 }

@@ -551,7 +551,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.16470589}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -975,7 +975,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_Name
-      value: AttackMenu
+      value: PlayerMenu
       objectReference: {fileID: 0}
     - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_IsActive
@@ -1260,6 +1260,14 @@ PrefabInstance:
     - target: {fileID: 3838525804336366737, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6213634045846544188, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: TestPerishableSkill
+      value: 
+      objectReference: {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
+    - target: {fileID: 6213634045846544188, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1000]._Value
+      value: 18
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}

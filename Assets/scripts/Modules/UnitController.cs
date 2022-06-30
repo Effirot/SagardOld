@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 public interface ObjectOnMap
 {
-    HealthBar Health{ get; set; }
+    IHealthBar Health{ get; set; }
 
     List<Effect> Resists{ get; set; }
     List<Effect> Debuff{ get; set; }
@@ -17,16 +17,16 @@ public interface PlayerStats : ObjectOnMap
 {
     Color Team{ get; set; }
 
-    StaminaBar Stamina{ get; set; }
-    SanityBar Sanity{ get; set; }
+    IStaminaBar Stamina{ get; set; }
+    ISanityBar Sanity{ get; set; }
 
     bool CanControl { get; set; }
     bool Corpse { get; set; }
     int WalkDistance { get; set; }
 
-    List<StateBar> OtherStates{ get; set; }
+    List<IStateBar> OtherStates{ get; set; }
 
-    Skill SkillRealizer{ get; set; }
+    SkillCombiner SkillRealizer{ get; set; }
 }
 
 public abstract class UnitController : MonoBehaviour
@@ -56,16 +56,16 @@ public abstract class UnitController : MonoBehaviour
     abstract public bool Corpse { get; set; }
     abstract public int WalkDistance { get; set; }
     
-    abstract public HealthBar Health { get; set; } // health parameters
-    abstract public StaminaBar Stamina { get; set; } // Stamina parameters
-    abstract public SanityBar Sanity { get; set; } // sanity parameters
+    abstract public IHealthBar Health { get; set; } // health parameters
+    abstract public IStaminaBar Stamina { get; set; } // Stamina parameters
+    abstract public ISanityBar Sanity { get; set; } // sanity parameters
 
-    abstract public List<StateBar> OtherStates { get; set; }
+    abstract public List<IStateBar> OtherStates { get; set; }
 
     abstract public List<Effect> Resists { get; set; }
     abstract public List<Effect> Debuff { get; set; }
 
-    abstract public Skill SkillRealizer { get; set; }
+    abstract public SkillCombiner SkillRealizer { get; set; }
 
     void Awake()
     {

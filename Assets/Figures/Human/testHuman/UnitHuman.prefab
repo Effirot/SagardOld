@@ -205,8 +205,9 @@ MonoBehaviour:
   _OtherStates: []
   _Resists: []
   _Debuff: []
-  _Skill:
+  _SkillRealizer:
     rid: 1003
+  TestPerishableSkill: {fileID: 0}
   references:
     version: 2
     RefIds:
@@ -231,7 +232,7 @@ MonoBehaviour:
         _Max: 9
         _SanityShield: 0
     - rid: 1003
-      type: {class: Skill, ns: , asm: Assembly-CSharp}
+      type: {class: SkillCombiner, ns: , asm: Assembly-CSharp}
       data:
         Unit: {fileID: 6213634045846544188}
         From:
@@ -246,7 +247,6 @@ MonoBehaviour:
         - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
         - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
         - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
-        - {fileID: 11400000, guid: 3fc5cb8070a00ea4b95a9cda4c28fb1e, type: 2}
         AdditionBaseSkills: []
 --- !u!1 &270387941299697432
 GameObject:

@@ -112,7 +112,7 @@ GameObject:
   - component: {fileID: 7407837266454244161}
   - component: {fileID: -5721805414729699740}
   m_Layer: 5
-  m_Name: AttackMenu
+  m_Name: PlayerMenu
   m_TagString: UnitUI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
