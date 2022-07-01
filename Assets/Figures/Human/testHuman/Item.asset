@@ -24,10 +24,13 @@ MonoBehaviour:
   WalkDistance: 5
   Health:
     rid: 7033181184647233539
+  ReplaceHealthBar: 0
   Stamina:
     rid: 7033181184647233540
+  ReplaceStaminaBar: 0
   Sanity:
     rid: 7033181184647233541
+  ReplaceSanityBar: 0
   Resists: []
   AdditionSkills: []
   references:

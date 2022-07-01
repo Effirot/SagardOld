@@ -18,16 +18,15 @@ MonoBehaviour:
   image: {fileID: 21300000, guid: 46c86860161059c45bd48e3034fa0ced, type: 3}
   PriorityAttacking: 0
   Type: 2
-  damageType: 5
-  secondaryDamageType: 2
-  Distance: 4
-  Damage: 8
+  damageType: 0
+  Distance: 7
+  Damage: 2
   DamageScalingType: 0
   Piercing: 0
-  Exploding: 0
-  AttackStartDistance: 3
+  AttackStartDistance: 2
   Debuff: []
-  NoWalking: 0
+  Exploding: 0
+  NoWalking: 1
   HitSelf: 0
   SelfDamage: 0
   UsingStamina: 3
