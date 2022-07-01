@@ -18,13 +18,11 @@ public class ATestGeneration : Generation
             {
                 return new Map.MapCell(
                     (int)Mathf.Round(Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 3f) % 2,
-                    Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 1.5f
+                    Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 1.1f
                 );
             }
         ), PlatformPreset);
-        
-        MeshCombiner combiner = GetComponent<MeshCombiner>();
 
-        combiner.CombineMeshes(false);
+        GetComponent<MeshCombiner>().CombineMeshes(false);
     }
 }

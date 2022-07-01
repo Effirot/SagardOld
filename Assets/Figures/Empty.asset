@@ -22,6 +22,7 @@ MonoBehaviour:
   secondaryDamageType: 0
   Distance: 0
   Damage: 0
+  DamageScalingType: 0
   Piercing: 0
   Exploding: 0
   AttackStartDistance: 0

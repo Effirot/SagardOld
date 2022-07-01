@@ -196,58 +196,52 @@ MonoBehaviour:
   _CanControl: 1
   _Corpse: 0
   _WalkDistance: 5
-  _Health:
-    rid: 1000
-  _Stamina:
-    rid: 1001
-  _Sanity:
-    rid: 1002
-  _OtherStates: []
-  _Resists: []
-  _Debuff: []
   _SkillRealizer:
-    rid: 1003
-  TestPerishableSkill: {fileID: 0}
+    Unit: {fileID: 6213634045846544188}
+    From:
+      Planer: {fileID: 8182480761862019246}
+      Model: {fileID: 447574044884308314}
+    To:
+      Planer: {fileID: 302834733322452018}
+      Model: {fileID: 110499025132641117}
+    SkillIndex: 0
+    AvailbleBaseSkills:
+    - {fileID: 11400000, guid: 432caffd66a197644a2b0f0c9908b957, type: 2}
+    - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
+    - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
+    - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
+    AdditionBaseSkills: []
+  HP:
+    rid: 1000
+  Stam:
+    rid: 1001
+  San:
+    rid: 1002
+  TestPerishableSkill: {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
   references:
     version: 2
     RefIds:
     - rid: 1000
-      type: {class: Health, ns: , asm: Assembly-CSharp}
+      type: {class: HealthOver, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 16
-        _Max: 16
-        _ArmorMelee: 2
-        _ArmorRange: 3
+        _Value: 20
+        _Max: 18
+        _OverMax: 3
+        _ArmorMelee: 3
+        _ArmorRange: 2
     - rid: 1001
       type: {class: Stamina, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 10
-        _Max: 10
-        _RestEffect: 4
+        _Value: 8
+        _Max: 8
+        _RestEffect: 5
         _WalkUseStamina: 1
     - rid: 1002
       type: {class: Sanity, ns: , asm: Assembly-CSharp}
       data:
         _Value: 9
-        _Max: 9
-        _SanityShield: 0
-    - rid: 1003
-      type: {class: SkillCombiner, ns: , asm: Assembly-CSharp}
-      data:
-        Unit: {fileID: 6213634045846544188}
-        From:
-          Planer: {fileID: 8182480761862019246}
-          Model: {fileID: 447574044884308314}
-        To:
-          Planer: {fileID: 302834733322452018}
-          Model: {fileID: 110499025132641117}
-        SkillIndex: 0
-        AvailbleBaseSkills:
-        - {fileID: 11400000, guid: c304c22ff858d26438173760aa2d6ae5, type: 2}
-        - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
-        - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
-        - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
-        AdditionBaseSkills: []
+        _Max: 50
+        _SanityShield: 1
 --- !u!1 &270387941299697432
 GameObject:
   m_ObjectHideFlags: 0

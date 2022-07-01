@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 namespace SagardCL //Class library
 {
@@ -45,6 +46,7 @@ namespace SagardCL //Class library
     public interface IStepEndUpdate
     {
         void Update();
+        public static UnityEvent StateList = new UnityEvent();
     }
     
     public interface IStateBar : IStepEndUpdate
@@ -53,14 +55,12 @@ namespace SagardCL //Class library
 
         int Value { get; }
         int Max { get; set; }  
-
-        public static List<IStepEndUpdate> StateList = new List<IStepEndUpdate>();
     }
 
     public interface IHealthBar : IStateBar
     {
         int ArmorMelee { get; set; } 
-        int ArmorRange {get; set; }
+        int ArmorRange { get; set; }
 
         void GetDamage(Attack attack);
     }
@@ -83,7 +83,31 @@ namespace SagardCL //Class library
 }
 
 
+    public interface IObjectOnMap
+    {
+        IHealthBar Health{ get; set; }
 
+        List<Effect> Resists{ get; set; }
+        List<Effect> Debuff{ get; set; }
+
+        void GetDamage(Attack attack);
+        void GetHeal(Attack attack);
+    }
+    public interface IPlayerStats : IObjectOnMap
+    {
+        Color Team{ get; set; }
+
+        IStaminaBar Stamina{ get; set; }
+        ISanityBar Sanity{ get; set; }
+
+        bool CanControl { get; set; }
+        bool Corpse { get; set; }
+        int WalkDistance { get; set; }
+
+        List<IStateBar> OtherStates{ get; set; }
+
+        SkillCombiner SkillRealizer{ get; set; }
+    }
 
 
 
@@ -158,13 +182,12 @@ namespace SagardCL //Class library
 
         public Perishable(T target, int Timer) { Target = target; HideTimer = Timer; 
             Condition = DisappearanceCondition.Timer; 
-            InGameEvents.StepEnd.AddListener(this.TimerTick); 
+            IStepEndUpdate.StateList.AddListener(Update);
         }
-        public void TimerTick()
+        public void Update()
         {
             if(HideTimer <= 0) Target = default(T);
             this.HideTimer--;
-            Debug.LogWarning("Something");
         }
 
 

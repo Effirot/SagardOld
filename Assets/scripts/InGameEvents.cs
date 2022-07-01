@@ -23,10 +23,8 @@ public class InGameEvents : MonoBehaviour
     public static bool Controllable { get { return _Controllable; } set { _Controllable = value; } }
 
 
-    private void UpdateAllLocalParameters() { foreach(IStateBar stateBar in IStateBar.StateList) { stateBar.Update(); } }
 
-
-    void Start() { StepEnd.AddListener(UpdateAllLocalParameters); }
+    void Start() { StepEnd.AddListener(IStepEndUpdate.StateList.Invoke); }
     void Update(){
         if(EventSystem.current.IsPointerOverGameObject()) return;
 

@@ -5,71 +5,65 @@ using UnityEngine.Events;
 using SagardCL;
 using System.Threading.Tasks;
 
-public interface ObjectOnMap
-{
-    IHealthBar Health{ get; set; }
-
-    List<Effect> Resists{ get; set; }
-    List<Effect> Debuff{ get; set; }
-}
-
-public interface PlayerStats : ObjectOnMap
-{
-    Color Team{ get; set; }
-
-    IStaminaBar Stamina{ get; set; }
-    ISanityBar Sanity{ get; set; }
-
-    bool CanControl { get; set; }
-    bool Corpse { get; set; }
-    int WalkDistance { get; set; }
-
-    List<IStateBar> OtherStates{ get; set; }
-
-    SkillCombiner SkillRealizer{ get; set; }
-}
-
-public abstract class UnitController : MonoBehaviour
+public abstract class UnitController : MonoBehaviour, IPlayerStats
 {
     private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
     private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
+
+    public Color Team { get { return _Team; } set { _Team = value; } }
+    [SerializeField] Color _Team;
+
+    public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
+    [SerializeField] bool _CanControl = true;
+    public bool Corpse { get { return Corpse; } set{ Corpse = value; } }
+    [SerializeField] bool _Corpse = false;
+    public bool Artifacer { get { return Artifacer; } set{ Artifacer = value; } }
+    [SerializeField] bool _Artifacer = false;
+    public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
+    [SerializeField] int _WalkDistance = 5;
+
+
+    public IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
+    IHealthBar _Health;
+    public IStaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
+    IStaminaBar _Stamina;
+    public ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
+    ISanityBar _Sanity;
+    
+
+    public List<IStateBar> OtherStates { get { return _OtherStates; } set{ _OtherStates = value; }}
+    List<IStateBar> _OtherStates = new List<IStateBar>();
+
+    public List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
+    List<Effect> _Resists = new List<Effect>();
+    public List<Effect> Debuff { get { return _Debuff; } set{ _Debuff = value; }}
+    List<Effect> _Debuff = new List<Effect>();
+
+    public List<Item> Inventory;
+
+    public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
+    [SerializeField]SkillCombiner _SkillRealizer = new SkillCombiner();
 
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
     protected Collider Collider => GetComponent<MeshCollider>();
 
     public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value;} }
     
+
     
     protected int MouseTest = 0;
     protected List<Attack> AttackZone = new List<Attack>();
     protected List<Checkers> WalkWay = new List<Checkers>();
 
     private Checkers LastPose = new Checkers();
-    protected Checkers CursorPos { get { 
-            Checkers pos = new Checkers(GameObject.Find("3DCursor").transform.position);
-            if(LastPose != pos) { LastPose = pos; ChangePos(); } 
-            return pos; } 
+    protected Checkers CursorPos { get {
+        Checkers pos = new Checkers(GameObject.Find("3DCursor").transform.position);
+        if(LastPose != pos) { LastPose = pos; ChangePos(); } 
+        return pos; } 
     }
 
-    abstract public Color Team{ get; set; }
-    abstract public bool CanControl { get; set; }
-    abstract public bool Corpse { get; set; }
-    abstract public int WalkDistance { get; set; }
-    
-    abstract public IHealthBar Health { get; set; } // health parameters
-    abstract public IStaminaBar Stamina { get; set; } // Stamina parameters
-    abstract public ISanityBar Sanity { get; set; } // sanity parameters
-
-    abstract public List<IStateBar> OtherStates { get; set; }
-
-    abstract public List<Effect> Resists { get; set; }
-    abstract public List<Effect> Debuff { get; set; }
-
-    abstract public SkillCombiner SkillRealizer { get; set; }
-
-    void Awake()
+    async void Awake()
     {
-        
         InGameEvents.MapUpdate.AddListener(ParametersUpdate);
         InGameEvents.MouseController.AddListener((id, b) => 
         { 
@@ -89,8 +83,12 @@ public abstract class UnitController : MonoBehaviour
             if(find.Where == new Checkers(position)){
                 if(find.damageType != DamageType.Heal)GetDamage(find);
                 else GetHeal(find);
-                }
+            }
         });
+    
+        
+        await Task.Delay(1);
+        position = new Checkers(position);
     }
     void Update()
     {   
@@ -199,7 +197,6 @@ public abstract class UnitController : MonoBehaviour
 
     protected async void ParametersUpdate()
     {
-        
         await MovePlannerUpdate();
         await AttackPlannerUpdate();
     }
@@ -239,7 +236,7 @@ public abstract class UnitController : MonoBehaviour
         SkillRealizer.Graphics(); 
     }
 
-    protected virtual async Task Walking()
+    async Task Walking()
     {
         if(WalkWay.Count == 0) return;
         WillRest = false;
@@ -251,7 +248,7 @@ public abstract class UnitController : MonoBehaviour
             {
                 position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
                 MPlaner.LineRenderer.SetPosition(0, position);
-                if(new Checkers(position) == WalkWay[PointNum] & new Checkers(position) != WalkWay[WalkWay.Count - 1]){ PointNum++; }
+                if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
                 yield return new WaitForEndOfFrame();
             }
             yield break;
@@ -262,7 +259,7 @@ public abstract class UnitController : MonoBehaviour
         Stamina.GetTired(Stamina.WalkUseStamina);
         ParametersUpdate();
     }
-    protected virtual async Task PriorityAttacking()
+    async Task PriorityAttacking()
     {
         if(AttackZone.Count == 0) return;
         if(!SkillRealizer.NowUsing.PriorityAttacking) return;
@@ -275,7 +272,7 @@ public abstract class UnitController : MonoBehaviour
 
         await AttackPlannerUpdate();
     }
-    protected virtual async Task Attacking()
+    async Task Attacking()
     {
         if(AttackZone.Count == 0) return;
         if(SkillRealizer.NowUsing.PriorityAttacking) return;
@@ -290,20 +287,25 @@ public abstract class UnitController : MonoBehaviour
         
         await AttackPlannerUpdate();
     }
-    protected virtual async Task Dead() 
+    async Task Dead() 
     { 
+        if(Health.Value > 0) return;
         await Task.Delay(Random.Range(10, 100)); 
-
+        TransformIntoCorpse();
     }
     private bool WillRest = true;
-    protected virtual async Task Rest() 
+    async Task Rest() 
     { 
         if(!WillRest) { WillRest = true; return;}
         await Task.Delay(Random.Range(0, 2300)); 
         Stamina.Rest();
     }
 
+    public abstract void GetDamage(Attack attack);
+    public abstract void GetHeal(Attack attack);
 
-    protected abstract void GetDamage(Attack attack);
-    protected abstract void GetHeal(Attack attack);
+    public virtual void TransformIntoCorpse()
+    {
+
+    }
 }

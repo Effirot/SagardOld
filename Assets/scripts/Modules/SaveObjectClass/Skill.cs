@@ -13,18 +13,18 @@ public class Skill : Descript, Sendable
     [Space(2)]
     [Header("Parameters")]
     public bool PriorityAttacking;
+    
     public HitType Type;
     [SerializeField]public DamageType damageType;
-    [SerializeField]public DamageType secondaryDamageType;
     [Space]
     [Range(0, 40)]public int Distance;
     [Range(0, 20)]public int Damage;
     public DamageScaling DamageScalingType;
     [SerializeField]public bool Piercing;
-    [Range(0, 15)]public int Exploding;
     [Range(0, 10)]public int AttackStartDistance;
-    
     public Effect[] Debuff;
+
+    [Range(0, 15)]public int Exploding;
     public bool NoWalking;
     public bool HitSelf;
     [Range(0, 10)]public int SelfDamage;
@@ -34,7 +34,17 @@ public class Skill : Descript, Sendable
     [Space]
     public IStateBar Ammo;
     public bool DeleteWhenLowAmmo = false;
+
 }
+
+
+
+
+
+
+
+
+
 
 [System.Serializable]
 public class SkillCombiner{
@@ -49,7 +59,7 @@ public class SkillCombiner{
     public int SkillIndex = 0;
     [SerializeField] private List<Skill> AvailbleBaseSkills;
     public List<Skill> AdditionBaseSkills;
-    public List<Skill> AvailbleSkills => CombineLists<Skill>(AvailbleBaseSkills, AdditionBaseSkills);
+    public List<Skill> AvailbleSkills => CombineLists<Skill>(new List<List<Skill>>(){ AvailbleBaseSkills, AdditionBaseSkills});
 
     public Skill NowUsing => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
 
@@ -74,6 +84,8 @@ public class SkillCombiner{
         if(Check()){
             await Task.Delay(0);
             Checkers FinalPoint = (NowUsing.Piercing)? endPos : ToPoint(startPos, endPos);
+
+
             switch(NowUsing.Type)
             {
                 default: yield break;
@@ -162,6 +174,7 @@ public class SkillCombiner{
                     break;
                 }
             }
+
 
             if(NowUsing.HitSelf) yield return(new Attack(Unit, new Checkers(startPos), NowUsing.SelfDamage, DamageType.Pure));
             if(NowUsing.Exploding == 0) yield break;
