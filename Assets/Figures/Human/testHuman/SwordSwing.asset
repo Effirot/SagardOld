@@ -26,7 +26,7 @@ MonoBehaviour:
   AttackStartDistance: 2
   Debuff: []
   Exploding: 0
-  NoWalking: 1
+  NoWalking: 0
   HitSelf: 0
   SelfDamage: 0
   UsingStamina: 3
