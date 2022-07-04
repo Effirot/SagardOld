@@ -75,10 +75,10 @@ public class HealthOver : IHealthBar
 }
 public class HealthCorpse : IHealthBar
 {
-    public HealthCorpse() { IStepEndUpdate.StateList.AddListener(Update); }
+    public HealthCorpse() { IStepEndUpdate.StateList.AddListener(Update); Value = Max; }
 
     [SerializeField, Range(0, 50)] int _Value = 9;
-    public int Value { get { return _Value; } }
+    public int Value { get { return _Value; } set { _Value = value; }}
     [SerializeField, Range(0, 50)] int _Max = 9;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -87,10 +87,10 @@ public class HealthCorpse : IHealthBar
     [SerializeField] int _ArmorRange = 4;
     public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
 
-    private int CorpseTimer = 0;
+    private int CorpseTimer = 4;
     public void Update()
     {
-        if(CorpseTimer == 0) { _Value -= 1; return; }
+        if(CorpseTimer <= 1) { _Value -= 1; CorpseTimer = 4; return; }
         CorpseTimer -= 1;
     }
 

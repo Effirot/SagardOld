@@ -7,7 +7,11 @@ using SagardCL;
 
 public class HumanStandardController : UnitController
 {
-    public override void GetDamage(Attack attack) { Health.GetDamage(attack); }
+    public override void GetDamage(Attack attack) 
+    { 
+        Health.GetDamage(attack); 
+        if(attack.damage > 0) ChangeFigureColorWave(Color.red, 0.3f);
+    }
     public override void GetHeal(Attack attack) { Health.GetDamage(attack); }
 
 

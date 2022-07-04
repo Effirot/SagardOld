@@ -15,7 +15,7 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
 
     public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
     [SerializeField] bool _CanControl = true;
-    public bool Corpse { get { return Corpse; } set{ Corpse = value; } }
+    public bool Corpse { get { return _Corpse; } set{ _Corpse = value; } }
     [SerializeField] bool _Corpse = false;
     public bool Artifacer { get { return Artifacer; } set{ Artifacer = value; } }
     [SerializeField] bool _Artifacer = false;
@@ -31,7 +31,7 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
     ISanityBar _Sanity;
     
 
-    public List<IStateBar> OtherStates { get { return _OtherStates; } set{ _OtherStates = value; }}
+    public List<IStateBar> OtherStates { get { return _OtherStates; } set{ _OtherStates = value; } }
     List<IStateBar> _OtherStates = new List<IStateBar>();
 
     public List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
@@ -57,17 +57,19 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
 
     private Checkers LastPose = new Checkers();
     protected Checkers CursorPos { get {
-        Checkers pos = new Checkers(GameObject.Find("3DCursor").transform.position);
+        Checkers pos = CursorController.Pos;
         if(LastPose != pos) { LastPose = pos; ChangePos(); } 
         return pos; } 
     }
 
-    async void Awake()
+    void Awake()
     {
+        transform.parent.position = new Checkers(transform.parent.position);
+        MPlaner.position = new Checkers(MPlaner.position);
         InGameEvents.MapUpdate.AddListener(ParametersUpdate);
         InGameEvents.MouseController.AddListener((id, b) => 
         { 
-            if(id != MPlaner.Planer) { MouseTest = 0; return; }
+            if(id != MPlaner.Planer | !(!Corpse & CanControl)) { MouseTest = 0; return; }
             MouseTest = b;
             switch(MouseTest)
             {
@@ -76,20 +78,27 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
                 case 2: AttackPlaningIn(); return;
             }
         });
+        async Task Summon(int id){ 
+        switch(id)
+        {
+            case 1: await Walking(); return;
+            case 2: await PriorityAttacking(); return;
+            case 3: await Attacking(); return;
+            case 4: await Dead(); return;
+            case 5: await Rest(); return;
+        }
+    }   
         InGameEvents.StepSystem.Add(Summon);
         InGameEvents.AttackTransporter.AddListener((a) => { 
+            
             Attack find = a.Find((a) => a.Where == new Checkers(position));
-
             if(find.Where == new Checkers(position)){
                 if(find.damageType != DamageType.Heal)GetDamage(find);
                 else GetHeal(find);
             }
         });
-    
-        
-        await Task.Delay(1);
-        position = new Checkers(position);
     }
+
     void Update()
     {   
         switch(MouseTest)
@@ -100,17 +109,7 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
             case 4: break;
         }
     }
-
-    async Task Summon(int id){ 
-        switch(id)
-        {
-            case 1: await Walking(); return;
-            case 2: await PriorityAttacking(); return;
-            case 3: await Attacking(); return;
-            case 4: await Dead(); return;
-            case 5: await Rest(); return;
-        }
-    }    
+ 
     protected bool WalkChecker(bool Other = true)
     {        
         if(!Other) return false;
@@ -131,19 +130,25 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         return WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
     }
 
+// Standing methods
     protected void StandingUpd() // Calling(void Update), when you no planing
     {
-        //Base model
         MPlaner.Renderer.enabled = WalkChecker();
-        
-        //Move planner
-        MPlaner.Collider.enabled = true;
-        if(!WalkChecker() & InGameEvents.Controllable) MPlaner.position = position;
     
         //Attack planner
         if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
         APlaner.Renderer.enabled = SkillRealizer.Check();
     }
+    protected void StandingIn()
+    {
+        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
+        
+        InGameEvents.MapUpdate.Invoke();
+
+        if(!WalkChecker() & InGameEvents.Controllable) MPlaner.position = position;
+        MPlaner.Collider.enabled = true;
+    }
+// Move planning methods
     protected void MovePlaningUpd() // Calling(void Update), when you planing your moving
     {
         MPlaner.Renderer.enabled = true;
@@ -153,8 +158,13 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         //Move planner
         MPlaner.position = new Checkers(CursorPos);
         MPlaner.Collider.enabled = false;
-        
     }
+    protected async void MovePlaningIn()
+    {
+        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
+        await MovePlannerUpdate();
+    }
+// Attack planning methods
     protected void AttackPlaningUpd() // Calling(void Update), when you planing your attacks
     {
 
@@ -172,19 +182,6 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         //Mouse Scroll
         CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, SkillRealizer.AvailbleSkills.Count - 1);
     }
-
-    protected void StandingIn()
-    {
-        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
-        position = new Checkers(position);
-        
-        InGameEvents.MapUpdate.Invoke();
-    }
-    protected async void MovePlaningIn()
-    {
-        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
-        await MovePlannerUpdate();
-    }
     protected async void AttackPlaningIn()
     {
         CurrentSkillIndex = 0;
@@ -192,15 +189,17 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         await AttackPlannerUpdate();
     }
 
+// Control use methods   
     protected async void MouseWheelTurn(){ await AttackPlannerUpdate();  }
     protected async void ChangePos() {  if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
 
+
+// Update methods
     protected async void ParametersUpdate()
     {
         await MovePlannerUpdate();
         await AttackPlannerUpdate();
     }
-    
     protected async Task MovePlannerUpdate()
     {
         await Task.Delay(1);
@@ -236,29 +235,36 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         SkillRealizer.Graphics(); 
     }
 
+
     async Task Walking()
     {
         if(WalkWay.Count == 0) return;
+        MouseTest = 4;
         WillRest = false;
         await Task.Delay(10);
-        IEnumerator MPlanerMove()
-        {   
-            int PointNum = 1;
-            for(float i = 0.00001f; position != MPlaner.position; i *= 1.040f)
-            {
-                position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
-                MPlaner.LineRenderer.SetPosition(0, position);
-                if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
-                yield return new WaitForEndOfFrame();
-            }
-            yield break;
-        }
+
         await MovePlannerUpdate();
         StartCoroutine(MPlanerMove());
+        await Task.Delay(200);
         await Task.Run(MPlanerMove);
         Stamina.GetTired(Stamina.WalkUseStamina);
+        StopCoroutine(MPlanerMove());
+        MouseTest = 0;
         ParametersUpdate();
     }
+    IEnumerator MPlanerMove()
+    {   
+        int PointNum = 1;
+        for(float i = 0.00001f; position != MPlaner.position; i *= 1.20f)
+        {
+            position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
+            MPlaner.LineRenderer.SetPosition(0, position);
+            if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
+            yield return new WaitForFixedUpdate();
+        }
+        yield break;
+    }
+    
     async Task PriorityAttacking()
     {
         if(AttackZone.Count == 0) return;
@@ -277,8 +283,7 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         if(AttackZone.Count == 0) return;
         if(SkillRealizer.NowUsing.PriorityAttacking) return;
         WillRest = false;
-        await Task.Delay(Random.Range(0, 2700));
-        Debug.Log("Attacked " + MPlaner.Planer.name);
+        await Task.Delay(Random.Range(900, 2700));
 
         Stamina.GetTired(SkillRealizer.StaminaWaste());
         InGameEvents.AttackTransporter.Invoke(AttackZone);
@@ -291,21 +296,63 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
     { 
         if(Health.Value > 0) return;
         await Task.Delay(Random.Range(10, 100)); 
-        TransformIntoCorpse();
+        ZeroHealth();
     }
-    private bool WillRest = true;
     async Task Rest() 
     { 
         if(!WillRest) { WillRest = true; return;}
         await Task.Delay(Random.Range(0, 2300)); 
         Stamina.Rest();
     }
+    private bool WillRest = true;
+
 
     public abstract void GetDamage(Attack attack);
     public abstract void GetHeal(Attack attack);
 
-    public virtual void TransformIntoCorpse()
+    public virtual void ZeroHealth()
     {
-
+        Corpse = true;
+        Health = new HealthCorpse() { Max = Health.Max, Value = Health.Max, ArmorMelee = Health.ArmorMelee, ArmorRange = Health.ArmorRange };
+                
+        ChangeFigureColor(new Color(0.78f, 0.78f, 0.78f), 0.007f);
     }
+
+
+
+
+
+
+    public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
+    public void ChangeFigureColor(Color color, float speed, Material[] material = null) 
+    { 
+        if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
+                                                         transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
+        foreach (Material mat in material) StartCoroutine(ChangeMaterialColor(mat, color, speed)); 
+    }
+    public void ChangeFigureColorWave(Color color, float speed, Material[] material = null) 
+    { 
+        if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
+                                                         transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
+        
+        List<Task> tasks = new List<Task>();
+        foreach (Material mat in material) { StartCoroutine(Wave(mat, color, speed)); }
+
+        IEnumerator Wave(Material material, Color color, float speed)
+        { 
+            Color Save = material.color;
+            yield return ChangeMaterialColor(material, color, speed); 
+            yield return ChangeMaterialColor(material, Save, speed); 
+        }
+    }
+
+    static IEnumerator ChangeMaterialColor(Material material, Color color, float speed) {
+        
+        while(material.color != color)
+        {
+            material.color = Color.Lerp(material.color, color, speed);
+            speed += 0.001f;
+            yield return new WaitForFixedUpdate();
+        }
+    } 
 }

@@ -195,7 +195,9 @@ MonoBehaviour:
   _Team: {r: 0, g: 0, b: 0, a: 0}
   _CanControl: 1
   _Corpse: 0
+  _Artifacer: 0
   _WalkDistance: 5
+  Inventory: []
   _SkillRealizer:
     Unit: {fileID: 6213634045846544188}
     From:
@@ -217,6 +219,7 @@ MonoBehaviour:
     rid: 1001
   San:
     rid: 1002
+  InventorySize: 1
   TestPerishableSkill: {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
   references:
     version: 2
@@ -224,7 +227,7 @@ MonoBehaviour:
     - rid: 1000
       type: {class: HealthOver, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 20
+        _Value: 18
         _Max: 18
         _OverMax: 3
         _ArmorMelee: 3
@@ -2983,7 +2986,7 @@ GameObject:
   - component: {fileID: 4835452840273576197}
   - component: {fileID: 3788561625218304564}
   m_Layer: 6
-  m_Name: Figure
+  m_Name: MPlaner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

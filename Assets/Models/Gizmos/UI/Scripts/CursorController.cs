@@ -6,9 +6,10 @@ using UnityEngine;
 public class CursorController : MonoBehaviour
 {
     public static GameObject ObjectOnMap;
+    public static Checkers Pos;
     void Update()
     {
-        Checkers Pos = new Checkers(transform.position);
+        Pos = new Checkers(transform.position);
         if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit)) Pos = new Checkers(hit.point);
 
         float Distance = Vector3.Distance(transform.position, Pos) / 10;

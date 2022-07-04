@@ -74,7 +74,7 @@ public class SkillCombiner{
     private Checkers ToPoint(Vector3 f, Vector3 t, float Up = 0)
     {
         if(Physics.Raycast(f, t - f, out RaycastHit hit, Vector3.Distance(f, t), LayerMask.GetMask("Object", "Map")))
-            return new Checkers(hit.point, Up);
+            return new Checkers(hit.point, Up); 
         return t; 
     }
 
@@ -225,7 +225,7 @@ public class SkillCombiner{
         if(NowUsing.Type == HitType.Empty) return false;
         return Checkers.Distance(startPos, endPos) < NowUsing.Distance & 
                !(startPos == endPos) & 
-               Checkers.Distance(startPos, endPos) > ((NowUsing.Type != HitType.Arc)? NowUsing.AttackStartDistance - 0.7f : 0); }
+               Checkers.Distance(startPos, endPos) > ((NowUsing.Type != HitType.Arc)? NowUsing.AttackStartDistance - 0.7f : 0); } 
 
     public int StaminaWaste()
     {
