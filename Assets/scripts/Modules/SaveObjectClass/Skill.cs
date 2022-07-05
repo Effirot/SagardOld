@@ -49,17 +49,17 @@ public class Skill : Descript, Sendable
 [System.Serializable]
 public class SkillCombiner{
     
-    //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------   
     [Header("Controllers")]  
     public UnitController Unit;
     [Space]
     public AllInOne From;
     public AllInOne To;
 
-    public int SkillIndex = 0;
+    [NonSerialized] public int SkillIndex = 0;
     [SerializeField] private List<Skill> AvailbleBaseSkills;
     public List<Skill> AdditionBaseSkills;
-    public List<Skill> AvailbleSkills => CombineLists<Skill>(new List<List<Skill>>(){ AvailbleBaseSkills, AdditionBaseSkills});
+    public List<Skill> AvailbleSkills => UnitController.CombineLists<Skill>(new List<List<Skill>>(){ AvailbleBaseSkills, AdditionBaseSkills, Unit.AllItemStats.AdditionSkills});
 
     public Skill NowUsing => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
 
@@ -236,23 +236,16 @@ public class SkillCombiner{
         }
     }
 
-    List<T> CombineLists<T>(List<T> a, List<T> b) 
-    {
-        List<T> result = new List<T>();
-        result.AddRange(a);
-        result.AddRange(b);
-        return result;
-    }
-    List<T> CombineLists<T>(List<List<T>> a) 
-    {
-        List<T> result = new List<T>();
-        foreach(List<T> b in a)
-        {
-            result.AddRange(b);
-        }
-        return result;
-    }
+
+
+
+
 }
+
+
+
+
+
 
 public class SkillBuff
 {

@@ -10,26 +10,27 @@ public class HumanStandardController : UnitController
     public override void GetDamage(Attack attack) 
     { 
         Health.GetDamage(attack); 
-        if(attack.damage > 0) ChangeFigureColorWave(Color.red, 0.3f);
+        if(attack.damage > 0) ChangeFigureColorWave(attack.DamageColor(), 0.2f);
     }
-    public override void GetHeal(Attack attack) { Health.GetDamage(attack); }
 
 
+
+    [Space(100)]
+    [Header("Start parameters")]
     [SerializeReference] IHealthBar HP = new HealthOver();
     [SerializeReference] IStaminaBar Stam = new Stamina();
     [SerializeReference] ISanityBar San = new Sanity();
     [Space]
     [SerializeField] int InventorySize = 1;
+    [SerializeReference] List<Item> Items = new List<Item>(2);
 
-    public Skill TestPerishableSkill;
     void Start() {
-        if(TestPerishableSkill) SkillRealizer.AdditionBaseSkills.Add(new Perishable<Skill>(TestPerishableSkill, 1));
 
         Health = HP;
         Stamina = Stam;
         Sanity = San;
 
-        Inventory = new List<Item>(InventorySize);
+        Inventory = Items;
 
     }
 }

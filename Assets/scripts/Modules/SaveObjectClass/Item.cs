@@ -4,8 +4,77 @@ using UnityEngine;
 using SagardCL;
 using System;
 
-[CreateAssetMenu(fileName = "Item", menuName = "SagardCL objects/Item", order = 51)]
+[CreateAssetMenu(fileName = "Item", menuName = "SagardCL objects/Standard Item", order = 51)]
 public class Item : Descript, Sendable
+{
+    public VirtualItem ThisItem;
+    public static implicit operator VirtualItem(Item item) { return item.ThisItem; }
+
+    public static VirtualItem CompoundParameters(List<VirtualItem> items) 
+    {
+        var result = new VirtualItem();
+        var resists = new List<Effect>();
+        var additionStates = new List<IStateBar>();
+        var additionSkills = new List<Skill>();
+        foreach(VirtualItem item in items)
+        {
+            result.WalkDistance += item.WalkDistance;
+
+            result.Health.Max += item.Health.Max;
+            result.Health.ArmorMelee += item.Health.ArmorMelee;
+            result.Health.ArmorRange += item.Health.ArmorRange;
+
+            result.Stamina.Max += item.Stamina.Max;
+            result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
+            result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
+            
+            result.Sanity.Max += item.Sanity.Max;
+            result.Sanity.SanityShield += item.Sanity.SanityShield;
+
+            resists.AddRange(item.Resists);
+            additionStates.AddRange(item.AdditionState);
+            additionSkills.AddRange(item.AdditionSkills);
+        }
+        result.Resists = resists;
+        result.AdditionSkills = additionSkills;
+        result.AdditionState = additionStates;
+
+        return result; 
+    }
+    public static VirtualItem CompoundParameters(List<Item> items) 
+    {
+        var result = new VirtualItem();
+        var resists = new List<Effect>();
+        var additionStates = new List<IStateBar>();
+        var additionSkills = new List<Skill>();
+        foreach(VirtualItem item in items)
+        {
+            result.WalkDistance += item.WalkDistance;
+
+            result.Health.Max += item.Health.Max;
+            result.Health.ArmorMelee += item.Health.ArmorMelee;
+            result.Health.ArmorRange += item.Health.ArmorRange;
+
+            result.Stamina.Max += item.Stamina.Max;
+            result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
+            result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
+            
+            result.Sanity.Max += item.Sanity.Max;
+            result.Sanity.SanityShield += item.Sanity.SanityShield;
+
+            if(item.Resists != null) resists.AddRange(item.Resists);
+            if(item.AdditionState != null) additionStates.AddRange(item.AdditionState);
+            if(item.AdditionSkills != null) additionSkills.AddRange(item.AdditionSkills);
+        }
+        result.Resists = resists;
+        result.AdditionSkills = additionSkills;
+        result.AdditionState = additionStates;
+
+        return result; 
+    }
+}
+
+[System.Serializable]public class VirtualItem
 {
     public enum ItemQuality
     {
@@ -19,7 +88,6 @@ public class Item : Descript, Sendable
     public ItemQuality Quality;
     public bool CanTakeOff = true;
     public bool DestroyOnDeath = false;
-    public bool Artifacers = false;
     public bool UseInCrafts = true;
     [Space]
     public int WalkDistance = 0;
@@ -31,25 +99,18 @@ public class Item : Descript, Sendable
     public bool ReplaceStaminaBar = false;
     [SerializeReference]public ISanityBar Sanity = new Sanity();
     public bool ReplaceSanityBar = false;
-
     
-    public IStateBar OtherStates;
+    public List<IStateBar> AdditionState;
+
 
     public List<Effect> Resists = new List<Effect>();
     [Space]
     public List<Skill> AdditionSkills = new List<Skill>();
-
-    public static Item CompoundParameters(List<Item> items) 
-    {
-        foreach(Item item in items)
-        {
-            
-        }
-        return new Item(); 
-    }
 }
 
+public class ArtifacerVirtualItem : VirtualItem
+{
 
-
+}
 
 

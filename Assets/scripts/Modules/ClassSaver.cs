@@ -38,6 +38,7 @@ namespace SagardCL //Class library
         Addition,
     }
 
+
     // All Interfaces 
     public interface Sendable
     {
@@ -53,7 +54,7 @@ namespace SagardCL //Class library
     {
         Color BarColor{ get; }
 
-        int Value { get; }
+        int Value { get; set; }
         int Max { get; set; }  
     }
 
@@ -91,7 +92,6 @@ namespace SagardCL //Class library
         List<Effect> Debuff{ get; set; }
 
         void GetDamage(Attack attack);
-        void GetHeal(Attack attack);
     }
     public interface IPlayerStats : IObjectOnMap
     {
@@ -144,6 +144,19 @@ namespace SagardCL //Class library
             damageType = Type;
             Debuff = new Effect[] { debuff };
         }
+
+        public Color DamageColor() 
+        { 
+            switch (damageType)
+            {
+                default: return Color.HSVToRGB(0.02f, 1, 1);
+                case DamageType.Melee: return Color.HSVToRGB(0.02f, 1, 1);
+                case DamageType.MetalHeal: goto case DamageType.Heal; 
+                case DamageType.Heal: return Color.HSVToRGB(0.42f, 1, 1);
+                case DamageType.Rezo: return Color.HSVToRGB(67f / 360f, 1, 1);
+                case DamageType.Pure: return Color.HSVToRGB(274f / 360f, 1, 1);
+            }
+        }
     }
     
     [System.Serializable]
@@ -166,33 +179,37 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer { get{ return Planer.GetComponent<LineRenderer>(); } }
     }
 
-    [System.Serializable]public class Perishable<T> where T : Sendable
-    {
-        private T Target;
+
+
+
+
+    // [System.Serializable]public class Perishable<T> where T : Sendable
+    // {
+    //     private T Target;
         
-        enum DisappearanceCondition
-        {
-            Timer,
-            LowAmmo,
-        }
-        DisappearanceCondition Condition;
+    //     enum DisappearanceCondition
+    //     {
+    //         Timer,
+    //         LowAmmo,
+    //     }
+    //     DisappearanceCondition Condition;
         
-        public int HideTimer;
-        public IStateBar AmmoLink;
+    //     public int HideTimer;
+    //     public IStateBar AmmoLink;
 
-        public Perishable(T target, int Timer) { Target = target; HideTimer = Timer; 
-            Condition = DisappearanceCondition.Timer; 
-            IStepEndUpdate.StateList.AddListener(Update);
-        }
-        public void Update()
-        {
-            if(HideTimer <= 0) Target = default(T);
-            this.HideTimer--;
-        }
+    //     public Perishable(T target, int Timer) { Target = target; HideTimer = Timer; 
+    //         Condition = DisappearanceCondition.Timer; 
+    //         IStepEndUpdate.StateList.AddListener(Update);
+    //     }
+    //     public void Update()
+    //     {
+    //         if(HideTimer <= 0) Target = default(T);
+    //         this.HideTimer--;
+    //     }
 
 
-        public Perishable(T target, IStateBar ammoLink) { Target = target; AmmoLink = ammoLink; Condition = DisappearanceCondition.LowAmmo; }
+    //     public Perishable(T target, IStateBar ammoLink) { Target = target; AmmoLink = ammoLink; Condition = DisappearanceCondition.LowAmmo; }
 
-        public static implicit operator T (Perishable<T> a) { return a.Target; }
-    }
+    //     public static implicit operator T (Perishable<T> a) { return a.Target; }
+    // }
 }

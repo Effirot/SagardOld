@@ -9,8 +9,9 @@ using UnityEngine.Events;
 // ================================================================= Health Bar ===========================================================================================================
 public class Health : IHealthBar
 {
+    [Header("Health")]
     [SerializeField, Range(0, 50)] int _Value = 0;
-    public int Value { get { return _Value; } }
+    public int Value { get { return _Value; } set { _Value = value; } }
     [SerializeField, Range(0, 50)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -40,9 +41,9 @@ public class Health : IHealthBar
 public class HealthOver : IHealthBar
 {
     public HealthOver() { IStepEndUpdate.StateList.AddListener(Update); }
-
+    [Header("Over Max Health")]
     [SerializeField, Range(0, 50)] int _Value = 0;
-    public int Value { get { return _Value; } }
+    public int Value { get { return _Value; } set { _Value = value; }}
     [SerializeField, Range(0, 50)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [SerializeField] int _OverMax;
@@ -76,7 +77,7 @@ public class HealthOver : IHealthBar
 public class HealthCorpse : IHealthBar
 {
     public HealthCorpse() { IStepEndUpdate.StateList.AddListener(Update); Value = Max; }
-
+    [Header("Corpse Health")]
     [SerializeField, Range(0, 50)] int _Value = 9;
     public int Value { get { return _Value; } set { _Value = value; }}
     [SerializeField, Range(0, 50)] int _Max = 9;
@@ -87,10 +88,10 @@ public class HealthCorpse : IHealthBar
     [SerializeField] int _ArmorRange = 4;
     public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
 
-    private int CorpseTimer = 4;
+    private int CorpseTimer = 3;
     public void Update()
     {
-        if(CorpseTimer <= 1) { _Value -= 1; CorpseTimer = 4; return; }
+        if(CorpseTimer <= 1) { _Value -= 1; CorpseTimer = 3; return; }
         CorpseTimer -= 1;
     }
 
@@ -98,22 +99,23 @@ public class HealthCorpse : IHealthBar
     {
         switch(attack.damageType)
         {
-            case DamageType.Pure: _Value -= attack.damage; break;
-            case DamageType.Melee: _Value -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: _Value -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: _Value -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 1.25f); break;
-            case DamageType.Terra: _Value -= attack.damage / 4; break;
+            case DamageType.Pure: _Value -= (attack.damage / 2); break;
+            case DamageType.Melee: _Value -= (attack.damage / 2) - ArmorMelee; break;
+            case DamageType.Range: _Value -= (attack.damage / 2) - ArmorRange; break;
+            case DamageType.Rezo: _Value -= (attack.damage / 2) - (int)Mathf.Round((ArmorRange + ArmorMelee) * 1.25f); break;
+            case DamageType.Terra: _Value -= attack.damage * 2; break;
  
-            case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
-            case DamageType.MetalHeal: _Value -= 1; break;
+            case DamageType.Heal: CorpseTimer += attack.damage; break;
+            case DamageType.MetalHeal: _Value -= 3; break;
         }
     }
     public Color BarColor{ get{ return new Color(0, 0, 0); } }
 }
 public class Metal : IHealthBar
 {
+    [Header("Metal")]
     [SerializeField, Range(0, 50)] int _Value = 0;
-    public int Value { get { return _Value; } }
+    public int Value { get { return _Value; } set { _Value = value; } }
     [SerializeField, Range(0, 50)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -143,8 +145,9 @@ public class Metal : IHealthBar
 // ================================================================= Stamina Bar ===========================================================================================================
 public class Stamina : IStaminaBar
 {
+    [Header("Stamina Bar")]
     [SerializeField, Range(0, 50)] int _Value = 0;
-    public int Value { get { return _Value; } }
+    public int Value { get { return _Value; } set { _Value = value; }}
     [SerializeField, Range(0, 50)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
@@ -164,8 +167,9 @@ public class Stamina : IStaminaBar
 // ================================================================= Sanity Bar ============================================================================================================
 public class Sanity : ISanityBar
 {
+    [Header("Sanity Bar")]
     [SerializeField, Range(0, 50)] int _Value = 0;
-    public int Value { get { return _Value; } }
+    public int Value { get { return _Value; } set { _Value = value; }}
     [SerializeField, Range(0, 50)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
