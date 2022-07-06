@@ -7,16 +7,16 @@ using System;
 [CreateAssetMenu(fileName = "Item", menuName = "SagardCL objects/Standard Item", order = 51)]
 public class Item : Descript, Sendable
 {
-    public VirtualItem ThisItem;
-    public static implicit operator VirtualItem(Item item) { return item.ThisItem; }
+    public ParamsChanger ThisItem;
+    public static implicit operator ParamsChanger(Item item) { return item.ThisItem; }
 
-    public static VirtualItem CompoundParameters(List<VirtualItem> items) 
+    public static ParamsChanger CompoundParameters(List<ParamsChanger> items) 
     {
-        var result = new VirtualItem();
+        var result = new ParamsChanger();
         var resists = new List<Effect>();
         var additionStates = new List<IStateBar>();
         var additionSkills = new List<Skill>();
-        foreach(VirtualItem item in items)
+        foreach(ParamsChanger item in items)
         {
             result.WalkDistance += item.WalkDistance;
 
@@ -41,13 +41,13 @@ public class Item : Descript, Sendable
 
         return result; 
     }
-    public static VirtualItem CompoundParameters(List<Item> items) 
+    public static ParamsChanger CompoundParameters(List<Item> items) 
     {
-        var result = new VirtualItem();
+        var result = new ParamsChanger();
         var resists = new List<Effect>();
         var additionStates = new List<IStateBar>();
         var additionSkills = new List<Skill>();
-        foreach(VirtualItem item in items)
+        foreach(ParamsChanger item in items)
         {
             result.WalkDistance += item.WalkDistance;
 
@@ -74,7 +74,7 @@ public class Item : Descript, Sendable
     }
 }
 
-[System.Serializable]public class VirtualItem
+[System.Serializable]public class ParamsChanger
 {
     public enum ItemQuality
     {
@@ -108,7 +108,7 @@ public class Item : Descript, Sendable
     public List<Skill> AdditionSkills = new List<Skill>();
 }
 
-public class ArtifacerVirtualItem : VirtualItem
+public class ArtifacerVirtualItem : ParamsChanger
 {
 
 }

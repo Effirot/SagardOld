@@ -48,10 +48,15 @@ namespace SagardCL //Class library
     {
         void Update();
         public static UnityEvent StateList = new UnityEvent();
+
+        abstract bool Updatable { get; set; }
     }
     
+
     public interface IStateBar : IStepEndUpdate
     {
+        object Clone();
+        
         Color BarColor{ get; }
 
         int Value { get; set; }
@@ -79,9 +84,9 @@ namespace SagardCL //Class library
     }
 
     public interface IAmmoBar : IStateBar
-{
+    {
 
-}
+    }
 
 
     public interface IObjectOnMap

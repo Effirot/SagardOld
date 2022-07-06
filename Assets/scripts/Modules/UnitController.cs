@@ -4,14 +4,111 @@ using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
 using System.Threading.Tasks;
+using System;
+using Random = UnityEngine.Random;
 
-public abstract class UnitController : MonoBehaviour, IPlayerStats
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+
+[Serializable] public abstract class UnitController : MonoBehaviour, IPlayerStats
 {
+    // ================================================================= Useful Stuff =================================================================
     private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
     private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
 
+    protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
+    Collider Collider => GetComponent<MeshCollider>();
+
+    public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
+    protected List<Attack> AttackZone = new List<Attack>();
+    protected List<Checkers> WalkWay = new List<Checkers>();
+
+    private Checkers LastPose = new Checkers();
+    Checkers CursorPos { get {
+        Checkers pos = CursorController.Pos;
+        if(LastPose != pos) { LastPose = pos; ChangePos(); } 
+        return pos; } 
+    }
+    
+    
+    public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
+    public void ChangeFigureColor(Color color, float speed, Material[] material = null) 
+    { 
+        if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
+                                                         transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
+        foreach (Material mat in material) StartCoroutine(ChangeMaterialColor(mat, color, speed)); 
+    }
+    public void ChangeFigureColorWave(Color color, float speed, Material[] material = null) 
+    { 
+        if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
+                                                         transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
+        
+        List<Task> tasks = new List<Task>();
+        foreach (Material mat in material) { StartCoroutine(Wave(mat, color, speed)); }
+
+        IEnumerator Wave(Material material, Color color, float speed)
+        { 
+            Color Save = material.color;
+            yield return ChangeMaterialColor(material, color, speed); 
+            yield return ChangeMaterialColor(material, Save, speed); 
+        }
+    }
+
+    static IEnumerator ChangeMaterialColor(Material material, Color color, float speed) {
+        while(material.color != color)
+        {
+            material.color = Color.Lerp(material.color, color, speed);
+            speed *= 1.1f;
+            yield return new WaitForFixedUpdate();
+        }
+    }
+
+    public static List<T> CombineLists<T>(List<T> a, List<T> b) 
+    {
+        List<T> result = new List<T>();
+        result.AddRange(a);
+        result.AddRange(b);
+        return result;
+    }
+    public static List<T> CombineLists<T>(List<List<T>> a) 
+    {
+        List<T> result = new List<T>();
+        foreach(List<T> b in a)
+        {
+            result.AddRange(b);
+        }
+        return result;
+    }
+
+    protected bool WalkChecker(bool Other = true)
+    {        
+        if(!Other) return false;
+        
+        //OnOtherPlaner
+        foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
+        { 
+            if(hit.collider.gameObject != MPlaner.Planer) { return false; }
+        }
+        
+        //OnSelf
+        if(new Checkers(position) == new Checkers(MPlaner.position))
+            return false;
+        
+        //OnStamina
+        if(Stamina.WalkUseStamina > Stamina.Value) return false;
+        //OnDistance
+        return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
+    }
+
+
+
+
+    //<params>================================================================ All parameters =================================================================
     public Color Team { get { return _Team; } set { _Team = value; } }
     [SerializeField] Color _Team;
+
 
     public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
     [SerializeField] bool _CanControl = true;
@@ -20,19 +117,23 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
     public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
     [SerializeField] int _WalkDistance = 5;
 
-    public IHealthBar Health { get{ return _Health; } set{ if (_Health == null) BaseHealth = value; _Health = value; } }
-    [SerializeReference] IHealthBar _Health;
-    IHealthBar BaseHealth;
-    public IStaminaBar Stamina { get{ return _Stamina; } set{ if( _Stamina == null) BaseStamina = value; _Stamina = value; } }
-    [SerializeReference] IStaminaBar _Stamina;
-    IStaminaBar BaseStamina;
-    public ISanityBar Sanity { get { return _Sanity; } set{ if(_Sanity == null) BaseSanity = value; _Sanity = value; } } 
-    [SerializeReference] ISanityBar _Sanity;
-    ISanityBar BaseSanity;
+
+    public IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
+    IHealthBar _Health;
+    [SerializeReference, SerializeReferenceButton] IHealthBar BaseHealth;
+
+    public IStaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
+    IStaminaBar _Stamina;
+    [SerializeReference, SerializeReferenceButton] IStaminaBar BaseStamina;
+
+    public ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
+    ISanityBar _Sanity;
+    [SerializeReference, SerializeReferenceButton] ISanityBar BaseSanity;
     
     public List<IStateBar> OtherStates { get { return CombineLists<IStateBar>(_OtherStates, AllItemStats.AdditionState); } 
                                          set{ _OtherStates = value; } }
-    List<IStateBar> _OtherStates = new List<IStateBar>();
+    [SerializeReference, SerializeReferenceButton] List<IStateBar> _OtherStates = new List<IStateBar>();
+
 
 
     public List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
@@ -40,33 +141,25 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
     public List<Effect> Debuff { get { return _Debuff; } set{ _Debuff = value; } }
     List<Effect> _Debuff;
 
-    public List<Item> Inventory { get { return _Inventory; } set{ _Inventory = value; ChangeItems(); } }
+    public List<Item> Inventory { get { return _Inventory; } set{ _Inventory = value; } }
+    public int InventorySize = 1;
     [SerializeField] List<Item> _Inventory;
-    public VirtualItem AllItemStats => Item.CompoundParameters(Inventory);
+    public ParamsChanger AllItemStats => Item.CompoundParameters(Inventory);
 
     public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
     [SerializeField] SkillCombiner _SkillRealizer = new SkillCombiner();
+    //</params>
 
-    protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
-    protected Collider Collider => GetComponent<MeshCollider>();
 
-    public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
-    
 
-    protected int MouseTest = 0;
-    protected List<Attack> AttackZone = new List<Attack>();
-    protected List<Checkers> WalkWay = new List<Checkers>();
 
-    private Checkers LastPose = new Checkers();
-    protected Checkers CursorPos { get {
-        Checkers pos = CursorController.Pos;
-        if(LastPose != pos) { LastPose = pos; ChangePos(); } 
-        return pos; } 
-    }
-
+    // ================================================================= OnStart Parameters ===============================================================================================
+    int MouseTest = 0;
     void Awake()
     {
-        
+        Health = BaseHealth.Clone() as IHealthBar;
+        Stamina = BaseStamina.Clone() as IStaminaBar;
+        Sanity = BaseSanity.Clone() as ISanityBar;
 
         InGameEvents.MapUpdate.AddListener(ParametersUpdate);
         InGameEvents.MouseController.AddListener((id, b) => 
@@ -98,8 +191,11 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
                 GetDamage(find);
             }
         });
-    }
+    
 
+    
+        AfterInventoryUpdate();
+    }
     void Update()
     {   
         switch(MouseTest)
@@ -110,40 +206,25 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
             case 4: break;
         }
     }
- 
-    protected bool WalkChecker(bool Other = true)
-    {        
-        if(!Other) return false;
-        
-        //OnOtherPlaner
-        foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
-        { 
-            if(hit.collider.gameObject != MPlaner.Planer) { return false; }
-        }
-        
-        //OnSelf
-        if(new Checkers(position) == new Checkers(MPlaner.position))
-            return false;
-        
-        //OnStamina
-        if(Stamina.WalkUseStamina > Stamina.Value) return false;
-        //OnDistance
-        return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
-    }
 
+    // Control use methods   
+    async void MouseWheelTurn(){ await AttackPlannerUpdate();  }
+    async void ChangePos() {  if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
     
     // Standing methods
-    protected void StandingUpd() // Calling(void Update), when you no planing
+    void StandingUpd() // Calling(void Update), when you no planing
     {
-        position = new Checkers(position);
+        
         if(!WalkChecker()) MPlaner.position = position;
         MPlaner.Renderer.enabled = WalkChecker();
     
         //Attack planner
         if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
         APlaner.Renderer.enabled = SkillRealizer.Check();
+        
+        position = new Checkers(position);
     }
-    protected void StandingIn()
+    void StandingIn()
     {
         UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
         
@@ -153,7 +234,7 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         MPlaner.Collider.enabled = true;
     }
     // Move planning methods
-    protected void MovePlaningUpd() // Calling(void Update), when you planing your moving
+    void MovePlaningUpd() // Calling(void Update), when you planing your moving
     {
         MPlaner.Renderer.enabled = true;
         
@@ -163,14 +244,14 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         MPlaner.position = new Checkers(CursorPos);
         MPlaner.Collider.enabled = false;
     }
-    protected async void MovePlaningIn()
+    async void MovePlaningIn()
     {
         APlaner.position = new Checkers(APlaner.position);
         UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
         await MovePlannerUpdate();
     }
     // Attack planning methods
-    protected void AttackPlaningUpd() // Calling(void Update), when you planing your attacks
+    void AttackPlaningUpd() // Calling(void Update), when you planing your attacks
     {
 
         //Move planner
@@ -187,16 +268,100 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         //Mouse Scroll
         CurrentSkillIndex = Mathf.Clamp(CurrentSkillIndex + (int)(Input.GetAxis("Mouse ScrollWheel") * 10), 0, SkillRealizer.AvailbleSkills.Count - 1);
     }
-    protected async void AttackPlaningIn()
+    async void AttackPlaningIn()
     {
         CurrentSkillIndex = 0;
         UnitUIController.UiEvent.Invoke("OpenForPlayer", MPlaner.Planer, this);
         await AttackPlannerUpdate();
     }
 
-    // Control use methods   
-    protected async void MouseWheelTurn(){ await AttackPlannerUpdate();  }
-    protected async void ChangePos() {  if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
+
+
+
+
+    async Task Walking()
+    {
+        if(WalkWay.Count == 0) return;
+        MouseTest = 4;
+        WillRest = false;
+        await Task.Delay(10);
+
+        await MovePlannerUpdate();
+        StartCoroutine(MPlanerMove());
+        await Task.Delay(200);
+        await Task.Run(MPlanerMove);
+        Stamina.GetTired(Stamina.WalkUseStamina);
+        StopCoroutine(MPlanerMove());
+        MouseTest = 0;
+        ParametersUpdate();
+    }
+    IEnumerator MPlanerMove()
+    {   
+        int PointNum = 1;
+        for(float i = 0.00001f; position != MPlaner.position; i *= 1.30f)
+        {
+            position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
+            MPlaner.LineRenderer.SetPosition(0, position);
+            if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
+            yield return new WaitForFixedUpdate();
+        }
+        yield break;
+    }
+    async Task PriorityAttacking()
+    {
+        if(AttackZone.Count == 0) return;
+        if(!SkillRealizer.NowUsing.PriorityAttacking) return;
+        WillRest = false;
+        await Task.Delay(Random.Range(0, 2700));
+
+        InGameEvents.AttackTransporter.Invoke(AttackZone);
+        AttackZone.Clear();
+        APlaner.position = MPlaner.position;
+
+        await AttackPlannerUpdate();
+    }
+    async Task Attacking()
+    {
+        if(AttackZone.Count == 0) return;
+        if(SkillRealizer.NowUsing.PriorityAttacking) return;
+        WillRest = false;
+        await Task.Delay(Random.Range(900, 2700));
+
+        Stamina.GetTired(SkillRealizer.StaminaWaste());
+        InGameEvents.AttackTransporter.Invoke(AttackZone);
+        AttackZone.Clear();
+        APlaner.position = MPlaner.position;
+        
+        await AttackPlannerUpdate();
+    }
+    async Task Dead() 
+    { 
+        if(Health.Value > 0) return;
+        await Task.Delay(Random.Range(10, 100)); 
+        Corpse = true;
+        try { ZeroHealth(); } catch {}
+    }
+    async Task Rest() 
+    { 
+        if(!WillRest) { WillRest = true; return; }
+        await Task.Delay(Random.Range(0, 2300)); 
+        AfterInventoryUpdate(); 
+        Stamina.Rest();
+    }
+    private bool WillRest = true;
+
+
+    public abstract void GetDamage(Attack attack);
+    public virtual void ZeroHealth()
+    {
+        if(Health is HealthCorpse) { Destroy(transform.parent.gameObject); }
+        else {
+            Health = new HealthCorpse() { Max = Health.Max, Value = Health.Max, ArmorMelee = Health.ArmorMelee, ArmorRange = Health.ArmorRange };
+
+            ChangeFigureColor(new Color(0.6f, 0.6f, 0.6f), 0.2f);
+        }
+    }
+
 
 
     // Update methods
@@ -239,90 +404,7 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;
         SkillRealizer.Graphics(); 
     }
-
-
-    async Task Walking()
-    {
-        if(WalkWay.Count == 0) return;
-        MouseTest = 4;
-        WillRest = false;
-        await Task.Delay(10);
-
-        await MovePlannerUpdate();
-        StartCoroutine(MPlanerMove());
-        await Task.Delay(200);
-        await Task.Run(MPlanerMove);
-        Stamina.GetTired(Stamina.WalkUseStamina);
-        StopCoroutine(MPlanerMove());
-        MouseTest = 0;
-        ParametersUpdate();
-    }
-    IEnumerator MPlanerMove()
-    {   
-        int PointNum = 1;
-        for(float i = 0.00001f; position != MPlaner.position; i *= 1.30f)
-        {
-            position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
-            MPlaner.LineRenderer.SetPosition(0, position);
-            if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
-            yield return new WaitForFixedUpdate();
-        }
-        yield break;
-    }
-    
-    async Task PriorityAttacking()
-    {
-        if(AttackZone.Count == 0) return;
-        if(!SkillRealizer.NowUsing.PriorityAttacking) return;
-        WillRest = false;
-        await Task.Delay(Random.Range(0, 2700));
-
-        InGameEvents.AttackTransporter.Invoke(AttackZone);
-        AttackZone.Clear();
-        APlaner.position = MPlaner.position;
-
-        await AttackPlannerUpdate();
-    }
-    async Task Attacking()
-    {
-        if(AttackZone.Count == 0) return;
-        if(SkillRealizer.NowUsing.PriorityAttacking) return;
-        WillRest = false;
-        await Task.Delay(Random.Range(900, 2700));
-
-        Stamina.GetTired(SkillRealizer.StaminaWaste());
-        InGameEvents.AttackTransporter.Invoke(AttackZone);
-        AttackZone.Clear();
-        APlaner.position = MPlaner.position;
-        
-        await AttackPlannerUpdate();
-    }
-    async Task Dead() 
-    { 
-        if(Health.Value > 0) return;
-        await Task.Delay(Random.Range(10, 100)); 
-        Corpse = true;
-        ZeroHealth();
-    }
-    async Task Rest() 
-    { 
-        if(!WillRest) { WillRest = true; return;}
-        await Task.Delay(Random.Range(0, 2300)); 
-        Stamina.Rest();
-    }
-    private bool WillRest = true;
-
-    public abstract void GetDamage(Attack attack);
-
-    public virtual void ZeroHealth()
-    {
-        Health = new HealthCorpse() { Max = Health.Max, Value = Health.Max, ArmorMelee = Health.ArmorMelee, ArmorRange = Health.ArmorRange };
-        
-        ChangeFigureColor(new Color(0.6f, 0.6f, 0.6f), 0.2f);
-    }
-
-
-    public virtual void ChangeItems()
+    public virtual void AfterInventoryUpdate()
     {
         Health.Max = BaseHealth.Max + AllItemStats.Health.Max;
         Health.Value = Health.Value + AllItemStats.Health.Max;
@@ -333,60 +415,22 @@ public abstract class UnitController : MonoBehaviour, IPlayerStats
         Sanity.Max = BaseSanity.Max + AllItemStats.Sanity.Max;
         Sanity.Value = Sanity.Value + AllItemStats.Sanity.Max;
     } 
-
-    
-
-
-
-
-    public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
-    public void ChangeFigureColor(Color color, float speed, Material[] material = null) 
-    { 
-        if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
-                                                         transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
-        foreach (Material mat in material) StartCoroutine(ChangeMaterialColor(mat, color, speed)); 
-    }
-    public void ChangeFigureColorWave(Color color, float speed, Material[] material = null) 
-    { 
-        if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
-                                                         transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
-        
-        List<Task> tasks = new List<Task>();
-        foreach (Material mat in material) { StartCoroutine(Wave(mat, color, speed)); }
-
-        IEnumerator Wave(Material material, Color color, float speed)
-        { 
-            Color Save = material.color;
-            yield return ChangeMaterialColor(material, color, speed); 
-            yield return ChangeMaterialColor(material, Save, speed); 
-        }
-    }
-
-    static IEnumerator ChangeMaterialColor(Material material, Color color, float speed) {
-        
-        while(material.color != color)
-        {
-            material.color = Color.Lerp(material.color, color, speed);
-            speed += 0.01f;
-            yield return new WaitForFixedUpdate();
-        }
-    } 
-
-
-    public static List<T> CombineLists<T>(List<T> a, List<T> b) 
-    {
-        List<T> result = new List<T>();
-        result.AddRange(a);
-        result.AddRange(b);
-        return result;
-    }
-    public static List<T> CombineLists<T>(List<List<T>> a) 
-    {
-        List<T> result = new List<T>();
-        foreach(List<T> b in a)
-        {
-            result.AddRange(b);
-        }
-        return result;
-    }
 }
+
+
+
+
+
+
+
+#if UNITY_EDITOR
+[CustomEditor(typeof(UnitController), true)]
+[CanEditMultipleObjects]
+public class UnitControllerSerializer : Editor
+{
+    void OnEnable() {
+        
+    }
+
+}
+#endif

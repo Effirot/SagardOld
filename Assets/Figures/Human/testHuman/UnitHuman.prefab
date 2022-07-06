@@ -432,13 +432,16 @@ MonoBehaviour:
   _CanControl: 1
   _Corpse: 0
   _WalkDistance: 5
-  _Health:
-    rid: -2
-  _Stamina:
-    rid: -2
-  _Sanity:
-    rid: -2
-  _Inventory: []
+  BaseHealth:
+    rid: 7033181276535259173
+  BaseStamina:
+    rid: 7033181276535259174
+  BaseSanity:
+    rid: 7033181276535259175
+  _OtherStates: []
+  InventorySize: 1
+  _Inventory:
+  - {fileID: 11400000, guid: 37bd40e62f978464c96bc8063a36144b, type: 2}
   _SkillRealizer:
     Unit: {fileID: 5881976563747058673}
     From:
@@ -453,36 +456,25 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
     - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
     AdditionBaseSkills: []
-  HP:
-    rid: 1000
-  Stam:
-    rid: 1001
-  San:
-    rid: 1002
-  InventorySize: 1
-  Items:
-  - {fileID: 11400000, guid: 37bd40e62f978464c96bc8063a36144b, type: 2}
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
-    - rid: 1000
+    - rid: 7033181276535259173
       type: {class: HealthOver, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 18
-        _Max: 18
+        _Value: 16
+        _Max: 16
         _OverMax: 3
-        _ArmorMelee: 3
-        _ArmorRange: 2
-    - rid: 1001
+        _ArmorMelee: 0
+        _ArmorRange: 0
+    - rid: 7033181276535259174
       type: {class: Stamina, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 8
-        _Max: 8
+        _Value: 11
+        _Max: 11
         _RestEffect: 5
         _WalkUseStamina: 1
-    - rid: 1002
+    - rid: 7033181276535259175
       type: {class: Sanity, ns: , asm: Assembly-CSharp}
       data:
         _Value: 9

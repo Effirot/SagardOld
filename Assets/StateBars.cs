@@ -21,6 +21,10 @@ public class Health : IHealthBar
     public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
 
     public void Update() { }
+    public bool Updatable { get { return _Updatable; } set { _Updatable = value; } }
+    [SerializeField] bool _Updatable;
+
+    public object Clone() { return this.MemberwiseClone(); }
 
     public void GetDamage(Attack attack)
     {
@@ -58,6 +62,10 @@ public class HealthOver : IHealthBar
     {
         if(Value > Max) this._Value -= 1;
     }
+    public bool Updatable { get { return _Updatable; } set { _Updatable = value; } }
+    [SerializeField] bool _Updatable;
+
+    public object Clone() { object clone = this.MemberwiseClone(); IStepEndUpdate.StateList.AddListener(((HealthOver)clone).Update); return clone; }
 
     public void GetDamage(Attack attack)
     {
@@ -94,6 +102,10 @@ public class HealthCorpse : IHealthBar
         if(CorpseTimer <= 1) { _Value -= 1; CorpseTimer = 3; return; }
         CorpseTimer -= 1;
     }
+    public bool Updatable { get { return _Updatable; } set { _Updatable = value; } }
+    [SerializeField] bool _Updatable;
+
+    public object Clone() { return this.MemberwiseClone(); }
 
     public void GetDamage(Attack attack)
     {
@@ -125,6 +137,10 @@ public class Metal : IHealthBar
     public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
 
     public void Update() { }
+    public bool Updatable { get { return _Updatable; } set { _Updatable = value; } }
+    [SerializeField] bool _Updatable;
+
+    public object Clone() { return this.MemberwiseClone(); }
 
     public void GetDamage(Attack attack)
     {
@@ -161,6 +177,10 @@ public class Stamina : IStaminaBar
     public void GetTired(int value){ _Value = Mathf.Clamp(Value - value, 0, Max); }
 
     public void Update() { }
+    public bool Updatable { get { return _Updatable; } set { _Updatable = value; } }
+    [SerializeField] bool _Updatable;
+
+    public object Clone() { return this.MemberwiseClone(); }
 
     public Color BarColor{ get{ return new Color(0.8f, 1f, 0); } }
 }
@@ -177,6 +197,11 @@ public class Sanity : ISanityBar
     public int SanityShield { get { return _SanityShield; } set { _SanityShield = value; } }
 
     public void Update() { }
+    public bool Updatable { get { return _Updatable; } set { _Updatable = value; } }
+    [SerializeField] bool _Updatable;
+
+    public object Clone() { return this.MemberwiseClone(); }
 
     public Color BarColor{ get{ return new Color(0.3f, 0, 0.3f); } }
 }
+// ================================================================= Other Bars ============================================================================================================
