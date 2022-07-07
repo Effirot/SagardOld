@@ -18,6 +18,10 @@ namespace SagardCL //Class library
         Heal,
         MetalHeal,
     }       
+    public enum AttackType
+    {
+
+    }
     public enum HitType
     {
         Empty, //
@@ -37,7 +41,7 @@ namespace SagardCL //Class library
         Descending,
         Addition,
     }
-
+    
 
     // All Interfaces 
     public interface Sendable
@@ -83,7 +87,7 @@ namespace SagardCL //Class library
         int SanityShield { get; set; } 
     }
 
-    public interface IAmmoBar : IStateBar
+    public interface IOtherBar : IStateBar
     {
 
     }
@@ -109,7 +113,7 @@ namespace SagardCL //Class library
         bool Corpse { get; set; }
         int WalkDistance { get; set; }
 
-        List<IStateBar> OtherStates{ get; set; }
+        List<IOtherBar> OtherStates{ get; set; }
 
         SkillCombiner SkillRealizer{ get; set; }
     }

@@ -99,7 +99,6 @@ public abstract class Generation : MonoBehaviour
                     case DamageType.Heal: result += Color.HSVToRGB(0.42f, 1, attack.damage * 0.06f); break;
                     case DamageType.Rezo: result += Color.HSVToRGB(67f / 360f, 1, attack.damage * 0.06f); break;
                     case DamageType.Pure: result += Color.HSVToRGB(274f / 360f, 1, attack.damage * 0.06f); break;
-                    
                 }
             }
             return result;
@@ -149,6 +148,12 @@ public class Map
     {
         scaleX = PlayerNum * 9 + (((int)key / 23)%7); scaleZ = PlayerNum * 9 + (((int)key / 14)%7); 
         key = (uint)Random.Range(0, 99999999);
+        PlatformMatrix = GenerateRelief(Formula);
+    }
+    public Map(MapFormula Formula, Vector2 Scale)
+    {
+        key = (uint)Random.Range(0, 99999999);
+        scaleX = (int)Scale.x; scaleZ = (int)Scale.y; 
         PlatformMatrix = GenerateRelief(Formula);
     }
     public Map(MapFormula Formula)

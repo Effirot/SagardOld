@@ -606,7 +606,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1015609024
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -881,6 +881,11 @@ MonoBehaviour:
     - {fileID: 6798787137180158450, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
     MaterialVariants:
     - {fileID: 2100000, guid: 773d881e966fc874295211ce10fa1af6, type: 2}
+  - platform: {fileID: 7050857232321542953, guid: d37056bb2fb60a64fa889c391ab91445, type: 3}
+    MeshVariants:
+    - {fileID: -8495433742444736037, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
+    MaterialVariants:
+    - {fileID: 2100000, guid: f6a3c0e39c4877544a9361e586eb0b5f, type: 2}
 --- !u!4 &1521680027
 Transform:
   m_ObjectHideFlags: 0
@@ -985,6 +990,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 732739999}
     m_Modifications:
+    - target: {fileID: 6186674204239143505, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
     - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_Name
       value: PlayerMenu
@@ -992,6 +1001,10 @@ PrefabInstance:
     - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7407837266454244161, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_Pivot.x
@@ -1076,6 +1089,14 @@ PrefabInstance:
     - target: {fileID: 7407837266454244161, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7407837267057441783, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
+      objectReference: {fileID: 0}
+    - target: {fileID: 8904231435637024618, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
@@ -1413,6 +1434,10 @@ PrefabInstance:
     - target: {fileID: 4554630649988616335, guid: 8ca3b3fca0b046948901e1520b8aa180, type: 3}
       propertyPath: m_Name
       value: Camera Position
+      objectReference: {fileID: 0}
+    - target: {fileID: 4554630650189576354, guid: 8ca3b3fca0b046948901e1520b8aa180, type: 3}
+      propertyPath: field of view
+      value: 88.3
       objectReference: {fileID: 0}
     - target: {fileID: 8095210384407083543, guid: 8ca3b3fca0b046948901e1520b8aa180, type: 3}
       propertyPath: m_RootOrder

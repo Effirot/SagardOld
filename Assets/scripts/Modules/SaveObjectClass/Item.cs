@@ -7,6 +7,7 @@ using System;
 [CreateAssetMenu(fileName = "Item", menuName = "SagardCL objects/Standard Item", order = 51)]
 public class Item : Descript, Sendable
 {
+    public bool Artifacer = false;
     public ParamsChanger ThisItem;
     public static implicit operator ParamsChanger(Item item) { return item.ThisItem; }
 
@@ -14,7 +15,7 @@ public class Item : Descript, Sendable
     {
         var result = new ParamsChanger();
         var resists = new List<Effect>();
-        var additionStates = new List<IStateBar>();
+        var additionStates = new List<IOtherBar>();
         var additionSkills = new List<Skill>();
         foreach(ParamsChanger item in items)
         {
@@ -45,7 +46,7 @@ public class Item : Descript, Sendable
     {
         var result = new ParamsChanger();
         var resists = new List<Effect>();
-        var additionStates = new List<IStateBar>();
+        var additionStates = new List<IOtherBar>();
         var additionSkills = new List<Skill>();
         foreach(ParamsChanger item in items)
         {
@@ -74,7 +75,7 @@ public class Item : Descript, Sendable
     }
 }
 
-[System.Serializable]public class ParamsChanger
+[System.Serializable] public class ParamsChanger
 {
     public enum ItemQuality
     {
@@ -86,31 +87,30 @@ public class Item : Descript, Sendable
     }
 
     public ItemQuality Quality;
-    public bool CanTakeOff = true;
+    public bool Throwable = true;
     public bool DestroyOnDeath = false;
     public bool UseInCrafts = true;
     [Space]
     public int WalkDistance = 0;
 
-    
-    [SerializeReference]public IHealthBar Health = new Health();
+    [SerializeReference, SerializeReferenceButton]public IHealthBar Health = new Health();
     public bool ReplaceHealthBar = false;
-    [SerializeReference]public IStaminaBar Stamina = new Stamina();
+    [SerializeReference, SerializeReferenceButton]public IStaminaBar Stamina = new Stamina();
     public bool ReplaceStaminaBar = false;
-    [SerializeReference]public ISanityBar Sanity = new Sanity();
+    [SerializeReference, SerializeReferenceButton]public ISanityBar Sanity = new Sanity();
     public bool ReplaceSanityBar = false;
     
-    public List<IStateBar> AdditionState;
-
+    public List<IOtherBar> AdditionState;
 
     public List<Effect> Resists = new List<Effect>();
     [Space]
     public List<Skill> AdditionSkills = new List<Skill>();
-}
 
-public class ArtifacerVirtualItem : ParamsChanger
-{
+    public void ThrowThis(Checkers position)
+    {
+        if(!Throwable) return;
 
+    }
 }
 
 

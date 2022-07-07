@@ -20,7 +20,8 @@ public class ATestGeneration : Generation
                     (int)Mathf.Round(Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 3f) % 2,
                     Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 1.1f
                 );
-            }
+            }, 
+            new Vector2(30, 30)
         ), PlatformPreset);
 
         GetComponent<MeshCombiner>().CombineMeshes(false);

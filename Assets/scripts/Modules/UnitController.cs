@@ -14,24 +14,14 @@ using UnityEditor;
 
 [Serializable] public abstract class UnitController : MonoBehaviour, IPlayerStats
 {
-    // ================================================================= Useful Stuff =================================================================
+    #region // ============================================================ Useful Stuff ==================================================================================================
     private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
     private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
-
     protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
     Collider Collider => GetComponent<MeshCollider>();
 
-    public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
-    protected List<Attack> AttackZone = new List<Attack>();
-    protected List<Checkers> WalkWay = new List<Checkers>();
-
     private Checkers LastPose = new Checkers();
-    Checkers CursorPos { get {
-        Checkers pos = CursorController.Pos;
-        if(LastPose != pos) { LastPose = pos; ChangePos(); } 
-        return pos; } 
-    }
-    
+    Checkers CursorPos { get { Checkers pos = CursorController.Pos; if(LastPose != pos) { LastPose = pos; ChangePos(); } return pos; } }
     
     public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
     public void ChangeFigureColor(Color color, float speed, Material[] material = null) 
@@ -55,7 +45,6 @@ using UnityEditor;
             yield return ChangeMaterialColor(material, Save, speed); 
         }
     }
-
     static IEnumerator ChangeMaterialColor(Material material, Color color, float speed) {
         while(material.color != color)
         {
@@ -72,7 +61,7 @@ using UnityEditor;
         result.AddRange(b);
         return result;
     }
-    public static List<T> CombineLists<T>(List<List<T>> a) 
+    public static List<T> CombineLists<T>(List<List<T>> a)
     {
         List<T> result = new List<T>();
         foreach(List<T> b in a)
@@ -81,6 +70,19 @@ using UnityEditor;
         }
         return result;
     }
+    #endregion
+    #region // =========================================================== All parameters =================================================================================================
+
+    #region // ================================== controlling
+    public Color Team { get { return _Team; } set { _Team = value; } }
+    [SerializeField] Color _Team;
+
+    public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
+    [SerializeField] bool _CanControl = true;
+    public bool Corpse { get { return _Corpse; } set{ _Corpse = value; } }
+    [SerializeField] bool _Corpse = false;
+    public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
+    [SerializeField] int _WalkDistance = 5;
 
     protected bool WalkChecker(bool Other = true)
     {        
@@ -102,58 +104,53 @@ using UnityEditor;
         return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
     }
 
-
-
-
-    //<params>================================================================ All parameters =================================================================
-    public Color Team { get { return _Team; } set { _Team = value; } }
-    [SerializeField] Color _Team;
-
-
-    public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
-    [SerializeField] bool _CanControl = true;
-    public bool Corpse { get { return _Corpse; } set{ _Corpse = value; } }
-    [SerializeField] bool _Corpse = false;
-    public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
-    [SerializeField] int _WalkDistance = 5;
-
-
-    public IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
+    #endregion
+    #region // ================================== parameters
     IHealthBar _Health;
-    [SerializeReference, SerializeReferenceButton] IHealthBar BaseHealth;
-
-    public IStaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
-    IStaminaBar _Stamina;
-    [SerializeReference, SerializeReferenceButton] IStaminaBar BaseStamina;
-
-    public ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
     ISanityBar _Sanity;
+    IStaminaBar _Stamina;
+
+    [SerializeReference, SerializeReferenceButton] IHealthBar BaseHealth;
     [SerializeReference, SerializeReferenceButton] ISanityBar BaseSanity;
+    [SerializeReference, SerializeReferenceButton] IStaminaBar BaseStamina;
+    [SerializeReference, SerializeReferenceButton] List<IOtherBar> _OtherStates = new List<IOtherBar>();
     
-    public List<IStateBar> OtherStates { get { return CombineLists<IStateBar>(_OtherStates, AllItemStats.AdditionState); } 
-                                         set{ _OtherStates = value; } }
-    [SerializeReference, SerializeReferenceButton] List<IStateBar> _OtherStates = new List<IStateBar>();
+    public IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
+    public ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
+    public IStaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
+    public List<IOtherBar> OtherStates { get { return CombineLists<IOtherBar>(_OtherStates, AllItemStats.AdditionState); } set{ _OtherStates = value; } }
 
+    #endregion
+    #region // ================================== effects
+    [SerializeReference, SerializeReferenceButton] List<Effect> _Debuff;
+    [SerializeReference, SerializeReferenceButton] List<Effect> _Resists;
 
-
-    public List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
-    List<Effect> _Resists;
     public List<Effect> Debuff { get { return _Debuff; } set{ _Debuff = value; } }
-    List<Effect> _Debuff;
+    public List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
 
-    public List<Item> Inventory { get { return _Inventory; } set{ _Inventory = value; } }
-    public int InventorySize = 1;
+    #endregion
+    #region // ================================== inventory
     [SerializeField] List<Item> _Inventory;
-    public ParamsChanger AllItemStats => Item.CompoundParameters(Inventory);
+    public int InventorySize = 1;
+    [SerializeField] public List<Item> ArtifacerItems;
+    public int ArtifacerItemsCount = 0;
+    public List<Item> Inventory { get { return CombineLists<Item>(_Inventory, ArtifacerItems); } set{ _Inventory = value; } }
 
+    public ParamsChanger AllItemStats;
+    #endregion
+    #region // ================================== Skills
     public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
     [SerializeField] SkillCombiner _SkillRealizer = new SkillCombiner();
-    //</params>
 
+    protected List<Attack> AttackZone = new List<Attack>();
+    protected List<Checkers> WalkWay = new List<Checkers>();
+    
+    public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
+    #endregion
+ 
 
-
-
-    // ================================================================= OnStart Parameters ===============================================================================================
+    #endregion
+    #region // ========================================================= OnStart Parameters ===============================================================================================
     int MouseTest = 0;
     void Awake()
     {
@@ -191,8 +188,6 @@ using UnityEditor;
                 GetDamage(find);
             }
         });
-    
-
     
         AfterInventoryUpdate();
     }
@@ -276,9 +271,7 @@ using UnityEditor;
     }
 
 
-
-
-
+    #region // =============================== Step System
     async Task Walking()
     {
         if(WalkWay.Count == 0) return;
@@ -349,22 +342,9 @@ using UnityEditor;
         Stamina.Rest();
     }
     private bool WillRest = true;
+    #endregion
 
-
-    public abstract void GetDamage(Attack attack);
-    public virtual void ZeroHealth()
-    {
-        if(Health is HealthCorpse) { Destroy(transform.parent.gameObject); }
-        else {
-            Health = new HealthCorpse() { Max = Health.Max, Value = Health.Max, ArmorMelee = Health.ArmorMelee, ArmorRange = Health.ArmorRange };
-
-            ChangeFigureColor(new Color(0.6f, 0.6f, 0.6f), 0.2f);
-        }
-    }
-
-
-
-    // Update methods
+    #region // =============================== Update methods
     protected async void ParametersUpdate()
     {
         await MovePlannerUpdate();
@@ -406,6 +386,8 @@ using UnityEditor;
     }
     public virtual void AfterInventoryUpdate()
     {
+        AllItemStats = Item.CompoundParameters(Inventory);
+
         Health.Max = BaseHealth.Max + AllItemStats.Health.Max;
         Health.Value = Health.Value + AllItemStats.Health.Max;
 
@@ -415,22 +397,23 @@ using UnityEditor;
         Sanity.Max = BaseSanity.Max + AllItemStats.Sanity.Max;
         Sanity.Value = Sanity.Value + AllItemStats.Sanity.Max;
     } 
-}
-
-
-
-
-
-
-
-#if UNITY_EDITOR
-[CustomEditor(typeof(UnitController), true)]
-[CanEditMultipleObjects]
-public class UnitControllerSerializer : Editor
-{
-    void OnEnable() {
-        
+    
+    public virtual void GetDamage(Attack attack)
+    {
+        Health.GetDamage(attack); 
+        if(attack.damage > 0) ChangeFigureColorWave(attack.DamageColor(), 0.2f);
     }
+    public virtual void ZeroHealth()
+    {
+        if(Health is HealthCorpse) { Destroy(transform.parent.gameObject); }
+        else {
+            Health = new HealthCorpse() { Max = Health.Max, Value = Health.Max, ArmorMelee = Health.ArmorMelee, ArmorRange = Health.ArmorRange };
 
+            ChangeFigureColor(new Color(0.6f, 0.6f, 0.6f), 0.2f);
+        }
+    }
+    
+    #endregion
+    
+    #endregion
 }
-#endif
