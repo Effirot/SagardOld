@@ -6,10 +6,12 @@ public class ATestGeneration : Generation
 {   
     [SerializeField] PlatformVisual[] PlatformPreset;
 
+    public Checkers posForWay;
+
     void Start()
     {
         Regenerate();
-
+        DrawWay();
     }
     public void Regenerate()
     {
@@ -25,5 +27,22 @@ public class ATestGeneration : Generation
         ), PlatformPreset);
 
         GetComponent<MeshCombiner>().CombineMeshes(false);
+    }
+
+
+
+    public async void DrawWay()
+    {
+        LineRenderer lineRenderer = GetComponent<LineRenderer>();
+        
+        List<Vector3> checkers = new List<Vector3>();
+        await foreach(Checkers a in Checkers.PatchWay.WayTo(new Checkers(0, 0), posForWay, 10))
+        {
+            checkers.Insert(0, a);
+        }
+
+        if(lineRenderer == null) return;
+        lineRenderer.positionCount = checkers.Count;
+        lineRenderer.SetPositions(checkers.ToArray());
     }
 }

@@ -74,15 +74,17 @@ using UnityEditor;
     #region // =========================================================== All parameters =================================================================================================
 
     #region // ================================== controlling
+    
     public Color Team { get { return _Team; } set { _Team = value; } }
     [SerializeField] Color _Team;
 
-    public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
     [SerializeField] bool _CanControl = true;
-    public bool Corpse { get { return _Corpse; } set{ _Corpse = value; } }
     [SerializeField] bool _Corpse = false;
-    public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
     [SerializeField] int _WalkDistance = 5;
+    
+    public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
+    public bool Corpse { get { return _Corpse; } set{ _Corpse = value; } }
+    public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
 
     protected bool WalkChecker(bool Other = true)
     {        
@@ -106,6 +108,7 @@ using UnityEditor;
 
     #endregion
     #region // ================================== parameters
+    
     IHealthBar _Health;
     ISanityBar _Sanity;
     IStaminaBar _Stamina;
@@ -113,7 +116,7 @@ using UnityEditor;
     [SerializeReference, SerializeReferenceButton] IHealthBar BaseHealth;
     [SerializeReference, SerializeReferenceButton] ISanityBar BaseSanity;
     [SerializeReference, SerializeReferenceButton] IStaminaBar BaseStamina;
-    [SerializeReference, SerializeReferenceButton] List<IOtherBar> _OtherStates = new List<IOtherBar>();
+    [SerializeReference, SerializeReferenceButton] List<IOtherBar> _OtherStates;
     
     public IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
     public ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
@@ -122,6 +125,7 @@ using UnityEditor;
 
     #endregion
     #region // ================================== effects
+    
     [SerializeReference, SerializeReferenceButton] List<Effect> _Debuff;
     [SerializeReference, SerializeReferenceButton] List<Effect> _Resists;
 
@@ -130,6 +134,7 @@ using UnityEditor;
 
     #endregion
     #region // ================================== inventory
+    
     [SerializeField] List<Item> _Inventory;
     public int InventorySize = 1;
     [SerializeField] public List<Item> ArtifacerItems;
@@ -139,6 +144,7 @@ using UnityEditor;
     public ParamsChanger AllItemStats;
     #endregion
     #region // ================================== Skills
+   
     public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
     [SerializeField] SkillCombiner _SkillRealizer = new SkillCombiner();
 
@@ -147,7 +153,6 @@ using UnityEditor;
     
     public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
     #endregion
- 
 
     #endregion
     #region // ========================================================= OnStart Parameters ===============================================================================================
@@ -359,7 +364,7 @@ using UnityEditor;
         MPlaner.LineRenderer.enabled = true;
         WalkWay.Clear();
         if (WalkChecker()){
-            await foreach(Checkers step in Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position))){
+            await foreach(Checkers step in Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position), 20)){
                 WalkWay.Add(step);
             }
             MPlaner.LineRenderer.positionCount = WalkWay.Count;

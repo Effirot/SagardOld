@@ -4,11 +4,14 @@ using System.Threading.Tasks;
 using System.Collections;
 using System.Linq;
 
-[System.Serializable]
-public struct Checkers
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+[System.Serializable] public struct Checkers
 {
-    int X, Z;
-    float UP;
+    [SerializeField] int X, Z;
+    [SerializeField] float UP;
 
     public int x { get{ return X; } }
     public int z { get{ return Z; } }
@@ -22,6 +25,8 @@ public struct Checkers
         return 0;
     }
 
+    #region // =============================== Realizations
+
     public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = UPadd; }
     public Checkers(Vector3 Vector3add, float UPadd = 0) { X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = UPadd; }
     public Checkers(Vector2 Vector2add, float UPadd = 0) { X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = UPadd; }
@@ -34,11 +39,14 @@ public struct Checkers
     public static Checkers operator -(Checkers a, Checkers b) { return new Checkers(a.x - b.x, a.z - b.z, a.up); }
     public static bool operator ==(Checkers a, Checkers b) { return a.x == b.x & a.z == b.z; }
     public static bool operator !=(Checkers a, Checkers b) { return !(a.x == b.x & a.z == b.z); }
-
+    
     public override int GetHashCode() { return 0; }  
-    public override bool Equals(object o) { return true; }  
+    public override bool Equals(object o) { return true; } 
 
-    public enum mode{ NoHeight, Height }
+    #endregion
+    #region // =============================== Math
+
+    public enum mode{ NoHeight, Height, OnlyHeight, }
     public static float Distance(Checkers a, Checkers b, mode Mode = mode.NoHeight)
     {
         if(Mode == mode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
@@ -73,130 +81,90 @@ public struct Checkers
         return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
     }
     
+    #endregion
 
-
-
-
-    public class PatchWay
+    public static class PatchWay
     {
-        public static async IAsyncEnumerable<Checkers> WayTo(Checkers a, Checkers b) { await Task.Delay(0); yield return a; yield return b; }
-    
-        private class PathNode
-        {
-            public Checkers Position { get; set; }
-            public int PathLengthFromStart { get; set; }
-            public PathNode CameFrom { get; set; }
-            public int HeuristicEstimatePathLength { get; set; }
-            public int EstimateFullPathLength { get { return this.PathLengthFromStart + this.HeuristicEstimatePathLength; } }
+        public static async IAsyncEnumerable<Checkers> WayTo(Checkers a, Checkers b, int MaxSteps, float CheckersUp = 0.1f) 
+        { 
+            await Task.Delay(0); 
+            yield return new Checkers(a, CheckersUp); 
+            yield return new Checkers(b, CheckersUp);
         }
-
-        // public static List<Checkers> FindPath(Checkers start, Checkers goal)
-        // {
-        //     // Шаг 1.
-        //     var closedSet = new List<PathNode>();
-        //     var openSet = new List<PathNode>();
-        //     // Шаг 2.
-        //     openSet.Add(new PathNode()
-        //     {
-        //         Position = start,
-        //         CameFrom = null,
-        //         PathLengthFromStart = 0,
-        //         HeuristicEstimatePathLength = GetHeuristicPathLength(start, goal)
-        //     });
-            
-        //     while (openSet.Count > 0)
-        //     {
-        //         // Шаг 3.
-        //         var currentNode = openSet.OrderBy(node => 
-        //         node.EstimateFullPathLength).First();
-        //         // Шаг 4.
-        //         if (currentNode.Position == goal)
-        //         return GetPathForNode(currentNode);
-        //         // Шаг 5.
-        //         openSet.Remove(currentNode);
-        //         closedSet.Add(currentNode);
-        //         // Шаг 6.
-        //         foreach (var neighbourNode in GetNeighbours(currentNode, goal))
-        //         {
-        //         // Шаг 7.
-        //         if (closedSet.Count(node => node.Position == neighbourNode.Position) > 0)
-        //             continue;
-        //         var openNode = openSet.FirstOrDefault(node =>
-        //             node.Position == neighbourNode.Position);
-        //         // Шаг 8.
-        //         if (openNode == null)
-        //             openSet.Add(neighbourNode);
-        //         else
-        //             if (openNode.PathLengthFromStart > neighbourNode.PathLengthFromStart)
-        //             {
-        //             // Шаг 9.
-        //             openNode.CameFrom = currentNode;
-        //             openNode.PathLengthFromStart = neighbourNode.PathLengthFromStart;
-        //             }
-        //         }
-        //     }
-        //     // Шаг 10.
-        //     return null;
-        // }
-
-        private static int GetHeuristicPathLength(Checkers from, Checkers to)
-        {
-        return Mathf.Abs(from.x - to.x) + Mathf.Abs(from.z - to.z);
-        }
-        private static int GetDistanceBetweenNeighbours()
-        {
-            return 1;
-        }
-        
-
-        GameObject CheckPosition(int x, int z) {
-            Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map", "Object"));  
-            return hit.collider.gameObject;
-        }
-
-        // private static List<PathNode> GetNeighbours(PathNode pathNode, Checkers goal)
-        // {
-        //     var result = new List<PathNode>();
-        //     for(int x = 0; x < 3; x++)
-        //     {
-        //         for(int z = 0; z < 3; z++)
-        //         {
-        //             bool Checked = 
-        //         }
-        //     }
-
-            
-        //     foreach (Checkers point in neighbourPoints)
-        //     {
-        //         if ()
-        //             continue;
-        //         // Заполняем данные для точки маршрута.
-        //         var neighbourNode = new PathNode()
-        //         {
-        //             Position = point,
-        //             CameFrom = pathNode,
-        //             PathLengthFromStart = pathNode.PathLengthFromStart +
-        //                 GetDistanceBetweenNeighbours(),
-        //             HeuristicEstimatePathLength = GetHeuristicPathLength(point, goal)
-        //         };
-        //         result.Add(neighbourNode);
-        //     }
-        //     return result;
-        // }
-
-        private static List<Checkers> GetPathForNode(PathNode pathNode)
-        {
-            var result = new List<Checkers>();
-            var currentNode = pathNode;
-            while (currentNode != null)
-            {
-                result.Add(currentNode.Position);
-                currentNode = currentNode.CameFrom;
-            }
-            result.Reverse();
-            return result;
-        }
-
 
     }
+
+    public enum EMoveAction { walk, jump, fall, swim };
+    
+    public class PathPoint
+    {
+        // текущая точка
+        public Checkers point { get; set; }
+        // расстояние от старта
+        public float pathLenghtFromStart { get; set; }
+        // примерное расстояние до цели
+        public float heuristicEstimatePathLenght { get; set; }
+        // еврестическое расстояние до цели
+        public float estimateFullPathLenght
+        {
+            get
+            {
+               return this.heuristicEstimatePathLenght + this.pathLenghtFromStart;
+            }
+        }
+        // способ движения
+        public EMoveAction moveAction = EMoveAction.walk;
+        // точка из которой пришли сюда
+        public PathPoint cameFrom;
+            private PathPoint NewPathPoint(Checkers point, float pathLenghtFromStart, float heuristicEstimatePathLenght, EMoveAction moveAction)
+        {
+            PathPoint a = new PathPoint();
+            a.point = point;
+            a.pathLenghtFromStart = pathLenghtFromStart;
+            a.heuristicEstimatePathLenght = heuristicEstimatePathLenght;
+            a.moveAction = moveAction;
+            return a;
+        }
+
+        private PathPoint NewPathPoint(Checkers point, float pathLenghtFromStart, float heuristicEstimatePathLenght, EMoveAction moveAction, PathPoint ppoint)
+        {
+            PathPoint a = new PathPoint();
+            a.point = point;
+            a.pathLenghtFromStart = pathLenghtFromStart;
+            a.heuristicEstimatePathLenght = heuristicEstimatePathLenght;
+            a.moveAction = moveAction;
+            a.cameFrom = ppoint;
+            return a;
+        }
+    }
+
 }
+
+#if UNITY_EDITOR
+[CustomEditor(typeof(Checkers))]
+public class CheckersEditor : Editor
+{
+    // SerializedProperty x, z, up;
+
+    // private void OnEnable() {
+    //     x = serializedObject.FindProperty("X");
+    //     z = serializedObject.FindProperty("Z");
+
+    //     up = serializedObject.FindProperty("UP");
+    // }
+
+    // public override void OnInspectorGUI()
+    // {
+    //     EditorGUILayout.BeginHorizontal();
+
+    //     EditorGUILayout.PropertyField(x, new GUIContent ("X"));
+    //     EditorGUILayout.PropertyField(z, new GUIContent ("Z"));
+
+    //     EditorGUILayout.EndHorizontal();
+
+    //     EditorGUILayout.Slider(up, -1, 10, new GUIContent ("Up"));
+    // }
+
+
+}
+#endif
