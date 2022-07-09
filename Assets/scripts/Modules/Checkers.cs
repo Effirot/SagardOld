@@ -85,11 +85,9 @@ using UnityEditor;
 
     public static class PatchWay
     {
-        public static async IAsyncEnumerable<Checkers> WayTo(Checkers a, Checkers b, int MaxSteps, float CheckersUp = 0.1f) 
-        { 
-            await Task.Delay(0); 
-            yield return new Checkers(a, CheckersUp); 
-            yield return new Checkers(b, CheckersUp);
+        public static List<Checkers> WayTo(Checkers a, Checkers b, int MaxSteps, float CheckersUp = 0.1f) 
+        {            
+            return new List<Checkers>() { a, b };
         }
 
     }

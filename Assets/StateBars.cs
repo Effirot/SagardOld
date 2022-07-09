@@ -10,9 +10,9 @@ using UnityEngine.Events;
 public class Health : IHealthBar
 {
     [Header("Health")]
-    [SerializeField, Range(0, 50)] int _Value = 0;
+    [SerializeField, Range(-10, 35)] int _Value = 0;
     public int Value { get { return _Value; } set { _Value = value; } }
-    [SerializeField, Range(0, 50)] int _Max = 0;
+    [SerializeField, Range(-10, 35)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
     [SerializeField] int _ArmorMelee;
@@ -46,9 +46,9 @@ public class HealthOver : IHealthBar
 {
     public HealthOver() { IStepEndUpdate.StateList.AddListener(Update); }
     [Header("Over Max Health")]
-    [SerializeField, Range(0, 50)] int _Value = 0;
+    [SerializeField, Range(-10, 35)] int _Value = 0;
     public int Value { get { return _Value; } set { _Value = value; }}
-    [SerializeField, Range(0, 50)] int _Max = 0;
+    [SerializeField, Range(-10, 35)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [SerializeField] int _OverMax;
     public int OverMax { get { return _OverMax; } set { _OverMax = value; } }
@@ -86,9 +86,9 @@ public class HealthCorpse : IHealthBar
 {
     public HealthCorpse() { IStepEndUpdate.StateList.AddListener(Update); Value = Max; }
     [Header("Corpse Health")]
-    [SerializeField, Range(0, 50)] int _Value = 9;
+    [SerializeField, Range(-10, 35)] int _Value = 9;
     public int Value { get { return _Value; } set { _Value = value; }}
-    [SerializeField, Range(0, 50)] int _Max = 9;
+    [SerializeField, Range(-10, 35)] int _Max = 9;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
     [SerializeField] int _ArmorMelee = 2;
@@ -126,9 +126,9 @@ public class HealthCorpse : IHealthBar
 public class Metal : IHealthBar
 {
     [Header("Metal")]
-    [SerializeField, Range(0, 50)] int _Value = 0;
+    [SerializeField, Range(-10, 35)] int _Value = 0;
     public int Value { get { return _Value; } set { _Value = value; } }
-    [SerializeField, Range(0, 50)] int _Max = 0;
+    [SerializeField, Range(-10, 35)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
     [SerializeField] int _ArmorMelee;
@@ -162,9 +162,9 @@ public class Metal : IHealthBar
 public class Stamina : IStaminaBar
 {
     [Header("Stamina Bar")]
-    [SerializeField, Range(0, 50)] int _Value = 0;
+    [SerializeField, Range(-10, 35)] int _Value = 0;
     public int Value { get { return _Value; } set { _Value = value; }}
-    [SerializeField, Range(0, 50)] int _Max = 0;
+    [SerializeField, Range(-10, 35)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
     [SerializeField] int _RestEffect = 0;
@@ -188,9 +188,9 @@ public class Stamina : IStaminaBar
 public class Sanity : ISanityBar
 {
     [Header("Sanity Bar")]
-    [SerializeField, Range(0, 50)] int _Value = 0;
+    [SerializeField, Range(-10, 35)] int _Value = 0;
     public int Value { get { return _Value; } set { _Value = value; }}
-    [SerializeField, Range(0, 50)] int _Max = 0;
+    [SerializeField, Range(-10, 35)] int _Max = 0;
     public int Max { get { return _Max; } set { _Max = value; } }
     [Space]
     [SerializeField] int _SanityShield = 0;

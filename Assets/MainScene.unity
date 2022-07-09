@@ -210,6 +210,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: InventorySize
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: ArtifacerInventorySize
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[7033181276535259164]
       value: Assembly-CSharp HealthOver
       objectReference: {fileID: 0}
@@ -508,6 +516,8 @@ MonoBehaviour:
   UI: {fileID: 726519167}
   StateBarPreset: {fileID: 6867865859717448150, guid: a7ebe7b71ef3da048b681f5f99214df5, type: 3}
   SkillPreset: {fileID: 6546885335653142607, guid: 1f67af6d47161fe44b2f16156e36e6e6, type: 3}
+  InventorySlot: {fileID: 6546885335653142607, guid: 6472ac7c4f32a1c439882fd0f7cd868a, type: 3}
+  ArtifacerInventorySlot: {fileID: 6546885335653142607, guid: 4d394216b2bc84245b5936edd316bcd2, type: 3}
   ItemPreset: {fileID: 0}
   MoveOnCanvas: {fileID: 726519169}
 --- !u!1 &946658990
@@ -886,6 +896,10 @@ MonoBehaviour:
     - {fileID: -8495433742444736037, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
     MaterialVariants:
     - {fileID: 2100000, guid: f6a3c0e39c4877544a9361e586eb0b5f, type: 2}
+  posForWay:
+    X: 0
+    Z: 0
+    UP: 0
 --- !u!4 &1521680027
 Transform:
   m_ObjectHideFlags: 0
@@ -990,21 +1004,9 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 732739999}
     m_Modifications:
-    - target: {fileID: 6186674204239143505, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
     - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_Name
       value: PlayerMenu
-      objectReference: {fileID: 0}
-    - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
       objectReference: {fileID: 0}
     - target: {fileID: 7407837266454244161, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_Pivot.x
@@ -1089,14 +1091,6 @@ PrefabInstance:
     - target: {fileID: 7407837266454244161, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7407837267057441783, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
-      objectReference: {fileID: 0}
-    - target: {fileID: 8904231435637024618, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
-      propertyPath: m_StaticEditorFlags
-      value: 2147483647
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 903ac686b20352c4690f1a56893f2062, type: 3}

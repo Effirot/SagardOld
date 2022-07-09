@@ -13,6 +13,8 @@ public class UnitUIController : MonoBehaviour
     [Space]
     public GameObject StateBarPreset;
     public GameObject SkillPreset;
+    public GameObject InventorySlot;
+    public GameObject ArtifacerInventorySlot;
     public GameObject ItemPreset;
     [Space] 
     public MoveOnUi MoveOnCanvas;
@@ -27,10 +29,8 @@ public class UnitUIController : MonoBehaviour
         }
     }); }
 
-    private async void Open(GameObject Summoner, UnitController lifeParameters)
+    private void Open(GameObject Summoner, UnitController lifeParameters)
     {
-        
-        await System.Threading.Tasks.Task.Delay(1);
         UI.SetActive(true);
         MoveOnCanvas.Target = Summoner.transform;
         UpdateUi(lifeParameters);
@@ -41,8 +41,8 @@ public class UnitUIController : MonoBehaviour
     {
         foreach (GameObject element in UIelements) { Destroy(element); }
 
-        // Skill Vision
-        {   
+        #region // Skill Vision
+        {
             int count = 0;
             
             foreach (Skill skill in lifeParameters.SkillRealizer.AvailbleSkills) 
@@ -72,8 +72,8 @@ public class UnitUIController : MonoBehaviour
                 count++;
             }
         }
-        // State Bar Vision
-        {
+        #endregion
+        #region // State Bar Vision
             InstantiateBars(lifeParameters.Health);
             InstantiateBars(lifeParameters.Sanity);
             InstantiateBars(lifeParameters.Stamina);
@@ -81,20 +81,39 @@ public class UnitUIController : MonoBehaviour
             if(lifeParameters.OtherStates != null) foreach(IStateBar stats in lifeParameters.OtherStates) { InstantiateBars(stats); }    
 
             void InstantiateBars(IStateBar stateBar) {
-            GameObject obj = Instantiate(StateBarPreset, UI.transform.Find("Bars").transform);
-            UIelements.Add(obj);
+                GameObject obj = Instantiate(StateBarPreset, UI.transform.Find("Bars").transform);
+                UIelements.Add(obj);
 
-            obj.GetComponent<Slider>().maxValue = stateBar.Max;
-            obj.GetComponent<Slider>().value = stateBar.Value;
-            obj.transform.Find("Value").GetComponent<Image>().color = stateBar.BarColor;
-            obj.transform.Find("Value/ValueNum").GetComponent<TextMeshProUGUI>().text = stateBar.Value + "";
-            obj.transform.Find("MaxNum").GetComponent<TextMeshProUGUI>().text = stateBar.Max + "";
+                obj.name = stateBar.GetType().Name;
+
+                obj.GetComponent<Slider>().maxValue = stateBar.Max;
+                obj.GetComponent<Slider>().value = stateBar.Value;
+                obj.transform.Find("Value").GetComponent<Image>().color = stateBar.BarColor;
+                obj.transform.Find("Value/ValueNum").GetComponent<TextMeshProUGUI>().text = stateBar.Value + "";
+                obj.transform.Find("MaxNum").GetComponent<TextMeshProUGUI>().text = stateBar.Max + "";
+            }
+        #endregion
+        #region // Inventory Vision
+        {
+            int count = 0;
+            while(count < lifeParameters.InventorySize + lifeParameters.ArtifacerInventorySize)
+            {
+                
+                if(count < lifeParameters.ArtifacerInventorySize)
+                {
+                    GameObject obj = Instantiate(ArtifacerInventorySlot, UI.transform.Find("Inventory").transform);
+                    UIelements.Add(obj);
+                }
+                else
+                {
+                    GameObject obj = Instantiate(InventorySlot, UI.transform.Find("Inventory").transform);
+                    UIelements.Add(obj);
+                }
+                count++;
+
             }
         }
-        // Inventory Vision
-        {
-
-        }
+        #endregion
     }
 
 

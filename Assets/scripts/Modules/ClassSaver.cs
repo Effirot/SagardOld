@@ -100,7 +100,7 @@ namespace SagardCL //Class library
         List<Effect> Resists{ get; set; }
         List<Effect> Debuff{ get; set; }
 
-        void GetDamage(Attack attack);
+        void DamageReaction(Attack attack);
     }
     public interface IPlayerStats : IObjectOnMap
     {
@@ -181,11 +181,11 @@ namespace SagardCL //Class library
         public static implicit operator GameObject(AllInOne a) { return a.Planer; }
 
         
-        public Material Material => Model.GetComponent<Material>();
-        public Collider Collider => Planer.GetComponent<MeshCollider>();
-        public Renderer Renderer => Model.GetComponent<Renderer>();
+        public Material Material => Model.GetComponent<Material>() ?? null;
+        public Collider Collider => Planer.GetComponent<MeshCollider>() ?? null;
+        public Renderer Renderer => Model.GetComponent<Renderer>() ?? null;
 
-        public LineRenderer LineRenderer { get{ return Planer.GetComponent<LineRenderer>(); } }
+        public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
 

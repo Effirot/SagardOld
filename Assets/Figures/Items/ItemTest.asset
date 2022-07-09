@@ -22,7 +22,7 @@ MonoBehaviour:
     Throwable: 1
     DestroyOnDeath: 0
     UseInCrafts: 1
-    WalkDistance: 3
+    WalkDistance: 4
     Health:
       rid: 7033181276535259181
     ReplaceHealthBar: 0
