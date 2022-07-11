@@ -17,30 +17,29 @@ namespace SagardCL //Class library
         Pure,
         Heal,
         MetalHeal,
-    }       
-    public enum AttackType
-    {
-
-    }
+    }  
     public enum HitType
     {
-        Empty, //
-        OnSelfPoint, //
         Arc, //
         Constant, 
         Line, //
-        InvertLine, //
-        ConstantLine, //
-        ShotgunShot,
-        Point, // 
-        Dash, 
+        CompoundLine,
+        Sphere, // 
     }
-    public enum DamageScaling 
+    public enum TargetPointGuidanceType
+    {
+        ToCursor,
+        ToCursorWithWalls,
+        ToFromPoint,
+    }
+    public enum DamageScaling
     {
         Constant,
         Descending,
         Addition,
     }
+
+
     
 
     // All Interfaces 

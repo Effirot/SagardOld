@@ -13,7 +13,7 @@ using UnityEditor;
 #endif
 
 
-[Serializable] public abstract class UnitController : MonoBehaviour, IPlayerStats
+[Serializable] public abstract class UnitController : MonoBehaviour
 {
     #region // ============================================================ Useful Stuff ==================================================================================================
         
@@ -91,24 +91,24 @@ using UnityEditor;
             public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
 
             protected bool WalkChecker(bool Other = true)
-        {        
-            if(!Other) return false;
-            
-            //OnOtherPlaner
-            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
-            { 
-                if(hit.collider.gameObject != MPlaner.Planer) { return false; }
+            {        
+                if(!Other) return false;
+                
+                //OnOtherPlaner
+                foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
+                { 
+                    if(hit.collider.gameObject != MPlaner.Planer) { return false; }
+                }
+                
+                //OnSelf
+                if(new Checkers(position) == new Checkers(MPlaner.position))
+                    return false;
+                
+                //OnStamina
+                if(Stamina.WalkUseStamina > Stamina.Value) return false;
+                //OnDistance
+                return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
             }
-            
-            //OnSelf
-            if(new Checkers(position) == new Checkers(MPlaner.position))
-                return false;
-            
-            //OnStamina
-            if(Stamina.WalkUseStamina > Stamina.Value) return false;
-            //OnDistance
-            return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
-        }
 
         #endregion
         #region // ================================== parameters
@@ -214,7 +214,7 @@ using UnityEditor;
         {   
             switch(MouseTest)
             {
-                default:  return;
+                default: return;
                 case 1: MovePlaningUpd(); return;
                 case 2: AttackPlaningUpd(); return;
                 case 4: break;
@@ -247,7 +247,7 @@ using UnityEditor;
         {
             MPlaner.Renderer.enabled = true;
             
-            if(SkillRealizer.NowUsing.NoWalking) APlaner.position = new Checkers(MPlaner.position);
+            if(SkillRealizer.ThisSkill.NoWalking) APlaner.position = new Checkers(MPlaner.position);
 
             //Move planner
             MPlaner.position = new Checkers(CursorPos);
@@ -264,7 +264,7 @@ using UnityEditor;
         {
 
             //Move planner
-            if(SkillRealizer.NowUsing.NoWalking)
+            if(SkillRealizer.ThisSkill.NoWalking)
             {
                 MPlaner.position = position;
                 MPlaner.Collider.enabled = true;
@@ -321,7 +321,7 @@ using UnityEditor;
             async Task PriorityAttacking()
             {
                 if(AttackZone.Count == 0) return;
-                if(!SkillRealizer.NowUsing.PriorityAttacking) return;
+                if(!SkillRealizer.ThisSkill.PriorityAttacking) return;
                 WillRest = false;
                 await Task.Delay(Random.Range(0, 2700));
 
@@ -334,7 +334,7 @@ using UnityEditor;
             async Task Attacking()
             {
                 if(AttackZone.Count == 0) return;
-                if(SkillRealizer.NowUsing.PriorityAttacking) return;
+                if(SkillRealizer.ThisSkill.PriorityAttacking) return;
                 WillRest = false;
                 await Task.Delay(Random.Range(900, 2700));
 
@@ -393,7 +393,7 @@ using UnityEditor;
             APlaner.position = new Checkers(APlaner.position);
             // Attack planner
             AttackZone.Clear();
-            if(SkillRealizer.NowUsing.NoWalking) await MovePlannerUpdate();
+            if(SkillRealizer.ThisSkill.NoWalking) await MovePlannerUpdate();
             await foreach(Attack attack in SkillRealizer.Realize())
             {
                 AttackZone.Add(attack);

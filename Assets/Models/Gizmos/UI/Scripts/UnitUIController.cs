@@ -47,7 +47,7 @@ public class UnitUIController : MonoBehaviour
             
             foreach (Skill skill in lifeParameters.SkillRealizer.AvailbleSkills) 
             { 
-                if(skill.Type != HitType.Empty){     
+                if(!skill.isEmpty){     
                     GameObject obj = Instantiate(SkillPreset, UI.transform.Find("Skills").transform);
                     UIelements.Add(obj); 
                     
