@@ -407,13 +407,8 @@ using UnityEditor;
             AllItemStats = Item.CompoundParameters(Inventory);
 
             Health.Max = BaseHealth.Max + AllItemStats.Health.Max;
-            Health.Value = Health.Value + AllItemStats.Health.Max;
-
             Stamina.Max = BaseStamina.Max + AllItemStats.Stamina.Max;
-            Stamina.Value = Stamina.Value + AllItemStats.Stamina.Max;
-
             Sanity.Max = BaseSanity.Max + AllItemStats.Sanity.Max;
-            Sanity.Value = Sanity.Value + AllItemStats.Sanity.Max;
         } 
         
         public virtual void DamageReaction(Attack attack)
