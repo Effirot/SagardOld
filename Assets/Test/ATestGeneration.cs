@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ATestGeneration : Generation
 {   
-    [SerializeField] PlatformVisual[] PlatformPreset;
+    [SerializeField] Map.PlatformVisual[] PlatformPreset;
 
     public Checkers posForWay;
 
@@ -15,7 +15,7 @@ public class ATestGeneration : Generation
     }
     public void Regenerate()
     {
-        LetsGenerate(new Map(
+        Map map = new Map(
             (x, z, key) => 
             {
                 return new Map.MapCell(
@@ -23,10 +23,14 @@ public class ATestGeneration : Generation
                     Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 1.1f
                 );
             }, 
-            new Vector2(30, 30)
-        ), PlatformPreset);
+            new Vector2(30, 30),
+        PlatformPreset);
 
-        GetComponent<MeshCombiner>().CombineMeshes(false);
+        LetsGenerate(map);
+
+        GetComponent<MeshCollider>().sharedMesh = map.colliderMesh();
+
+        //GetComponent<MeshCombiner>().CombineMeshes(false);
     }
 
 

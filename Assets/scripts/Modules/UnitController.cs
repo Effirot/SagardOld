@@ -13,13 +13,13 @@ using UnityEditor;
 #endif
 
 
-[Serializable] public abstract class UnitController : MonoBehaviour
+[Serializable] public abstract class UnitController : Parameters
 {
     #region // ============================================================ Useful Stuff ==================================================================================================
         
         private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
         private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
-        protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
+
         Collider Collider => GetComponent<MeshCollider>();
 
         static Checkers LastPose = new Checkers();
@@ -56,114 +56,59 @@ using UnityEditor;
             }
         }
 
-        public static List<T> CombineLists<T>(List<T> a, List<T> b) 
-        {
-            List<T> result = new List<T>();
-            result.AddRange(a);
-            result.AddRange(b);
-            return result;
-        }
-        public static List<T> CombineLists<T>(List<List<T>> a)
-        {
-            List<T> result = new List<T>();
-            foreach(List<T> b in a)
-            {
-                result.AddRange(b);
+        protected bool WalkChecker(bool Other = true)
+        {        
+            if(!Other) return false;
+            
+            //OnOtherPlaner
+            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
+            { 
+                if(hit.collider.gameObject != MPlaner.Planer) { return false; }
             }
-            return result;
+            
+            //OnSelf
+            if(new Checkers(position) == new Checkers(MPlaner.position))
+                return false;
+            
+            //OnStamina
+            if(Stamina.WalkUseStamina > Stamina.Value) return false;
+            //OnDistance
+            return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
         }
+    
+        public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
+    #endregion
+
+    #region // ================================== Skills
+
+    public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
+    [SerializeField] SkillCombiner _SkillRealizer = new SkillCombiner();
+
+    protected List<Attack> AttackZone = new List<Attack>();
+    protected List<Checkers> WalkWay = new List<Checkers>();
     
     #endregion
+    #region // ================================== inventory
     
-    #region // =========================================================== All parameters =================================================================================================
+        [SerializeField] List<Item> _Inventory;
+        public int InventorySize = 1;
+        [SerializeField] public List<Item> ArtifacerItems;
+        public int ArtifacerInventorySize = 0;
+        public List<Item> Inventory { get { return FieldManipulate.CombineLists<Item>(_Inventory, ArtifacerItems); } set{ _Inventory = value; } }
 
-        #region // ================================== controlling
-        
-            public Color Team { get { return _Team; } set { _Team = value; } }
-            [SerializeField] Color _Team;
+        public ParamsChanger AllItemStats;
 
-            [SerializeField] bool _CanControl = true;
-            [SerializeField] bool _Corpse = false;
-            [SerializeField] int _WalkDistance = 5;
-            
-            public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
-            public bool Corpse { get { return _Corpse; } set{ _Corpse = value; } }
-            public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
 
-            protected bool WalkChecker(bool Other = true)
-            {        
-                if(!Other) return false;
-                
-                //OnOtherPlaner
-                foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
-                { 
-                    if(hit.collider.gameObject != MPlaner.Planer) { return false; }
-                }
-                
-                //OnSelf
-                if(new Checkers(position) == new Checkers(MPlaner.position))
-                    return false;
-                
-                //OnStamina
-                if(Stamina.WalkUseStamina > Stamina.Value) return false;
-                //OnDistance
-                return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
-            }
-
-        #endregion
-        #region // ================================== parameters
-        
-            IHealthBar _Health;
-            ISanityBar _Sanity;
-            IStaminaBar _Stamina;
-
-            [SerializeReference, SerializeReferenceButton] IHealthBar BaseHealth;
-            [SerializeReference, SerializeReferenceButton] ISanityBar BaseSanity;
-            [SerializeReference, SerializeReferenceButton] IStaminaBar BaseStamina;
-            [SerializeReference, SerializeReferenceButton] List<IOtherBar> _OtherStates;
-            
-            public IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
-            public ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
-            public IStaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
-            public List<IOtherBar> OtherStates { get { return CombineLists<IOtherBar>(_OtherStates, AllItemStats.AdditionState); } set{ _OtherStates = value; } }
-
-        #endregion
-        #region // ================================== effects
-            
-            [SerializeReference, SerializeReferenceButton] List<Effect> _Debuff;
-            [SerializeReference, SerializeReferenceButton] List<Effect> _Resists;
-
-            public List<Effect> Debuff { get { return _Debuff; } set{ _Debuff = value; } }
-            public List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
-
-        #endregion
-        #region // ================================== inventory
-        
-            [SerializeField] List<Item> _Inventory;
-            public int InventorySize = 1;
-            [SerializeField] public List<Item> ArtifacerItems;
-            public int ArtifacerInventorySize = 0;
-            public List<Item> Inventory { get { return CombineLists<Item>(_Inventory, ArtifacerItems); } set{ _Inventory = value; } }
-
-            public ParamsChanger AllItemStats;
-
-        #endregion
-        #region // ================================== Skills
-    
-            public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
-            [SerializeField] SkillCombiner _SkillRealizer = new SkillCombiner();
-
-            protected List<Attack> AttackZone = new List<Attack>();
-            protected List<Checkers> WalkWay = new List<Checkers>();
-            
-            public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
-        
-        #endregion
-
+        public override List<IOtherBar> OtherStates { get { return FieldManipulate.CombineLists<IOtherBar>(base.OtherStates, AllItemStats.AdditionState); } set{ base.OtherStates = value; } }
     #endregion
-    
-    #region // ========================================================= OnStart Parameters ===============================================================================================
+    #region // ============================================================ Methods ========================================================================================================
         
+
+
+
+
+        
+
         private int MouseTest = 0;
         async void Start()
         {
@@ -193,10 +138,9 @@ using UnityEditor;
                 case 4: return Dead();
                 case 5: return Rest();
             }
-        }   
+            }   
             InGameEvents.StepSystem.Add(Summon);
             InGameEvents.AttackTransporter.AddListener((a) => { 
-                
                 Attack find = a.Find((a) => a.Where == new Checkers(position));
                 if(find.Where == new Checkers(position)){
                     DamageReaction(find);
@@ -286,9 +230,7 @@ using UnityEditor;
             await AttackPlannerUpdate();
         }
 
-
         #region // =============================== Step System
-
             async Task Walking()
             {
                 if(WalkWay.Count == 0) return;
@@ -360,7 +302,6 @@ using UnityEditor;
                 Stamina.Rest();
             }
             public bool WillRest = true;
-
         #endregion
 
     #region // =============================== Update methods

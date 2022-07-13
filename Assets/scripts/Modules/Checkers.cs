@@ -43,7 +43,7 @@ using UnityEditor;
     public override int GetHashCode() { return 0; }  
     public override bool Equals(object o) { return true; } 
 
-    #endregion
+    #endregion // =============================== Realizations
     #region // =============================== Math
 
     public enum mode{ NoHeight, Height, OnlyHeight, }
@@ -81,7 +81,7 @@ using UnityEditor;
         return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
     }
     
-    #endregion
+    #endregion // =============================== Math
 
     public static class PatchWay
     {

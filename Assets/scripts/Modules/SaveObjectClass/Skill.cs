@@ -86,7 +86,7 @@ public class Skill : Descript, Sendable
     [NonSerialized] public int SkillIndex = 0;
     [SerializeField] private List<Skill> AvailbleBaseSkills;
     public List<Skill> AdditionBaseSkills;
-    public List<Skill> AvailbleSkills => UnitController.CombineLists<Skill>(new List<List<Skill>>(){ AvailbleBaseSkills, AdditionBaseSkills, Unit.AllItemStats.AdditionSkills});
+    public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>(new List<List<Skill>>(){ AvailbleBaseSkills, AdditionBaseSkills, Unit.AllItemStats.AdditionSkills});
 
     public Skill ThisSkill => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
     private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
@@ -111,8 +111,6 @@ public class Skill : Descript, Sendable
             return new Checkers(hit.point, Up); 
         return t; 
     }
-
-
 
     public async IAsyncEnumerable<Attack> Realize()
     {
