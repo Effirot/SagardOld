@@ -57,14 +57,16 @@ public class Skill : Descript, Sendable
 
     [Serializable]public class HitBoxParameters
     {
+        [Header("Hit box")]
         public HitType HitBox;
         public TargetPointGuidanceType PointType;
-        public DamageType damageType;
-        [Space]
         [Range(0, 40)]public int MaxDistance;
+        [Range(0, 10)]public int MinDistance;
+        [Header("Damage")]
         [Range(0, 20)]public int Damage;
         public DamageScaling DamageScalingType;
-        [Range(0, 10)]public int MinDistance;
+        public DamageType damageType;
+        [Space]
         public Effect[] Debuff;
     }
     public bool isEmpty => Realizations.Count == 0;
@@ -86,7 +88,7 @@ public class Skill : Descript, Sendable
     [NonSerialized] public int SkillIndex = 0;
     [SerializeField] private List<Skill> AvailbleBaseSkills;
     public List<Skill> AdditionBaseSkills;
-    public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>(new List<List<Skill>>(){ AvailbleBaseSkills, AdditionBaseSkills, Unit.AllItemStats.AdditionSkills});
+    public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>( AvailbleBaseSkills, AdditionBaseSkills, Unit.AllItemStats.AdditionSkills );
 
     public Skill ThisSkill => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
     private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }

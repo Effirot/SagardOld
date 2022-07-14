@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SagardCL;
+using UnityEngine.Rendering;
 
 public abstract class Generation : MonoBehaviour
 {
@@ -19,21 +20,22 @@ public abstract class Generation : MonoBehaviour
         for(int x = 0; x < map.XScale - 1; x++)
         for(int z = 0; z < map.ZScale - 1; z++)
         {
-            if(map.GetCell(x, z).Let >= 0){
-                map.PutCell(x, z);
+            //map.PutCell(x, z, transform);
 
-                #region 
+            #region 
 
-                    AllAttackZoneArchive[x, z] = new List<Attack>();
+                AllAttackZoneArchive[x, z] = new List<Attack>();
 
-                    GameObject AttackGizmo = Instantiate<GameObject>(AttackVisual, new Checkers(x, z, 0.04f), AttackVisual.transform.rotation, transform);
-                    AttackVisualsRealizers[x, z] = AttackGizmo;
-                    
-                    AttackGizmo.SetActive(false);
+                GameObject AttackGizmo = Instantiate<GameObject>(AttackVisual, new Checkers(x, z, 0.04f), AttackVisual.transform.rotation, transform);
+                AttackVisualsRealizers[x, z] = AttackGizmo;
+                AttackGizmo.name = $"{x}:{z}";
+                
+                AttackGizmo.SetActive(false);
 
-                    AttackGizmo.transform.position = new Checkers(x, z, 0.04f);
-                #endregion               
-            }
+                AttackGizmo.transform.position = new Checkers(x, z, 0.04f);
+
+            #endregion               
+        
         }
     }
     private void ClearMap(){
@@ -87,8 +89,6 @@ public abstract class Generation : MonoBehaviour
 [System.Serializable] public struct Map
 {
     #region // Saving
-        PlatformVisual[] Platforms;
-
         [SerializeField] int scaleX, scaleZ;
         public int XScale { get{ return scaleX; } }
         public int ZScale { get{ return scaleZ; } }
@@ -96,72 +96,109 @@ public abstract class Generation : MonoBehaviour
         uint key { get; }
 
         MapCell[,] PlatformMatrix;
+
+        private List<Material> uniqueMaterialsList;
     #endregion
     #region // Overloads
 
-        public Map(MapFormula Formula, uint Key, Vector2 Scale, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, Vector2 Scale, params PlatformVisual[] visual)
         {
             scaleX = (int)Scale.x; scaleZ = (int)Scale.y; key = Key; 
             PlatformMatrix = new MapCell[scaleX, scaleZ];
-            Platforms = visual;
-            PlatformMatrix = GenerateRelief(Formula);
+            
+            uniqueMaterialsList = new List<Material>();
+            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            {
+                if(!uniqueMaterialsList.Contains(material))
+                    uniqueMaterialsList.Add(material);
+            }
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
         }
-        public Map(MapFormula Formula, uint Key, int PlayerNum, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, int PlayerNum, params PlatformVisual[] visual)
         {
             key = Key;
             scaleX = PlayerNum * 9 + (((int)key / 23)%7); scaleZ = PlayerNum * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[scaleX, scaleZ];
-            Platforms = visual;
-            PlatformMatrix = GenerateRelief(Formula);
+            
+            uniqueMaterialsList = new List<Material>();
+            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            {
+                if(!uniqueMaterialsList.Contains(material))
+                    uniqueMaterialsList.Add(material);
+            }
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
         }
-        public Map(MapFormula Formula, int PlayerNum, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int PlayerNum, params PlatformVisual[] visual)
         {
             key = (uint)Random.Range(0, 99999999);
             scaleX = PlayerNum * 9 + (((int)key / 23)%7); scaleZ = PlayerNum * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[scaleX, scaleZ];
-            Platforms = visual;
-            PlatformMatrix = GenerateRelief(Formula);
+            
+            uniqueMaterialsList = new List<Material>();
+            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            {
+                if(!uniqueMaterialsList.Contains(material))
+                    uniqueMaterialsList.Add(material);
+            }
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
         }
-        public Map(MapFormula Formula, Vector2 Scale, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, Vector2 Scale, params PlatformVisual[] visual)
         {
             key = (uint)Random.Range(0, 99999999);
             scaleX = (int)Scale.x; scaleZ = (int)Scale.y; 
             PlatformMatrix = new MapCell[scaleX, scaleZ];
-            Platforms = visual;
-            PlatformMatrix = GenerateRelief(Formula);
             
+            uniqueMaterialsList = new List<Material>();
+            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            {
+                if(!uniqueMaterialsList.Contains(material))
+                    uniqueMaterialsList.Add(material);
+            }
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
         }
-        public Map(MapFormula Formula, uint Key, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, params PlatformVisual[] visual)
         {
             key = Key;
             scaleX = 2 * 9 + (((int)key / 23)%7); scaleZ = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[scaleX, scaleZ];
-            Platforms = visual;
-            PlatformMatrix = GenerateRelief(Formula);
+
+            uniqueMaterialsList = new List<Material>();
+            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            {
+                if(!uniqueMaterialsList.Contains(material))
+                    uniqueMaterialsList.Add(material);
+            }
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
         }
-        public Map(MapFormula Formula, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformVisual[] visual)
         {
-            key = key = (uint)Random.Range(0, 99999999);;
+            key = key = (uint)Random.Range(0, 99999999);
             scaleX = 2 * 9 + (((int)key / 23)%7); scaleZ = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[scaleX, scaleZ];
-            Platforms = visual;
-            PlatformMatrix = GenerateRelief(Formula);
+
+            uniqueMaterialsList = new List<Material>();
+            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            {
+                if(!uniqueMaterialsList.Contains(material))
+                    uniqueMaterialsList.Add(material);
+            }
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
         }
         
     #endregion
 
     #region // Map Cell information
 
-        [System.Serializable]public struct MapCell
+        [System.Serializable] struct MapCell
         {
-            public int Modifier;
+            public PlatformVisual Modifier;
             public float Up;
-            public int Let;
+            public Let Let;
 
             public CombineInstance Mesh;
             public CombineInstance Collider;
             
-            public MapCell(int Mod, float up, int let = 0, GameObject letLink = null)
+            public MapCell(PlatformVisual Mod, float up, Let let = null)
             { Modifier = Mod; Up = Mathf.Clamp(up, 0, 4); Let = let; Mesh = new CombineInstance(); Collider = new CombineInstance(); }
 
             public void AddVerticalPosition(float y)
@@ -169,24 +206,24 @@ public abstract class Generation : MonoBehaviour
 
             }
         }
-        private MapCell[,] GenerateRelief(MapFormula formula)
+        private MapCell[,] GenerateRelief(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformVisual[] visual)
         {
             MapCell[,] result = new MapCell[scaleX, scaleZ];
 
-            for(int x = 0; x < scaleX; x++) for(int z = 0; z < scaleZ; z++)
-            result[x, z] = new MapCell(formula(x, z, key).Modifier, formula(x, z, key).Up, formula(x, z, key).Let);
+            for(int x = 0; x < scaleX; x++) 
+            for(int z = 0; z < scaleZ; z++)
+            result[x, z] = new MapCell(visual[formulaMod(x, z, key)], formulaUp(x, z, key));
             
             return result;
         }
-        public MapCell GetCell(int x, int z) { return PlatformMatrix[x, z]; }
 
     #endregion
     #region // Platform visualizer
 
         [System.Serializable]public struct PlatformVisual
         {
-            [SerializeField]Mesh[] MeshVariants;
-            [SerializeField]Material[] MaterialVariants;
+            [SerializeField]public Mesh[] MeshVariants;
+            [SerializeField]public Material[] MaterialVariants;
 
             public PlatformVisual(Material material, Mesh Mesh) { MaterialVariants = new Material[] { material }; MeshVariants = new Mesh[] { Mesh }; }
             public PlatformVisual(Material material, params Mesh[] Meshes) { MaterialVariants = new Material[] { material }; MeshVariants = Meshes; }
@@ -201,40 +238,54 @@ public abstract class Generation : MonoBehaviour
                 result.layer = LayerMask.NameToLayer("Map");
 
                 if(MeshVariants.Length != 0) result.GetComponent<MeshFilter>().mesh = MeshVariants[Random.Range(0, MeshVariants.Length)];
-                else                         result.GetComponent<MeshFilter>().mesh = CreateCubeCollider();
+                else                         CreateCubeCollider(new Vector3(-0.45f, 0, -0.45f), new Vector3(0.45f, -10, 0.45f));
                 if(MaterialVariants.Length != 0) result.GetComponent<MeshRenderer>().material = MaterialVariants[Random.Range(0, MaterialVariants.Length)];
                 // else                             result.GetComponent<MeshRenderer>().material = Material.Create();       
 
                 // result.GetComponent<MeshCollider>().sharedMesh = CreateCubeCollider();
-                // result.GetComponent<MeshCollider>().convex = true;
+                // result.GetComponent<MesНуhCollider>().convex = true;
                 return result;
-
-                
             }
 
-            public CombineInstance GetCombineMesh(Matrix4x4 transform)
+            public CombineInstance GetCombineCollider(Matrix4x4 transform)
             {
                 CombineInstance result = new CombineInstance();
 
-                result.mesh = CreateCubeCollider();
+                result.mesh = CreateCubeCollider(new Vector3(-0.45f, 0, -0.45f), new Vector3(0.45f, -10, 0.45f));
                 
                 result.transform = transform;
                 return result;
             }
+            public CombineInstance GetCombineMesh(Matrix4x4 transform)
+            {
+                CombineInstance result = new CombineInstance();
+                Mesh mesh = MeshVariants[Random.Range(0, MeshVariants.Length - 1)];
 
-            Mesh CreateCubeCollider()
+                if(MeshVariants.Length != 0) result.mesh = MeshVariants[Random.Range(0, MeshVariants.Length - 1)];
+                else CreateCubeCollider(new Vector3(-0.45f, 0, -0.45f), new Vector3(0.45f, -10, 0.45f));
+                
+                result.transform = transform;
+                return result;
+            }
+            public Material GetMaterial()
+            {
+                if(MaterialVariants.Length != 0) return MaterialVariants[Random.Range(0, MaterialVariants.Length - 1)];
+                else return null;
+            }
+
+
+            Mesh CreateCubeCollider(Vector3 pos1, Vector3 pos2)
             {
                 Vector3[] vertices = {
-                    new Vector3 (-0.45f, 0, -0.45f),
-                    new Vector3 (0.45f, 0, -0.45f),
-                    new Vector3 (0.45f, -10, -0.45f),
-                    new Vector3 (-0.45f, -10, -0.45f),
-                    new Vector3 (-0.45f, -10, 0.45f),
-                    new Vector3 (0.45f, -10, 0.45f),
-                    new Vector3 (0.45f, 0, 0.45f),
-                    new Vector3 (-0.45f, 0, 0.45f),
+                    new Vector3 (pos1.x, pos2.y, pos1.z),
+                    new Vector3 (pos2.x, pos2.y, pos1.z),
+                    new Vector3 (pos2.x, pos1.y, pos1.z),
+                    new Vector3 (pos1.x, pos1.y, pos1.z),
+                    new Vector3 (pos1.x, pos1.y, pos2.z),
+                    new Vector3 (pos2.x, pos1.y, pos2.z),
+                    new Vector3 (pos2.x, pos2.y, pos2.z),
+                    new Vector3 (pos1.x, pos2.y, pos2.z),
                 };
-
                 int[] triangles = {
                     0, 2, 1, //face front
                     0, 3, 2,
@@ -249,25 +300,31 @@ public abstract class Generation : MonoBehaviour
                     0, 6, 7, //face bottom
                     0, 1, 6
                 };
-                    
+                
                 Mesh result = new Mesh();
                 result.name = "Collider";
                 result.vertices = vertices;
                 result.triangles = triangles;
 
-                result.RecalculateNormals();
+                
 
                 return result;
             }
         }
-        public delegate MapCell MapFormula(int x, int y, uint key);
-        public GameObject PutCell(int x, int z)
+        public delegate float FormulaUp(int x, int y, uint key);
+        public delegate int FormulaMod(int x, int y, uint key);
+        public delegate int FormulaLet(int x, int y, uint key);
+        public GameObject PutCell(int x, int z, Transform parent = null)
         {
             try { 
                 MapCell cell = PlatformMatrix[x, z]; 
-                GameObject result = Platforms[cell.Modifier % Platforms.Length].GetObject();
+                GameObject result = PlatformMatrix[x, z].Modifier.GetObject();
                 
+                result.name = $"{x}:{z} - cell.Modifier";
+
                 result.transform.position = new Vector3(x, cell.Up, z);
+
+                result.transform.parent = parent;
 
                 return result;
             }
@@ -275,28 +332,66 @@ public abstract class Generation : MonoBehaviour
         }
 
     #endregion
+    #region // Let
+        public class Let
+        {
+
+        }
+    #endregion
 
     #region // Map Mesh
         public Mesh colliderMesh()
         {
             Mesh result = new Mesh();
             List<CombineInstance> instances = new List<CombineInstance>();
-            for(int x = 0; x < XScale; x++)
-            for(int z = 0; z < ZScale; z++)
+            for(int x = 0; x < scaleX - 1; x++) 
+            for(int z = 0; z < scaleZ - 1; z++)
             {
-                instances.Add(Platforms[PlatformMatrix[x, z].Modifier].GetCombineMesh(Matrix4x4.TRS(new Vector3(x, PlatformMatrix[x, z].Up, z), Quaternion.Euler(0, 0, 0), Vector3.one)));
+                instances.Add(PlatformMatrix[x, z].Modifier.GetCombineCollider(Matrix4x4.TRS(new Vector3(x, PlatformMatrix[x, z].Up, z), Quaternion.Euler(0, 0, 0), Vector3.one)));
             }
             result.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             result.CombineMeshes(instances.ToArray());
 
             return result;
         }
-        public Mesh visibleMesh()
+        public Mesh visibleMesh(out Material[] materials)
         {
-            Mesh result = new Mesh();
+            Dictionary<Material, List<CombineInstance>> SubMeshes = new Dictionary<Material, List<CombineInstance>>();
+            foreach(Material material in uniqueMaterialsList) { SubMeshes.Add(material, new List<CombineInstance>()); }
 
+            for(int x = 0; x < scaleX - 1; x++) 
+            for(int z = 0; z < scaleZ - 1; z++)
+            {
+                CombineInstance subMesh = PlatformMatrix[x, z].Modifier.GetCombineMesh(Matrix4x4.TRS(new Vector3(x, PlatformMatrix[x, z].Up, z), Quaternion.Euler(0, 0, 0), Vector3.one));
+
+                Material material = PlatformMatrix[x, z].Modifier.GetMaterial();
+
+                SubMeshes[material].Add(subMesh);
+            }
+            List<CombineInstance> instanceByMaterial = new List<CombineInstance>();
+            foreach(var value in SubMeshes)
+            {
+                CombineInstance item = new CombineInstance();
+                Mesh mesh = new Mesh();
+                mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+                mesh.CombineMeshes(value.Value.ToArray(), true);
+
+                item.mesh = mesh;
+                item.transform = Matrix4x4.identity;
+                instanceByMaterial.Add(item);
+            }
+
+            Mesh result = new Mesh();
+            result.subMeshCount = uniqueMaterialsList.Count;
+            result.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            result.CombineMeshes(instanceByMaterial.ToArray(), false);
+
+            materials = uniqueMaterialsList.ToArray();
             return result;
         }
+
+
+
 
     #endregion
 

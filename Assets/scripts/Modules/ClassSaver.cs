@@ -191,15 +191,7 @@ namespace SagardCL //Class library
 
     public static class FieldManipulate
     {
-        
-        public static List<T> CombineLists<T>(List<T> a, List<T> b) 
-        {
-            List<T> result = new List<T>();
-            result.AddRange(a);
-            result.AddRange(b);
-            return result;
-        }
-        public static List<T> CombineLists<T>(List<List<T>> a)
+        public static List<T> CombineLists<T>(params List<T>[] a)
         {
             List<T> result = new List<T>();
             foreach(List<T> b in a)
