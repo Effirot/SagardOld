@@ -37,24 +37,29 @@ using UnityEditor;
 
     public static Checkers operator +(Checkers a, Checkers b) { return new Checkers(a.x + b.x, a.z + b.z, a.up); }
     public static Checkers operator -(Checkers a, Checkers b) { return new Checkers(a.x - b.x, a.z - b.z, a.up); }
+    public static Checkers operator *(Checkers a, float b) { return new Checkers(a.x * b, a.z * b, a.up); }
+    public static Checkers operator *(float b, Checkers a) { return new Checkers(a.x * b, a.z * b, a.up); }
     public static bool operator ==(Checkers a, Checkers b) { return a.x == b.x & a.z == b.z; }
     public static bool operator !=(Checkers a, Checkers b) { return !(a.x == b.x & a.z == b.z); }
     
     public override int GetHashCode() { return 0; }  
     public override bool Equals(object o) { return true; } 
 
+    public Checkers WithUp(float a){ return new Checkers(this, a); }
+
     #endregion // =============================== Realizations
     #region // =============================== Math
 
-    public enum mode{ NoHeight, Height, OnlyHeight, }
-    public static float Distance(Checkers a, Checkers b, mode Mode = mode.NoHeight)
+    public enum CheckersDistanceMode{ NoHeight, Height, OnlyHeight, }
+    public static float Distance(Checkers a, Checkers b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
     {
-        if(Mode == mode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
+        if(Mode == CheckersDistanceMode.OnlyHeight) return Mathf.Abs(a.up - b.up);
+        if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
         return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
     }
-    public static float Distance(Vector3 a, Vector3 b, mode Mode = mode.NoHeight)
+    public static float Distance(Vector3 a, Vector3 b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
     {
-        if(Mode == mode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
+        if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
         return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
     }
 
@@ -79,6 +84,32 @@ using UnityEditor;
     public static bool CheckCoords(int x, int z) 
     {
         return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+    }
+    
+    public static Checkers Lerp(Checkers pos1, Checkers pos2, float StepSize)
+    {
+        float x = pos1.x + (pos2.x - pos1.x) * (StepSize);
+        float z = pos1.z + (pos2.z - pos1.z) * (StepSize);
+
+        return new Checkers(x, z);
+    }
+    public static Checkers MoveTowards(Checkers pos1, Checkers pos2, float StepSize)
+    {
+        return Checkers.Lerp(pos1, pos2, Distance(pos1, pos2) / StepSize);
+    }
+    
+    
+    public static List<Checkers> Line (Checkers from, Checkers to)
+    {
+        List<Checkers> result = new List<Checkers>();
+        int a = 0;
+        while(from != to & a <= 20)
+        {
+            from = Checkers.MoveTowards(from, to, 1f);
+
+            a++;
+        }
+        return result;
     }
     
     #endregion // =============================== Math
@@ -136,11 +167,21 @@ using UnityEditor;
         }
     }
 
+  
+
+
+
+
+
+    // public List<Checkers> Line(Checkers pos1, Checkers pos2, bool AddPos1Pos2 = true)
+    // {
+
+    // }
 }
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(Checkers))]
-public class CheckersEditor : Editor
+class CheckersEditor : Editor
 {
     // SerializedProperty x, z, up;
 

@@ -25,8 +25,6 @@ public class InGameEvents : MonoBehaviour
     public static bool Controllable { get { return _Controllable; } set { _Controllable = value; } }
 
 
-
-    void Start() { StepEnd.AddListener(IStepEndUpdate.StateList.Invoke); }
     void Update(){
         if(EventSystem.current.IsPointerOverGameObject()) return;
 

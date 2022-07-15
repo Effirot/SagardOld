@@ -20,21 +20,13 @@ MonoBehaviour:
   NoWalking: 0
   MaxCursorDistance: 22
   Realizations:
-  - HitBox: 4
-    PointType: 1
-    damageType: 2
-    MaxDistance: 2
-    Damage: 4
-    DamageScalingType: 1
-    MinDistance: 0
-    Debuff: []
   - HitBox: 2
     PointType: 1
-    damageType: 1
     MaxDistance: 16
+    MinDistance: 0
     Damage: 4
     DamageScalingType: 1
-    MinDistance: 0
+    damageType: 1
     Debuff: []
   UsingStamina: 1
   DeleteWhenLowAmmo: 0

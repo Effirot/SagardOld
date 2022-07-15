@@ -7,37 +7,6 @@ using UnityEditor;
 using System.ComponentModel;
 using System;
 
-// old version
-// [CreateAssetMenu(fileName = "BaseSkill", menuName = "SagardCL objects/Base Skill", order = 51)]
-// public class Skill : Descript, Sendable
-// {
-//     [Space(2)]
-//     [Header("Parameters")]
-//     public bool PriorityAttacking;
-    
-//     public HitType HitBox;
-//     [SerializeField]public DamageType damageType;
-//     [Space]
-//     [Range(0, 40)]public int Distance;
-//     [Range(0, 20)]public int Damage;
-//     public DamageScaling DamageScalingType;
-//     [SerializeField]public bool Piercing;
-//     [Range(0, 10)]public int AttackStartDistance;
-//     public Effect[] Debuff;
-
-//     [Range(0, 15)]public int Exploding;
-//     public bool NoWalking;
-//     public bool HitSelf;
-//     [Range(0, 10)]public int SelfDamage;
-//     [Space(3)]
-//     [Header("Skill Price")]
-//     public int UsingStamina;
-//     [Space]
-//     public IStateBar Ammo;
-//     public bool DeleteWhenLowAmmo = false;
-
-// }
-
 [CreateAssetMenu(fileName = "BaseSkill", menuName = "SagardCL objects/Base Skill", order = 51)]
 public class Skill : Descript, Sendable
 {
@@ -70,7 +39,6 @@ public class Skill : Descript, Sendable
         public Effect[] Debuff;
     }
     public bool isEmpty => Realizations.Count == 0;
-    
 }
 
 
@@ -162,13 +130,8 @@ public class Skill : Descript, Sendable
                         break;
                     }
                     case HitType.Line:{
-                        foreach(RaycastHit hit in Physics.RaycastAll(
-                            new Checkers(startPos, -4), 
-                            new Checkers(FinalPoint, -4) - new Checkers(startPos, -4f), 
-                            Checkers.Distance(startPos, FinalPoint), 
-                            LayerMask.GetMask("Map")))
+                        foreach(Checkers NowChecking in Checkers.Line(startPos, FinalPoint))
                         {
-                            Checkers NowChecking = new Checkers(hit.point);
                             if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance) 
                                 continue;
                             if(Checkers.Distance(NowChecking, startPos) > NowHit.MaxDistance)
