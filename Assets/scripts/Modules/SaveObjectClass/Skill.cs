@@ -130,7 +130,9 @@ public class Skill : Descript, Sendable
                         break;
                     }
                     case HitType.Line:{
-                        foreach(Checkers NowChecking in Checkers.Line(startPos, FinalPoint))
+                        List<Checkers> zone = Checkers.Line(startPos, FinalPoint);
+                        zone.Remove(startPos);
+                        foreach(Checkers NowChecking in zone)
                         {
                             if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance) 
                                 continue;

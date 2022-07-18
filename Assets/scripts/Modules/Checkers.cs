@@ -97,19 +97,40 @@ using UnityEditor;
     {
         return Checkers.Lerp(pos1, pos2, Distance(pos1, pos2) / StepSize);
     }
-    
-    
-    public static List<Checkers> Line (Checkers from, Checkers to)
-    {
-        List<Checkers> result = new List<Checkers>();
-        int a = 0;
-        while(from != to & a <= 20)
-        {
-            from = Checkers.MoveTowards(from, to, 1f);
 
-            a++;
+    public static List<Checkers> Line(Checkers pos1, Checkers pos2) {
+        List<Checkers> result = new List<Checkers>();
+        
+        int deltaX = Mathf.Abs(pos2.x - pos1.x);
+        int deltaZ = Mathf.Abs(pos2.z - pos1.z);
+        
+        int signX = pos1.x < pos2.x ? 1 : -1;
+        int signZ = pos1.z < pos2.z ? 1 : -1;
+        
+        int error = deltaX - deltaZ;
+
+        result.Add(pos2);
+
+        while(pos1 != pos2) 
+        {
+            
+
+            int error2 = error * 2;
+            if(error2 > -deltaZ) 
+            {
+                error -= deltaZ;
+                pos1.X += signX;
+            }
+            if(error2 < deltaX) 
+            {
+                error += deltaX;
+                pos1.Z += signZ;
+            }
+            result.Add(pos1);
         }
+
         return result;
+
     }
     
     #endregion // =============================== Math
