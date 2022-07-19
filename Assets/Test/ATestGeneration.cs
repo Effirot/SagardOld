@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ATestGeneration : Generation
 {   
-    [SerializeField] PlatformVisual[] PlatformPreset;
+    [SerializeField] PlatformPresets[] PlatformPreset;
 
     public Checkers posForWay;
 

@@ -2,7 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MassDisaster : MonoBehaviour
-{
 
+
+[CreateAssetMenu(fileName = "MassDisaster", menuName = "Sagard/MassDisaster", order = 0)]
+public class MassDisaster : ScriptableObject {
+    
+
+    
 }

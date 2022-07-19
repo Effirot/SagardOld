@@ -209,6 +209,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862467]
+      value: Assembly-CSharp Health
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862468]
+      value: Assembly-CSharp Sanity
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862469]
+      value: Assembly-CSharp Stamina
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
 --- !u!1001 &528202478
@@ -267,14 +279,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
-      propertyPath: InventorySize
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
-      propertyPath: ArtifacerInventorySize
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[7033181276535259164]
       value: Assembly-CSharp HealthOver
       objectReference: {fileID: 0}
@@ -285,6 +289,42 @@ PrefabInstance:
     - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[7033181276535259166]
       value: Assembly-CSharp Sanity
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862485]
+      value: Assembly-CSharp Health
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862486]
+      value: Assembly-CSharp Sanity
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862487]
+      value: Assembly-CSharp Stamina
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862488]
+      value: Assembly-CSharp HealthOver
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862485]._Max
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862485]._Value
+      value: 17
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862485]._Updatable
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862485]._ArmorMelee
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181594492862485]._ArmorRange
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}

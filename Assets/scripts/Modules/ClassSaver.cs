@@ -38,10 +38,7 @@ namespace SagardCL //Class library
         Descending,
         Addition,
     }
-
     
-    
-
     // All Interfaces 
     public interface Sendable
     {
@@ -65,6 +62,7 @@ namespace SagardCL //Class library
         int Max { get; set; }  
     }
 
+
     public interface IHealthBar : IStateBar
     {
         int ArmorMelee { get; set; } 
@@ -84,7 +82,6 @@ namespace SagardCL //Class library
     {
         int SanityShield { get; set; } 
     }
-
     public interface IOtherBar : IStateBar
     {
 
@@ -115,8 +112,6 @@ namespace SagardCL //Class library
 
         SkillCombiner SkillRealizer{ get; set; }
     }
-
-
 
 
     public struct Attack
@@ -165,7 +160,8 @@ namespace SagardCL //Class library
             }
         }
     }
-    
+
+
     [System.Serializable]
     public class AllInOne
     {
@@ -185,9 +181,6 @@ namespace SagardCL //Class library
 
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
-
-
-
 
     public static class FieldManipulate
     {

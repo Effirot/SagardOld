@@ -112,7 +112,7 @@ public abstract class Generation : MonoBehaviour
             colliderMesh();  
             visibleMesh();
         }
-        public void ChangeModifier(PlatformVisual Modifier)
+        public void ChangeModifier(PlatformPresets Modifier)
         {
             
         }
@@ -121,13 +121,13 @@ public abstract class Generation : MonoBehaviour
     #endregion
     #region // Overloads
 
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, Vector2 Scale, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, Vector2 Scale, params PlatformPresets[] visual)
         {
             XScale = (int)Scale.x; ZScale = (int)Scale.y; key = Key; 
             PlatformMatrix = new MapCell[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
             {
                 if(!MaterialsList.Contains(material))
                     MaterialsList.Add(material);
@@ -141,14 +141,14 @@ public abstract class Generation : MonoBehaviour
             visibleMesh();
             colliderMesh();
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, int PlayerNum, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, int PlayerNum, params PlatformPresets[] visual)
         {
             key = Key;
             XScale = PlayerNum * 9 + (((int)key / 23)%7); ZScale = PlayerNum * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
             {
                 if(!MaterialsList.Contains(material))
                     MaterialsList.Add(material);
@@ -162,14 +162,14 @@ public abstract class Generation : MonoBehaviour
             visibleMesh();
             colliderMesh();
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int PlayerNum, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int PlayerNum, params PlatformPresets[] visual)
         {
             key = (uint)Random.Range(0, 99999999);
             XScale = PlayerNum * 9 + (((int)key / 23)%7); ZScale = PlayerNum * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
             {
                 if(!MaterialsList.Contains(material))
                     MaterialsList.Add(material);
@@ -183,14 +183,14 @@ public abstract class Generation : MonoBehaviour
             visibleMesh();
             colliderMesh();
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, Vector2 Scale, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, Vector2 Scale, params PlatformPresets[] visual)
         {
             key = (uint)Random.Range(0, 99999999);
             XScale = (int)Scale.x; ZScale = (int)Scale.y; 
             PlatformMatrix = new MapCell[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
             {
                 if(!MaterialsList.Contains(material))
                     MaterialsList.Add(material);
@@ -204,14 +204,14 @@ public abstract class Generation : MonoBehaviour
             visibleMesh();
             colliderMesh();
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, params PlatformPresets[] visual)
         {
             key = Key;
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
 
             MaterialsList = new List<Material>();
-            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
             {
                 if(!MaterialsList.Contains(material))
                     MaterialsList.Add(material);
@@ -225,14 +225,14 @@ public abstract class Generation : MonoBehaviour
             visibleMesh();
             colliderMesh();
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformVisual[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformPresets[] visual)
         {
             key = key = (uint)Random.Range(0, 99999999);
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
 
             MaterialsList = new List<Material>();
-            foreach(PlatformVisual v in visual) foreach(Material material in v.MaterialVariants)
+            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
             {
                 if(!MaterialsList.Contains(material))
                     MaterialsList.Add(material);
@@ -263,14 +263,14 @@ public abstract class Generation : MonoBehaviour
             public CombineInstance Collider;
             public Material Material;
             
-            public MapCell(Checkers Position, PlatformVisual Mod, float heigh, Let let = null)
+            public MapCell(Checkers Position, PlatformPresets Mod, float heigh, Let let = null)
             { Let = let; 
             position = Position;
 
             Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, heigh, position.z), Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), Vector3.one)); 
             Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, heigh, position.z), Quaternion.Euler(0, 0, 0), Vector3.one));
             Material = Mod.GetMaterial(); }
-            public MapCell(int X, int Z, PlatformVisual Mod, float heigh, Let let = null)
+            public MapCell(int X, int Z, PlatformPresets Mod, float heigh, Let let = null)
             { Let = let; 
             position = new Checkers(X, Z);
 
@@ -284,7 +284,7 @@ public abstract class Generation : MonoBehaviour
 
             }
         }
-        private MapCell[,] GenerateRelief(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformVisual[] visual)
+        private MapCell[,] GenerateRelief(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformPresets[] visual)
         {
             MapCell[,] result = new MapCell[XScale, ZScale];
 
@@ -355,14 +355,14 @@ public abstract class Generation : MonoBehaviour
     #endregion
 }
 
-[System.Serializable]public class PlatformVisual
+[System.Serializable]public class PlatformPresets
 {
     [SerializeField]public Mesh[] MeshVariants;
     [SerializeField]public Material[] MaterialVariants;
 
-    public PlatformVisual(Material material, Mesh Mesh) { MaterialVariants = new Material[] { material }; MeshVariants = new Mesh[] { Mesh }; }
-    public PlatformVisual(Material material, params Mesh[] Meshes) { MaterialVariants = new Material[] { material }; MeshVariants = Meshes; }
-    public PlatformVisual(Material[] material, params Mesh[] Meshes) { MaterialVariants = material; MeshVariants = Meshes; }
+    public PlatformPresets(Material material, Mesh Mesh) { MaterialVariants = new Material[] { material }; MeshVariants = new Mesh[] { Mesh }; }
+    public PlatformPresets(Material material, params Mesh[] Meshes) { MaterialVariants = new Material[] { material }; MeshVariants = Meshes; }
+    public PlatformPresets(Material[] material, params Mesh[] Meshes) { MaterialVariants = material; MeshVariants = Meshes; }
 
     public GameObject GetObject()
     {

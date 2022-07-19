@@ -11,7 +11,7 @@ using System.Reflection;
 public class InGameEvents : MonoBehaviour
 {
     public static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
-    public delegate Task TaskStepStage(int StepStage);
+    public delegate Task TaskStepStage(string StepStage);
     
     public static UnityEvent StepEnd = new UnityEvent();
 
@@ -59,16 +59,28 @@ public class InGameEvents : MonoBehaviour
         if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(TargetObject, 0); TargetObject = null; }
     }
 
+    enum Step : int
+    {
+        Walking,
+        PriorityAttacking,
+        Attacking,
+        Dead,
+        Rest
+    }
     static async void CompleteModeSwitch()
     {
         Controllable = false;   
         
-        for(int i = 1; i <= 5; i++){
+        for(int i = 0; i < 5; i++){
             MapUpdate.Invoke();
             List<Task> task = new List<Task>();
-            foreach(TaskStepStage summon in StepSystem) { task.Add(summon(i)); }
 
+            Step step = (Step)i;
+
+            foreach(TaskStepStage summon in StepSystem) { task.Add(summon(step.ToString())); }
+            Debug.Log(step.ToString() + ": " + StepSystem.Count);
             await Task.WhenAll(task.ToArray());
+
         }
         StepEnd.Invoke();
         

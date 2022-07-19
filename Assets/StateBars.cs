@@ -7,7 +7,7 @@ using System;
 using UnityEngine.Events;
 
 // ================================================================= Health Bar ===========================================================================================================
-public class Health : IHealthBar
+[Serializable]public class Health : IHealthBar
 {
     [Header("Health")]
     [SerializeField, Range(-10, 35)] int _Value = 0;
@@ -42,7 +42,7 @@ public class Health : IHealthBar
     }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
-public class HealthOver : IHealthBar
+[Serializable]public class HealthOver : IHealthBar
 {
     public HealthOver() { IStepEndUpdate.StateList.AddListener(Update); }
     [Header("Over Max Health")]
@@ -82,7 +82,7 @@ public class HealthOver : IHealthBar
     }
     public Color BarColor{ get{ return new Color(1, 0.1f, 0); } }
 }
-public class HealthCorpse : IHealthBar
+[Serializable]public class HealthCorpse : IHealthBar
 {
     public HealthCorpse() { IStepEndUpdate.StateList.AddListener(Update); Value = Max; }
     [Header("Corpse Health")]
@@ -123,7 +123,7 @@ public class HealthCorpse : IHealthBar
     }
     public Color BarColor{ get{ return new Color(0, 0, 0); } }
 }
-public class Metal : IHealthBar
+[Serializable]public class Metal : IHealthBar
 {
     [Header("Metal")]
     [SerializeField, Range(-10, 35)] int _Value = 0;
@@ -159,7 +159,7 @@ public class Metal : IHealthBar
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
 // ================================================================= Stamina Bar ===========================================================================================================
-public class Stamina : IStaminaBar
+[Serializable]public class Stamina : IStaminaBar
 {
     [Header("Stamina Bar")]
     [SerializeField, Range(-10, 35)] int _Value = 0;
@@ -185,7 +185,7 @@ public class Stamina : IStaminaBar
     public Color BarColor{ get{ return new Color(0.8f, 1f, 0); } }
 }
 // ================================================================= Sanity Bar ============================================================================================================
-public class Sanity : ISanityBar
+[Serializable]public class Sanity : ISanityBar
 {
     [Header("Sanity Bar")]
     [SerializeField, Range(-10, 35)] int _Value = 0;

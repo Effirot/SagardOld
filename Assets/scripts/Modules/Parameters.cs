@@ -1,54 +1,136 @@
-using UnityEngine;
-using SagardCL;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+using SagardCL;
+using System.Threading.Tasks;
+using System;
+using Random = UnityEngine.Random;
 
-public abstract class Parameters : MonoBehaviour {
+public class Parameters : MonoBehaviour {
         #region // =========================================================== All parameters =================================================================================================
 
-        protected Vector3 position{ get{ return transform.position; } set{ transform.position = value; } }
-        
-        #region // ================================== controlling
-        
-            public Color Team { get { return _Team; } set { _Team = value; } }
-            [SerializeField] Color _Team;
-
-            [SerializeField] bool _CanControl = true;
-            [SerializeField] bool _Corpse = false;
-            [SerializeField] int _WalkDistance = 5;
+        protected Vector3 position{ get{ return this.transform.position; } set{ this.transform.position = value; } }
+                
+        public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
+        public void ChangeFigureColor(Color color, float speed, Material[] material = null) 
+        { 
+            if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
+                                                            transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
+            foreach (Material mat in material) StartCoroutine(ChangeMaterialColor(mat, color, speed)); 
+        }
+        public void ChangeFigureColorWave(Color color, float speed, Material[] material = null) 
+        { 
+            if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
+                                                            transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
             
-            public bool CanControl { get{ return _CanControl & !_Corpse; } set { _CanControl = value; } }
-            public bool Corpse { get { return _Corpse; } set{ _Corpse = value; } }
-            public int WalkDistance { get { return _WalkDistance; } set { _WalkDistance = value; } }
-        #endregion
+            List<Task> tasks = new List<Task>();
+            foreach (Material mat in material) { StartCoroutine(Wave(mat, color, speed)); }
+
+            IEnumerator Wave(Material material, Color color, float speed)
+            { 
+                Color Save = material.color;
+                yield return ChangeMaterialColor(material, color, speed); 
+                yield return ChangeMaterialColor(material, Save, speed); 
+            }
+        }
+        static protected IEnumerator ChangeMaterialColor(Material material, Color color, float speed) 
+        {
+            while(material.color != color)
+            {
+                material.color = Color.Lerp(material.color, color, speed);
+                speed *= 1.1f;
+                yield return new WaitForFixedUpdate();
+            }
+        }
+
         #region // ================================== parameters
 
-            public int maxVisibleDistance = 10;
-            public bool nowVisible() { return true; }
+            public const int maxVisibleDistance = 10;
+            public float visibleCoefficient = 1;
+            [SerializeField] bool AlwaysVisible = false;
+            [SerializeField] bool WallIgnoreVisible = false;
 
-            IHealthBar _Health;
-            ISanityBar _Sanity;
-            IStaminaBar _Stamina;
+            public bool nowVisible(Parameters Object) { return (Checkers.Distance(this.position, Object.position) <= maxVisibleDistance * visibleCoefficient &
+                                                                WallIgnoreVisible? Physics.Raycast(this.position, Object.position - this.position, Checkers.Distance(this.position, Object.position), LayerMask.NameToLayer("Object")) : true) | AlwaysVisible; }
 
-            [SerializeReference, SerializeReferenceButton] protected IHealthBar BaseHealth;
-            [SerializeReference, SerializeReferenceButton] protected ISanityBar BaseSanity;
-            [SerializeReference, SerializeReferenceButton] protected IStaminaBar BaseStamina;
-            [SerializeReference, SerializeReferenceButton] List<IOtherBar> _OtherStates;
+            [SerializeReference, SubclassSelector] public IHealthBar Health;
+            [SerializeReference, SubclassSelector] public ISanityBar Sanity;
+            [SerializeReference, SubclassSelector] public IStaminaBar Stamina;
+            [SerializeReference, SubclassSelector] public List<IOtherBar> OtherStates;
             
-            public IHealthBar Health { get{ return _Health; } set{ _Health = value; } }
-            public ISanityBar Sanity { get { return _Sanity; } set{ _Sanity = value; } } 
-            public IStaminaBar Stamina { get{ return _Stamina; } set{ _Stamina = value; } }
-            public virtual List<IOtherBar> OtherStates { get { return _OtherStates; } set{ _OtherStates = value; } }
+            protected IHealthBar BaseHealth;
+            protected ISanityBar BaseSanity;
+            protected IStaminaBar BaseStamina;
 
         #endregion
         #region // ================================== effects
             
-            [SerializeReference, SerializeReferenceButton] List<Effect> _Debuff;
-            [SerializeReference, SerializeReferenceButton] List<Effect> _Resists;
-
-            public List<Effect> Debuff { get { return _Debuff; } set{ _Debuff = value; } }
-            public List<Effect> Resists { get { return _Resists; } set{ _Resists = value; }}
+            [SerializeReference, SubclassSelector] List<Effect> Debuff;
+            [SerializeReference, SubclassSelector] List<Effect> Resists;
 
         #endregion
 
+
+        protected virtual Task Summon(string id){ 
+            var Method = this.GetType().GetMethod(id);
+            if(Method == null) return new Task(() => { });
+            return (Task)Method.Invoke(this, parameters: null);
+            
+        }   
+
+        protected virtual async void Start()
+        {
+            BaseHealth = Health.Clone() as IHealthBar;
+            BaseStamina = Stamina.Clone() as IStaminaBar;
+            BaseSanity = Sanity.Clone() as ISanityBar;
+
+            InGameEvents.MapUpdate.AddListener(ParametersUpdate);
+
+            InGameEvents.StepSystem.Add(Summon);
+            InGameEvents.AttackTransporter.AddListener((a) => { 
+                Attack find = a.Find((a) => a.Where == new Checkers(position));
+                if(find.Where == new Checkers(position)){
+                    DamageReaction(find);
+                    GetDamage(find);
+                }
+            });
+            InGameEvents.StepEnd.AddListener(EveryStepEnd);
+
+            await Task.Delay(10);
+            position = new Checkers(position);
+        }
+    
+    #region // =============================== Update methods
+        
+        protected virtual void ParametersUpdate() {}
+        protected virtual void DamageReaction(Attack attack) {}
+        private void GetDamage(Attack attack)
+        {
+            Health.GetDamage(attack); 
+            if(attack.damage > 0) ChangeFigureColorWave(attack.DamageColor(), 0.2f);
+        }
+        public virtual void LostHealth()
+        {
+            Destroy(transform.parent.gameObject);
+        }
+        
+
+    #endregion
+
+            #region // =============================== Step System
+  
+            protected virtual async Task Dead() 
+            { 
+                if(Health.Value > 0) return;
+                await Task.Delay(Random.Range(10, 100));                 
+                LostHealth();
+            }
+
+            protected virtual void EveryStepEnd()
+            {
+                
+            }
+        #endregion
     #endregion
 }

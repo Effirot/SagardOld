@@ -93,11 +93,11 @@ public class Item : Descript, Sendable
     [Space]
     public int WalkDistance = 0;
 
-    [SerializeReference, SerializeReferenceButton]public IHealthBar Health = new Health();
+    [SerializeReference, SubclassSelector]public IHealthBar Health = new Health();
     public bool ReplaceHealthBar = false;
-    [SerializeReference, SerializeReferenceButton]public IStaminaBar Stamina = new Stamina();
+    [SerializeReference, SubclassSelector]public IStaminaBar Stamina = new Stamina();
     public bool ReplaceStaminaBar = false;
-    [SerializeReference, SerializeReferenceButton]public ISanityBar Sanity = new Sanity();
+    [SerializeReference, SubclassSelector]public ISanityBar Sanity = new Sanity();
     public bool ReplaceSanityBar = false;
     
     public List<IOtherBar> AdditionState;

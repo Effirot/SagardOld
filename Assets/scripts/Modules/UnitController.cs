@@ -24,37 +24,6 @@ using UnityEditor;
 
         static Checkers LastPose = new Checkers();
         Checkers CursorPos { get { Checkers pos = CursorController.Pos; if(LastPose != pos) { LastPose = pos; ChangePos(); } return pos; } }
-        
-        public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
-        public void ChangeFigureColor(Color color, float speed, Material[] material = null) 
-        { 
-            if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
-                                                            transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
-            foreach (Material mat in material) StartCoroutine(ChangeMaterialColor(mat, color, speed)); 
-        }
-        public void ChangeFigureColorWave(Color color, float speed, Material[] material = null) 
-        { 
-            if(material == null) material = new Material[] { transform.parent.Find("MPlaner/Platform").GetComponent<Renderer>().material, 
-                                                            transform.parent.Find("MPlaner/Platform/Figure").GetComponent<Renderer>().material };
-            
-            List<Task> tasks = new List<Task>();
-            foreach (Material mat in material) { StartCoroutine(Wave(mat, color, speed)); }
-
-            IEnumerator Wave(Material material, Color color, float speed)
-            { 
-                Color Save = material.color;
-                yield return ChangeMaterialColor(material, color, speed); 
-                yield return ChangeMaterialColor(material, Save, speed); 
-            }
-        }
-        static IEnumerator ChangeMaterialColor(Material material, Color color, float speed) {
-            while(material.color != color)
-            {
-                material.color = Color.Lerp(material.color, color, speed);
-                speed *= 1.1f;
-                yield return new WaitForFixedUpdate();
-            }
-        }
 
         protected bool WalkChecker(bool Other = true)
         {        
@@ -79,6 +48,15 @@ using UnityEditor;
         public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
     #endregion
 
+    #region // ================================== controlling
+    
+        [SerializeField] Color Team;
+
+        [SerializeField] bool CanControl = true;
+        [SerializeField] bool Corpse = false;
+        [SerializeField] int WalkDistance = 5;
+            
+    #endregion
     #region // ================================== Skills
 
     public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
@@ -98,25 +76,14 @@ using UnityEditor;
 
         public ParamsChanger AllItemStats;
 
-
-        public override List<IOtherBar> OtherStates { get { return FieldManipulate.CombineLists<IOtherBar>(base.OtherStates, AllItemStats.AdditionState); } set{ base.OtherStates = value; } }
+        public new List<IOtherBar> OtherStates { get { return FieldManipulate.CombineLists<IOtherBar>(base.OtherStates, AllItemStats.AdditionState); } set{ base.OtherStates = value; } }
     #endregion
     #region // ============================================================ Methods ========================================================================================================
         
-
-
-
-
-        
-
         private int MouseTest = 0;
-        async void Start()
+        protected override async void Start()
         {
-            Health = BaseHealth.Clone() as IHealthBar;
-            Stamina = BaseStamina.Clone() as IStaminaBar;
-            Sanity = BaseSanity.Clone() as ISanityBar;
-
-            InGameEvents.MapUpdate.AddListener(ParametersUpdate);
+            base.Start();
             InGameEvents.MouseController.AddListener((id, b) => 
             { 
                 if(id != MPlaner.Planer | !(!Corpse & CanControl)) { MouseTest = 0; return; }
@@ -128,17 +95,8 @@ using UnityEditor;
                     case 2: AttackPlaningIn(); return;
                 }
             });
-            Task Summon(int id){ 
-            switch(id)
-            {
-                default: return new Task(() => { });
-                case 1: return Walking();
-                case 2: return PriorityAttacking();
-                case 3: return Attacking();
-                case 4: return Dead();
-                case 5: return Rest();
-            }
-            }   
+
+             
             InGameEvents.StepSystem.Add(Summon);
             InGameEvents.AttackTransporter.AddListener((a) => { 
                 Attack find = a.Find((a) => a.Where == new Checkers(position));
@@ -147,7 +105,8 @@ using UnityEditor;
                     GetDamage(find);
                 }
             });
-        
+
+            InGameEvents.StepEnd.AddListener(EveryStepEnd);
             AfterInventoryUpdate();
 
             await Task.Delay(10);
@@ -287,7 +246,7 @@ using UnityEditor;
                 
                 await AttackPlannerUpdate();
             }
-            async Task Dead() 
+            protected override async Task Dead() 
             { 
                 if(Health.Value > 0) return;
                 await Task.Delay(Random.Range(10, 100)); 
@@ -305,8 +264,9 @@ using UnityEditor;
         #endregion
 
     #region // =============================== Update methods
+
         
-        protected async void ParametersUpdate()
+        protected override async void ParametersUpdate()
         {
             await MovePlannerUpdate();
             await AttackPlannerUpdate();
@@ -351,17 +311,13 @@ using UnityEditor;
             Stamina.Max = BaseStamina.Max + AllItemStats.Stamina.Max;
             Sanity.Max = BaseSanity.Max + AllItemStats.Sanity.Max;
         } 
-        
-        public virtual void DamageReaction(Attack attack)
-        {
 
-        }
         private void GetDamage(Attack attack)
         {
             Health.GetDamage(attack); 
             if(attack.damage > 0) ChangeFigureColorWave(attack.DamageColor(), 0.2f);
         }
-        public virtual void LostHealth()
+        public override void LostHealth()
         {
             if(Health is HealthCorpse) { Destroy(transform.parent.gameObject); }
             else {

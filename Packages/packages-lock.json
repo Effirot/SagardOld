@@ -7,12 +7,12 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-    "com.textus-games.serialized-reference-ui": {
-      "version": "https://github.com/TextusGames/UnitySerializedReferenceUI.git",
+    "com.mackysoft.serializereference-extensions": {
+      "version": "https://github.com/mackysoft/Unity-SerializeReferenceExtensions.git?path=Assets/MackySoft/MackySoft.SerializeReferenceExtensions",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "51aff6062610296c86f739a3e093c29d08388a95"
+      "hash": "367bf2065c0d856c91b39c65751e1554a2205fe9"
     },
     "com.unity.animation.rigging": {
       "version": "1.1.1",
@@ -320,6 +320,12 @@
       "dependencies": {}
     },
     "com.unity.modules.jsonserialize": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {}
+    },
+    "com.unity.modules.nvidia": {
       "version": "1.0.0",
       "depth": 0,
       "source": "builtin",
