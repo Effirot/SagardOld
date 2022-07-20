@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SagardCL;
+using SagardCL.IParameterManipulate;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using UnityEngine.Events;

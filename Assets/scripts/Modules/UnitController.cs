@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
+using SagardCL.IParameterManipulate;
 using System.Threading.Tasks;
 using System;
 using Random = UnityEngine.Random;
@@ -15,6 +16,8 @@ using UnityEditor;
 
 [Serializable] public abstract class UnitController : Parameters
 {
+    public override Type type{ get{ return typeof(UnitController); }}
+
     #region // ============================================================ Useful Stuff ==================================================================================================
         
         private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
@@ -96,8 +99,6 @@ using UnityEditor;
                 }
             });
 
-             
-            InGameEvents.StepSystem.Add(Summon);
             InGameEvents.AttackTransporter.AddListener((a) => { 
                 Attack find = a.Find((a) => a.Where == new Checkers(position));
                 if(find.Where == new Checkers(position)){

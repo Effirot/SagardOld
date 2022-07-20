@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
+using SagardCL.IParameterManipulate;
 using System.Threading.Tasks;
 using System;
+using System.Reflection;
 using Random = UnityEngine.Random;
 
-public class Parameters : MonoBehaviour {
+public class Parameters : MonoBehaviour, Killable, GetableCrazy, Tiredable, Storage, Attacker, HaveName {
         #region // =========================================================== All parameters =================================================================================================
 
         protected Vector3 position{ get{ return this.transform.position; } set{ this.transform.position = value; } }
@@ -71,16 +73,23 @@ public class Parameters : MonoBehaviour {
 
         #endregion
 
+        public virtual Type type{ get{ return typeof(Parameters); } }
+        Task Summon(string id){ 
+            MethodInfo Method = type.GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-        protected virtual Task Summon(string id){ 
-            var Method = this.GetType().GetMethod(id);
-            if(Method == null) return new Task(() => { });
-            return (Task)Method.Invoke(this, parameters: null);
+            if(Method == null) { 
+                Debug.Log($"{type.ToString()}/{id} in {transform.parent.name}, not founded"); 
+                return new Task(() => { });
+            }
             
+            Debug.Log($"{type.ToString()}/{id} in {transform.parent.name}, founded");
+            return (Task)Method?.Invoke(this, parameters: null);
         }   
 
         protected virtual async void Start()
         {
+            transform.parent.name = HaveName.GetName();
+
             BaseHealth = Health.Clone() as IHealthBar;
             BaseStamina = Stamina.Clone() as IStaminaBar;
             BaseSanity = Sanity.Clone() as ISanityBar;

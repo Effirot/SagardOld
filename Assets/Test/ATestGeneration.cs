@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SagardCL;
+using System.Reflection;
 
 public class ATestGeneration : Generation
 {   
@@ -11,8 +13,14 @@ public class ATestGeneration : Generation
     void Start()
     {
         Regenerate();
+
+
+
+        {
+            Debug.Log(typeof(UnitController).GetMethod("Walking", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Name + " " + typeof(UnitController).GetMethod("Walking", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).ReturnType.Name);
+        }
     }
-    public async void Regenerate()
+    public void Regenerate()
     {
         Map map = new Map(
         (x, z, key) => 
@@ -23,6 +31,7 @@ public class ATestGeneration : Generation
 
         (x, z, key) => 
         { return (x % 5 == 0 | z % 5 == 0)? 1 : 0; },
+        
         3,
         PlatformPreset);
 
@@ -32,14 +41,6 @@ public class ATestGeneration : Generation
         GetComponent<MeshFilter>().sharedMesh = map.MapMesh;
         
         LetsGenerate(map);
-        
-        await System.Threading.Tasks.Task.Delay(2000);
-
-        Debug.Log("Deformed");
-        map.ChangeHeigh(new Checkers(1, 1, 2), new Checkers(1, 2, 2), 
-                        new Checkers(2, 2, 2.7f), new Checkers(2, 1, 2.5f));
-
-        GetComponent<MeshCollider>().sharedMesh = map.MapCollider;
     }
 
 

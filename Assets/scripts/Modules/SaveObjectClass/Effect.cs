@@ -4,7 +4,7 @@ using UnityEngine;
 using SagardCL;
 
 [CreateAssetMenu(fileName = "Effect", menuName = "SagardCL objects/Effect", order = 51)]
-public class Effect : Descript, Sendable
+public class Effect : Descript
 {
 
 }

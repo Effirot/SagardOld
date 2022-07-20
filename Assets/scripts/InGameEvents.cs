@@ -10,7 +10,7 @@ using System.Reflection;
 
 public class InGameEvents : MonoBehaviour
 {
-    public static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
+    internal static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
     public delegate Task TaskStepStage(string StepStage);
     
     public static UnityEvent StepEnd = new UnityEvent();
@@ -71,7 +71,7 @@ public class InGameEvents : MonoBehaviour
     {
         Controllable = false;   
         
-        for(int i = 0; i < 5; i++){
+        for(int i = 0; i < Enum.GetNames(typeof(Step)).Length; i++){
             MapUpdate.Invoke();
             List<Task> task = new List<Task>();
 
