@@ -220,19 +220,6 @@ using UnityEditor;
                     }
                 }
             }     
-            async Task PriorityAttacking()
-            {
-                if(AttackZone.Count == 0) return;
-                if(!SkillRealizer.ThisSkill.PriorityAttacking) return;
-                WillRest = false;
-                await Task.Delay(Random.Range(0, 2700));
-
-                InGameEvents.AttackTransporter.Invoke(AttackZone);
-                AttackZone.Clear();
-                APlaner.position = MPlaner.position;
-
-                await AttackPlannerUpdate();
-            }
             async Task Attacking()
             {
                 if(AttackZone.Count == 0) return;
@@ -247,7 +234,7 @@ using UnityEditor;
                 
                 await AttackPlannerUpdate();
             }
-            protected override async Task Dead() 
+            async Task Dead() 
             { 
                 if(Health.Value > 0) return;
                 await Task.Delay(Random.Range(10, 100)); 

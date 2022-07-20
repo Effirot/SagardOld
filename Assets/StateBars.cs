@@ -29,13 +29,12 @@ using UnityEngine.Events;
 
     public void GetDamage(Attack attack)
     {
-        switch(attack.damageType)
+        switch(attack.DamageType)
         {
-            case DamageType.Pure: _Value -= attack.damage; break;
-            case DamageType.Melee: _Value -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: _Value -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: _Value -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: _Value -= attack.damage / 4; break;
+            case DamageType.Pure: _Value -= Mathf.Clamp(attack.damage, 0, 1000); break;
+            case DamageType.Melee: _Value -= Mathf.Clamp(attack.damage - ArmorMelee, 0, 1000); break;
+            case DamageType.Range: _Value -= Mathf.Clamp(attack.damage - ArmorRange, 0, 1000); break;
+            case DamageType.Rezo: _Value -= Mathf.Clamp(attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
  
             case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
             case DamageType.MetalHeal: _Value -= 1; break;
@@ -70,13 +69,12 @@ using UnityEngine.Events;
 
     public void GetDamage(Attack attack)
     {
-        switch(attack.damageType)
+        switch(attack.DamageType)
         {
-            case DamageType.Pure: _Value -= attack.damage; break;
-            case DamageType.Melee: _Value -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: _Value -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: _Value -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: _Value -= attack.damage / 4; break;
+            case DamageType.Pure: _Value -= Mathf.Clamp(attack.damage, 0, 1000); break;
+            case DamageType.Melee: _Value -= Mathf.Clamp(attack.damage - ArmorMelee, 0, 1000); break;
+            case DamageType.Range: _Value -= Mathf.Clamp(attack.damage - ArmorRange, 0, 1000); break;
+            case DamageType.Rezo: _Value -= Mathf.Clamp(attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
  
             case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
         }
@@ -110,16 +108,15 @@ using UnityEngine.Events;
 
     public void GetDamage(Attack attack)
     {
-        switch(attack.damageType)
+        switch(attack.DamageType)
         {
-            case DamageType.Pure: _Value -= (attack.damage / 2); break;
-            case DamageType.Melee: _Value -= (attack.damage / 2) - ArmorMelee; break;
-            case DamageType.Range: _Value -= (attack.damage / 2) - ArmorRange; break;
-            case DamageType.Rezo: _Value -= (attack.damage / 2) - (int)Mathf.Round((ArmorRange + ArmorMelee) * 1.25f); break;
-            case DamageType.Terra: _Value -= attack.damage * 2; break;
+            case DamageType.Pure: _Value -= Mathf.Clamp((attack.damage / 2), 0, 1000); break;
+            case DamageType.Melee: _Value -= Mathf.Clamp((attack.damage / 2) - ArmorMelee, 0, 1000); break;
+            case DamageType.Range: _Value -= Mathf.Clamp((attack.damage / 2) - ArmorRange, 0, 1000); break;
+            case DamageType.Rezo: _Value -= Mathf.Clamp((attack.damage / 2) - (int)Mathf.Round((ArmorRange + ArmorMelee) * 1.25f), 0, 1000); break;
  
             case DamageType.Heal: CorpseTimer += attack.damage; break;
-            case DamageType.MetalHeal: _Value -= 3; break;
+            case DamageType.MetalHeal: _Value -= 999; break;
         }
     }
     public Color BarColor{ get{ return new Color(0, 0, 0); } }
@@ -145,13 +142,12 @@ using UnityEngine.Events;
 
     public void GetDamage(Attack attack)
     {
-        switch(attack.damageType)
+        switch(attack.DamageType)
         {
-            case DamageType.Pure: _Value -= attack.damage; break;
-            case DamageType.Melee: _Value -= attack.damage - ArmorMelee; break;
-            case DamageType.Range: _Value -= attack.damage - ArmorRange; break;
-            case DamageType.Rezo: _Value -= attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f); break;
-            case DamageType.Terra: _Value -= attack.damage / 4; break;
+            case DamageType.Pure: _Value -= Mathf.Clamp(attack.damage, 0, 1000); break;
+            case DamageType.Melee: _Value -= Mathf.Clamp(attack.damage - ArmorMelee, 0, 1000); break;
+            case DamageType.Range: _Value -= Mathf.Clamp(attack.damage - ArmorRange, 0, 1000); break;
+            case DamageType.Rezo: _Value -= Mathf.Clamp(attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
  
             case DamageType.Heal: _Value -= attack.damage / 2; break;
             case DamageType.MetalHeal: _Value =  Mathf.Clamp(Value + attack.damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); ; break;

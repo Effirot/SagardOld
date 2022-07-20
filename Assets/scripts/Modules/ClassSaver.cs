@@ -14,7 +14,6 @@ namespace SagardCL //Class library
         Range,
         Rezo,
         Sanity,
-        Terra,
         Pure,
         Heal,
         MetalHeal,
@@ -40,10 +39,9 @@ namespace SagardCL //Class library
         Addition,
     }
     
-
     public struct Attack
     {
-        public UnitController WhoAttack;
+        public Parameters WhoAttack;
 
         [SerializeField]Checkers WhereAttack;
         public Checkers Where { get { return WhereAttack; } }
@@ -51,32 +49,23 @@ namespace SagardCL //Class library
         [SerializeField]int Damage;
         public int damage { get { return Damage; } }
 
-        public DamageType damageType;
+        public DamageType DamageType;
         public Effect[] Debuff;
 
         // Overloads
-        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type, Effect[] debuff)
+        public Attack(Parameters Who, Checkers Where, int Dam, DamageType Type, params Effect[] debuff)
         {
             WhoAttack = Who;
             WhereAttack = Where;
-            Damage = Dam;
+            Damage = Mathf.Clamp(Dam, 0, 10000);
 
-            damageType = Type;
+            DamageType = Type;
             Debuff = debuff;
-        }
-        public Attack(UnitController Who, Checkers Where, int Dam, DamageType Type, Effect debuff = null)
-        {
-            WhoAttack = Who;
-            WhereAttack = Where;
-            Damage = Dam;
-
-            damageType = Type;
-            Debuff = new Effect[] { debuff };
         }
 
         public Color DamageColor() 
         { 
-            switch (damageType)
+            switch (DamageType)
             {
                 default: return Color.HSVToRGB(0.02f, 1, 1);
                 case DamageType.Melee: return Color.HSVToRGB(0.02f, 1, 1);
@@ -85,6 +74,47 @@ namespace SagardCL //Class library
                 case DamageType.Rezo: return Color.HSVToRGB(67f / 360f, 1, 1);
                 case DamageType.Pure: return Color.HSVToRGB(274f / 360f, 1, 1);
             }
+        }
+    
+        public struct AttackCombine
+        {
+            Dictionary<DamageType, List<Attack>> Sorter;
+            public HashSet<Parameters> WhoAttacks { get; private set; }
+
+            public AttackCombine(params Attack[] attacks)
+            {
+                Sorter = new Dictionary<DamageType, List<Attack>>();
+                WhoAttacks = new HashSet<Parameters>();
+
+                foreach(Attack attack in attacks)
+                {
+                    if(Sorter.ContainsKey(attack.DamageType)) 
+                    {
+                        Sorter[attack.DamageType].Add(attack);
+                        continue;
+                    }
+                    Sorter.Add(attack.DamageType, new List<Attack>() { attack } );
+                    WhoAttacks.Add(attack.WhoAttack);
+                }
+                
+            }
+
+            public List<Attack> Combine()
+            {
+                List<Attack> result = new List<Attack>();
+                foreach (var attacks in Sorter)
+                {
+                    Attack CombinedAttack = new Attack();  
+                    CombinedAttack.DamageType = attacks.Key; 
+                    foreach(Attack attack in attacks.Value) 
+                    {
+                        CombinedAttack.Damage += attack.Damage;
+                        CombinedAttack.Debuff.SetValue(attack.Debuff, CombinedAttack.Debuff.Length);
+                    }
+                }
+                return result;
+            }
+            
         }
     }
     [System.Serializable] public struct Checkers
@@ -268,9 +298,7 @@ namespace SagardCL //Class library
         }
 
     }
-
-    [System.Serializable]
-    public class AllInOne
+    [System.Serializable] public class AllInOne
     {
         public GameObject Planer;
         public GameObject Model;
