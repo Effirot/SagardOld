@@ -20,7 +20,7 @@ public class UnitUIController : MonoBehaviour
     [Space] 
     public MoveOnUi MoveOnCanvas;
 
-    public static UnityEvent<string, GameObject, UnitController> UiEvent = new UnityEvent<string, GameObject, UnitController>();
+    public static UnityEvent<string, GameObject, CharacterController> UiEvent = new UnityEvent<string, GameObject, CharacterController>();
 
     void Start() { UiEvent.AddListener((a, b, c) => {
         switch (a)
@@ -30,7 +30,7 @@ public class UnitUIController : MonoBehaviour
         }
     }); }
 
-    private void Open(GameObject Summoner, UnitController lifeParameters)
+    private void Open(GameObject Summoner, CharacterController lifeParameters)
     {
         UI.SetActive(true);
         MoveOnCanvas.Target = Summoner.transform;
@@ -38,7 +38,7 @@ public class UnitUIController : MonoBehaviour
     }
 
     private static List<GameObject> UIelements = new List<GameObject>();
-    private void UpdateUi(UnitController lifeParameters)
+    private void UpdateUi(CharacterController lifeParameters)
     {
         foreach (GameObject element in UIelements) { Destroy(element); }
 

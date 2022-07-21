@@ -13,12 +13,6 @@ public class ATestGeneration : Generation
     void Start()
     {
         Regenerate();
-
-
-
-        {
-            Debug.Log(typeof(UnitController).GetMethod("Walking", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Name + " " + typeof(UnitController).GetMethod("Walking", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).ReturnType.Name);
-        }
     }
     public void Regenerate()
     {

@@ -43,7 +43,7 @@ public abstract class Generation : MonoBehaviour
         }
     }
 
-    public static void DrawAttack(List<Attack> AttackZone,  UnitController sender)
+    public static void DrawAttack(List<Attack> AttackZone, CharacterController sender)
     {
         foreach(List<Attack> attacks in AllAttackZoneArchive) { if(attacks != null) attacks.RemoveAll((a) => a.WhoAttack == sender); }
         foreach(Attack attack in AttackZone) {  try{ AllAttackZoneArchive[attack.Where.x, attack.Where.z].Add(attack); } catch { }  }
@@ -69,11 +69,11 @@ public abstract class Generation : MonoBehaviour
             {
                 switch (attack.DamageType)
                 {
-                    default: result += Color.HSVToRGB(0.01f, 1, attack.damage * 0.06f); break;
-                    case DamageType.MetalHeal: goto case DamageType.Heal; 
-                    case DamageType.Heal: result += Color.HSVToRGB(0.42f, 1, attack.damage * 0.06f); break;
-                    case DamageType.Rezo: result += Color.HSVToRGB(67f / 360f, 1, attack.damage * 0.06f); break;
-                    case DamageType.Pure: result += Color.HSVToRGB(274f / 360f, 1, attack.damage * 0.06f); break;
+                    default: result += Color.HSVToRGB(0.01f, 1, attack.Damage * 0.06f); break;
+                    case DamageType.Repair: goto case DamageType.Heal; 
+                    case DamageType.Heal: result += Color.HSVToRGB(0.42f, 1, attack.Damage * 0.06f); break;
+                    case DamageType.Rezo: result += Color.HSVToRGB(67f / 360f, 1, attack.Damage * 0.06f); break;
+                    case DamageType.Pure: result += Color.HSVToRGB(274f / 360f, 1, attack.Damage * 0.06f); break;
                 }
             }
             return result;

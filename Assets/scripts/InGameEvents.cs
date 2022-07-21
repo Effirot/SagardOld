@@ -62,8 +62,8 @@ public class InGameEvents : MonoBehaviour
     enum Step : int
     {
         Walking,
-        PriorityAttacking,
         Attacking,
+        DamageMath,
         Dead,
         Rest
     }
@@ -78,9 +78,7 @@ public class InGameEvents : MonoBehaviour
             Step step = (Step)i;
 
             foreach(TaskStepStage summon in StepSystem) { task.Add(summon(step.ToString())); }
-            Debug.Log(step.ToString() + ": " + StepSystem.Count);
             await Task.WhenAll(task.ToArray());
-
         }
         StepEnd.Invoke();
         

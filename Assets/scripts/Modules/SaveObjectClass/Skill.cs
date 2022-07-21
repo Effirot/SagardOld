@@ -49,7 +49,7 @@ public class Skill : Descript, Sendable
     
     //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------   
     [Header("Controllers")]  
-    public UnitController Unit;
+    public CharacterController Unit;
     [Space]
     public AllInOne From;
     public AllInOne To;

@@ -279,6 +279,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: _Inventory.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[7033181276535259164]
       value: Assembly-CSharp HealthOver
       objectReference: {fileID: 0}
@@ -749,6 +753,18 @@ PrefabInstance:
     - target: {fileID: 3838525804336366737, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181638381273088]
+      value: Assembly-CSharp HealthOver
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181638381273089]
+      value: Assembly-CSharp Sanity
+      objectReference: {fileID: 0}
+    - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181638381273090]
+      value: Assembly-CSharp Stamina
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}

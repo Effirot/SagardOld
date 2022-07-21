@@ -16,7 +16,7 @@ namespace SagardCL //Class library
         Sanity,
         Pure,
         Heal,
-        MetalHeal,
+        Repair,
     }  
     public enum HitType
     {
@@ -41,81 +41,96 @@ namespace SagardCL //Class library
     
     public struct Attack
     {
-        public Parameters WhoAttack;
+        public CharacterCore WhoAttack;
 
-        [SerializeField]Checkers WhereAttack;
-        public Checkers Where { get { return WhereAttack; } }
-
-        [SerializeField]int Damage;
-        public int damage { get { return Damage; } }
+        public Checkers Where;
+        public int Damage;
 
         public DamageType DamageType;
         public Effect[] Debuff;
 
         // Overloads
-        public Attack(Parameters Who, Checkers Where, int Dam, DamageType Type, params Effect[] debuff)
+        public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
         {
             WhoAttack = Who;
-            WhereAttack = Where;
+            Where = where;
             Damage = Mathf.Clamp(Dam, 0, 10000);
 
             DamageType = Type;
             Debuff = debuff;
         }
-
         public Color DamageColor() 
         { 
             switch (DamageType)
             {
                 default: return Color.HSVToRGB(0.02f, 1, 1);
                 case DamageType.Melee: return Color.HSVToRGB(0.02f, 1, 1);
-                case DamageType.MetalHeal: goto case DamageType.Heal; 
+                case DamageType.Repair: goto case DamageType.Heal; 
                 case DamageType.Heal: return Color.HSVToRGB(0.42f, 1, 1);
                 case DamageType.Rezo: return Color.HSVToRGB(67f / 360f, 1, 1);
                 case DamageType.Pure: return Color.HSVToRGB(274f / 360f, 1, 1);
             }
         }
     
+
+
         public struct AttackCombine
         {
             Dictionary<DamageType, List<Attack>> Sorter;
-            public HashSet<Parameters> WhoAttacks { get; private set; }
+            public HashSet<CharacterCore> WhoAttacks;
 
             public AttackCombine(params Attack[] attacks)
             {
                 Sorter = new Dictionary<DamageType, List<Attack>>();
-                WhoAttacks = new HashSet<Parameters>();
+                WhoAttacks = new HashSet<CharacterCore>();
 
-                foreach(Attack attack in attacks)
-                {
-                    if(Sorter.ContainsKey(attack.DamageType)) 
-                    {
-                        Sorter[attack.DamageType].Add(attack);
-                        continue;
-                    }
-                    Sorter.Add(attack.DamageType, new List<Attack>() { attack } );
-                    WhoAttacks.Add(attack.WhoAttack);
-                }
+                foreach(Attack attack in attacks) { Add(attack); }
+            }
+            public static AttackCombine Standard()
+            {
                 
+                return new AttackCombine()
+                {
+                    Sorter = new Dictionary<DamageType, List<Attack>>(),
+                    WhoAttacks = new HashSet<CharacterCore>()
+                };
+            }
+
+            public void Add(Attack attack)
+            {
+                WhoAttacks.Add(attack.WhoAttack);
+                if(Sorter.ContainsKey(attack.DamageType)) 
+                {
+                    Sorter[attack.DamageType].Add(attack);
+                    return;
+                }
+                Debug.Log($" {attack.DamageType} {attack.Damage}");
+                Sorter.Add(attack.DamageType, new List<Attack>() { attack } );
+            }
+            public void Clear()
+            {
+                if(Sorter != null)Sorter.Clear();
+                if(WhoAttacks != null)WhoAttacks.Clear();
             }
 
             public List<Attack> Combine()
             {
                 List<Attack> result = new List<Attack>();
-                foreach (var attacks in Sorter)
+                if(Sorter != null) foreach (var attacks in Sorter)
                 {
                     Attack CombinedAttack = new Attack();  
                     CombinedAttack.DamageType = attacks.Key; 
                     foreach(Attack attack in attacks.Value) 
                     {
                         CombinedAttack.Damage += attack.Damage;
-                        CombinedAttack.Debuff.SetValue(attack.Debuff, CombinedAttack.Debuff.Length);
+                        if(attack.Debuff.Length > 0)CombinedAttack.Debuff.SetValue(attack.Debuff, CombinedAttack.Debuff.Length);
                     }
                 }
                 return result;
             }
             
         }
+    
     }
     [System.Serializable] public struct Checkers
     {
@@ -317,6 +332,106 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
+    [System.Serializable] public class ParamsChanger
+    {
+        public enum ItemQuality
+        {
+            Common,
+            Crafted,
+            Limited,
+            Famous,
+            InASingleCopy,
+        }
+
+        public ItemQuality Quality;
+        public bool Throwable = true;
+        public bool DestroyOnDeath = false;
+        public bool UseInCrafts = true;
+        [Space]
+        public int WalkDistance = 0;
+
+        [SerializeReference, SubclassSelector]public IHealthBar Health = new Health();
+        public bool ReplaceHealthBar = false;
+        [SerializeReference, SubclassSelector]public IStaminaBar Stamina = new Stamina();
+        public bool ReplaceStaminaBar = false;
+        [SerializeReference, SubclassSelector]public ISanityBar Sanity = new Sanity();
+        public bool ReplaceSanityBar = false;
+        
+        public List<IOtherBar> AdditionState;
+
+        public List<Effect> Resists = new List<Effect>();
+        [Space]
+        public List<Skill> AdditionSkills = new List<Skill>();
+
+        public void ThrowThis(Checkers position)
+        {
+            if(!Throwable) return;
+
+        }
+        
+        public static ParamsChanger CompoundParameters(params ParamsChanger[] items) 
+        {
+            var result = new ParamsChanger();
+            var resists = new List<Effect>();
+            var additionStates = new List<IOtherBar>();
+            var additionSkills = new List<Skill>();
+            foreach(ParamsChanger item in items)
+            {
+                result.WalkDistance += item.WalkDistance;
+
+                result.Health.Max += item.Health.Max;
+                result.Health.ArmorMelee += item.Health.ArmorMelee;
+                result.Health.ArmorRange += item.Health.ArmorRange;
+
+                result.Stamina.Max += item.Stamina.Max;
+                result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
+                result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
+                
+                result.Sanity.Max += item.Sanity.Max;
+                result.Sanity.SanityShield += item.Sanity.SanityShield;
+
+                resists.AddRange(item.Resists);
+                additionStates.AddRange(item.AdditionState);
+                additionSkills.AddRange(item.AdditionSkills);
+            }
+            result.Resists = resists;
+            result.AdditionSkills = additionSkills;
+            result.AdditionState = additionStates;
+
+            return result; 
+        }
+        public static ParamsChanger CompoundParameters(params Item[] items) 
+        {
+            var result = new ParamsChanger();
+            var resists = new List<Effect>();
+            var additionStates = new List<IOtherBar>();
+            var additionSkills = new List<Skill>();
+            foreach(ParamsChanger item in items)
+            {
+                result.WalkDistance += item.WalkDistance;
+
+                result.Health.Max += item.Health.Max;
+                result.Health.ArmorMelee += item.Health.ArmorMelee;
+                result.Health.ArmorRange += item.Health.ArmorRange;
+
+                result.Stamina.Max += item.Stamina.Max;
+                result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
+                result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
+                
+                result.Sanity.Max += item.Sanity.Max;
+                result.Sanity.SanityShield += item.Sanity.SanityShield;
+
+                if(item.Resists != null) resists.AddRange(item.Resists);
+                if(item.AdditionState != null) additionStates.AddRange(item.AdditionState);
+                if(item.AdditionSkills != null) additionSkills.AddRange(item.AdditionSkills);
+            }
+            result.Resists = resists;
+            result.AdditionSkills = additionSkills;
+            result.AdditionState = additionStates;
+
+            return result; 
+        }
+    }
     public static class FieldManipulate
     {
         public static List<T> CombineLists<T>(params List<T>[] a)
@@ -339,13 +454,10 @@ namespace SagardCL //Class library
         }
         public interface IStepEndUpdate
         {
-            void Update();
-            public static UnityEvent StateList = new UnityEvent();
-
-            abstract bool Updatable { get; set; }
+            void StepEnd();
         }
         
-        public interface IStateBar : IStepEndUpdate
+        public interface IStateBar
         {
             object Clone();
             
@@ -380,36 +492,39 @@ namespace SagardCL //Class library
         }
 
 
+
         public interface ObjectOnMap
         {
             public const int standardVisibleDistance = 10;
+            bool nowVisible(CharacterCore Object);
+
+            List<Effect> Resists { get; set; }
+            List<Effect> Debuff { get; set; }
         }
         public interface NetSendable
         {
 
         }
-    
-
 
         public interface Killable : ObjectOnMap
         {
-
+            IHealthBar Health { get; set; }
         }
         public interface GetableCrazy : ObjectOnMap
         {
-
+            ISanityBar Sanity { get; set; }
         }
         public interface Tiredable : ObjectOnMap
         {
-
+            IStaminaBar Stamina { get; set; }
         }
         public interface Storage : ObjectOnMap
         {
-
+            public List<Item> Inventory { get; set; }
         }
         public interface Attacker : ObjectOnMap
         {
-
+            public SkillCombiner SkillRealizer { get; set; }
         }
 
         public interface HaveName : ObjectOnMap
@@ -428,35 +543,4 @@ namespace SagardCL //Class library
         }
 
     }
-
-
-    // [System.Serializable]public class Perishable<T> where T : Sendable
-    // {
-    //     private T Target;
-        
-    //     enum DisappearanceCondition
-    //     {
-    //         Timer,
-    //         LowAmmo,
-    //     }
-    //     DisappearanceCondition Condition;
-        
-    //     public int HideTimer;
-    //     public IStateBar AmmoLink;
-
-    //     public Perishable(T target, int Timer) { Target = target; HideTimer = Timer; 
-    //         Condition = DisappearanceCondition.Timer; 
-    //         IStepEndUpdate.StateList.AddListener(Update);
-    //     }
-    //     public void Update()
-    //     {
-    //         if(HideTimer <= 0) Target = default(T);
-    //         this.HideTimer--;
-    //     }
-
-
-    //     public Perishable(T target, IStateBar ammoLink) { Target = target; AmmoLink = ammoLink; Condition = DisappearanceCondition.LowAmmo; }
-
-    //     public static implicit operator T (Perishable<T> a) { return a.Target; }
-    // }
 }

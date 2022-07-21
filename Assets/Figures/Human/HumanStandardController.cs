@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using SagardCL;
 
 
-public class HumanStandardController : UnitController
+public class HumanStandardController : CharacterController
 {
 
 
