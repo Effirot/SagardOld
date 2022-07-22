@@ -45,8 +45,8 @@ public abstract class Generation : MonoBehaviour
 
     public static void DrawAttack(List<Attack> AttackZone, CharacterController sender)
     {
-        foreach(List<Attack> attacks in AllAttackZoneArchive) { if(attacks != null) attacks.RemoveAll((a) => a.WhoAttack == sender); }
-        foreach(Attack attack in AttackZone) {  try{ AllAttackZoneArchive[attack.Where.x, attack.Where.z].Add(attack); } catch { }  }
+        foreach(List<Attack> attacks in AllAttackZoneArchive) { if(attacks != null) attacks.RemoveAll((a) => a.Sender == sender); }
+        foreach(Attack attack in AttackZone) {  try{ AllAttackZoneArchive[attack.Position.x, attack.Position.z].Add(attack); } catch { }  }
 
         CheckAllGizmos();
     }

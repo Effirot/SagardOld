@@ -23,7 +23,7 @@ using UnityEngine.Events;
 
     public object Clone() { return this.MemberwiseClone(); }
 
-    public void GetDamage(Attack attack)
+    public void Damage(Attack attack)
     {
         switch(attack.DamageType)
         {
@@ -55,21 +55,21 @@ using UnityEngine.Events;
 
     public void StepEnd()
     {
-        if(Value > Max) this._Value -= 1;
+        if(this.Value > this.Max) this.Value = Mathf.Clamp(Value - 1, 0, Max + OverMax); 
     }
 
-    public object Clone() { object clone = this.MemberwiseClone(); return clone; }
+    public object Clone() { return this.MemberwiseClone(); }
 
-    public void GetDamage(Attack attack)
+    public void Damage(Attack attack)
     {
         switch(attack.DamageType)
         {
-            case DamageType.Pure: _Value -= Mathf.Clamp(attack.Damage, 0, 1000); break;
-            case DamageType.Melee: _Value -= Mathf.Clamp(attack.Damage - ArmorMelee, 0, 1000); break;
-            case DamageType.Range: _Value -= Mathf.Clamp(attack.Damage - ArmorRange, 0, 1000); break;
-            case DamageType.Rezo: _Value -= Mathf.Clamp(attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
+            case DamageType.Pure: Value -= Mathf.Clamp(attack.Damage, 0, 1000); break;
+            case DamageType.Melee: Value -= Mathf.Clamp(attack.Damage - ArmorMelee, 0, 1000); break;
+            case DamageType.Range: Value -= Mathf.Clamp(attack.Damage - ArmorRange, 0, 1000); break;
+            case DamageType.Rezo: Value -= Mathf.Clamp(attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
  
-            case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
+            case DamageType.Heal: Value = Mathf.Clamp(Value + attack.Damage, 0, Max + OverMax); break;
         }
     }
     public Color BarColor{ get{ return new Color(1, 0.1f, 0); } }
@@ -96,7 +96,7 @@ using UnityEngine.Events;
 
     public object Clone() { return this.MemberwiseClone(); }
 
-    public void GetDamage(Attack attack)
+    public void Damage(Attack attack)
     {
         switch(attack.DamageType)
         {
@@ -126,7 +126,7 @@ using UnityEngine.Events;
 
     public object Clone() { return this.MemberwiseClone(); }
 
-    public void GetDamage(Attack attack)
+    public void Damage(Attack attack)
     {
         switch(attack.DamageType)
         {

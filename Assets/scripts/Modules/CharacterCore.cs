@@ -55,7 +55,10 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
     
         protected virtual async void Start()
         {
+            TakeDamageList.Clear();
+
             transform.parent.name = HaveName.GetName();
+            name += $"({transform.parent.name})";
 
             BaseHealth = _Health.Clone() as IHealthBar;
             BaseStamina = _Stamina.Clone() as IStaminaBar;
@@ -63,8 +66,8 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             
             InGameEvents.StepSystem.Add(FindStepStage);
             InGameEvents.AttackTransporter.AddListener((a) => { 
-                Attack find = a.Find((a) => a.Where == new Checkers(position));
-                if(find.Where == new Checkers(position)){
+                Attack find = a.Find((a) => a.Position == new Checkers(position));
+                if(find.Position == new Checkers(position)){
                     TakeDamageList.Add(find);
                 }
             });
@@ -148,7 +151,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         protected List<Attack> AttackZone = new List<Attack>();
         protected List<Checkers> WalkWay = new List<Checkers>();
 
-        private Attack.AttackCombine TakeDamageList = Attack.AttackCombine.Standard();
+        private Attack.AttackCombiner TakeDamageList = new Attack.AttackCombiner();
 
         #region // =============================== Update methods
             
@@ -279,14 +282,16 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             }
             async Task DamageMath()
             {
-                //if(TakeDamageList.Combine().Count == 0) return;
-                Debug.Log(TakeDamageList.Combine().Count);
-                foreach(Attack attack in TakeDamageList.Combine()) Health.GetDamage(attack);
-                ChangeFigureColorWave(Color.red, 1);
-
-                TakeDamageList = Attack.AttackCombine.Standard();
-
                 await Task.Delay(100);
+                int damage = 0;
+
+                List<Attack> attacks = TakeDamageList.Combine();
+                foreach(Attack attack in attacks) 
+                { Health.Damage(attack); damage += attack.Damage; }
+                
+                if(damage > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 1);
+
+                TakeDamageList.Clear();
             }
             async Task Dead() 
             { 

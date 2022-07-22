@@ -41,94 +41,90 @@ namespace SagardCL //Class library
     
     public struct Attack
     {
-        public CharacterCore WhoAttack;
+        #region // Constructor parameters
 
-        public Checkers Where;
-        public int Damage;
+            public CharacterCore Sender;
+            public Checkers Position;
+            public int Damage;
+            public DamageType DamageType;
+            public Effect[] Effects;
 
-        public DamageType DamageType;
-        public Effect[] Debuff;
+        #endregion
 
         // Overloads
         public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
         {
-            WhoAttack = Who;
-            Where = where;
+            Sender = Who;
+            Position = where;
             Damage = Mathf.Clamp(Dam, 0, 10000);
 
             DamageType = Type;
-            Debuff = debuff;
+            Effects = debuff;
         }
-        public Color DamageColor() 
+        public Color Color() 
         { 
             switch (DamageType)
             {
-                default: return Color.HSVToRGB(0.02f, 1, 1);
-                case DamageType.Melee: return Color.HSVToRGB(0.02f, 1, 1);
+                default: return UnityEngine.Color.HSVToRGB(0.02f, 1, 1);
+                case DamageType.Melee: return UnityEngine.Color.HSVToRGB(0.02f, 1, 1);
                 case DamageType.Repair: goto case DamageType.Heal; 
-                case DamageType.Heal: return Color.HSVToRGB(0.42f, 1, 1);
-                case DamageType.Rezo: return Color.HSVToRGB(67f / 360f, 1, 1);
-                case DamageType.Pure: return Color.HSVToRGB(274f / 360f, 1, 1);
+                case DamageType.Heal: return UnityEngine.Color.HSVToRGB(0.42f, 1, 1);
+                case DamageType.Rezo: return UnityEngine.Color.HSVToRGB(67f / 360f, 1, 1);
+                case DamageType.Pure: return UnityEngine.Color.HSVToRGB(274f / 360f, 1, 1);
             }
         }
     
-
-
-        public struct AttackCombine
+        public struct AttackCombiner
         {
             Dictionary<DamageType, List<Attack>> Sorter;
-            public HashSet<CharacterCore> WhoAttacks;
+            public HashSet<CharacterCore> Senders;
 
-            public AttackCombine(params Attack[] attacks)
-            {
-                Sorter = new Dictionary<DamageType, List<Attack>>();
-                WhoAttacks = new HashSet<CharacterCore>();
+            Checkers pos;
 
-                foreach(Attack attack in attacks) { Add(attack); }
-            }
-            public static AttackCombine Standard()
-            {
-                
-                return new AttackCombine()
-                {
-                    Sorter = new Dictionary<DamageType, List<Attack>>(),
-                    WhoAttacks = new HashSet<CharacterCore>()
-                };
-            }
+            public AttackCombiner(params Attack[] attacks) {Sorter = new Dictionary<DamageType, List<Attack>>(); 
+                                                            Senders = new HashSet<CharacterCore>();
+                                                            pos = attacks[0].Position;
+
+                                                            foreach(Attack attack in attacks) { Add(attack); Senders.Add(attack.Sender); } 
+                                                            foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }}
 
             public void Add(Attack attack)
             {
-                WhoAttacks.Add(attack.WhoAttack);
-                if(Sorter.ContainsKey(attack.DamageType)) 
-                {
-                    Sorter[attack.DamageType].Add(attack);
-                    return;
-                }
-                Debug.Log($" {attack.DamageType} {attack.Damage}");
-                Sorter.Add(attack.DamageType, new List<Attack>() { attack } );
+                Senders.Add(attack.Sender);
+                Sorter[attack.DamageType].Add(attack);
             }
             public void Clear()
             {
-                if(Sorter != null)Sorter.Clear();
-                if(WhoAttacks != null)WhoAttacks.Clear();
+                Sorter = new Dictionary<DamageType, List<Attack>>();
+                foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
+
+                Senders = new HashSet<CharacterCore>();
             }
 
             public List<Attack> Combine()
             {
                 List<Attack> result = new List<Attack>();
-                if(Sorter != null) foreach (var attacks in Sorter)
+                foreach (var attacks in Sorter)
                 {
-                    Attack CombinedAttack = new Attack();  
-                    CombinedAttack.DamageType = attacks.Key; 
-                    foreach(Attack attack in attacks.Value) 
-                    {
-                        CombinedAttack.Damage += attack.Damage;
-                        if(attack.Debuff.Length > 0)CombinedAttack.Debuff.SetValue(attack.Debuff, CombinedAttack.Debuff.Length);
-                    }
+                    int Damage = 0;
+                    foreach (Attack attack in attacks.Value) { Damage += attack.Damage; }
+                    result.Add(new Attack(null, pos, Damage, attacks.Key));
                 }
                 return result;
             }
-            
+            public Color CombinedColor()
+            {
+                Color result = new Color();
+                foreach (var attacks in Sorter)
+                {
+                    int Damage = 0;
+                    foreach (Attack attack in attacks.Value) { Damage += attack.Damage; }
+                    
+                    if(result == new Color()) new Attack(null, pos, Damage, attacks.Key).Color();
+                    else result += new Attack(null, pos, Damage, attacks.Key).Color();
+                }
+                return result;
+            }
         }
     
     }
@@ -472,7 +468,7 @@ namespace SagardCL //Class library
             int ArmorMelee { get; set; } 
             int ArmorRange { get; set; }
 
-            void GetDamage(Attack attack);
+            void Damage(Attack attack);
         }
         public interface IStaminaBar : IStateBar
         {

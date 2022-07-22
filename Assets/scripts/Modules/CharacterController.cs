@@ -63,7 +63,7 @@ using UnityEditor;
         {
             base.Start();
             InGameEvents.MapUpdate.AddListener(ParametersUpdate);
-            
+
             InGameEvents.MouseController.AddListener((id, b) => 
             { 
                 if(id != MPlaner.Planer | !(!Corpse & CanControl)) { MouseTest = 0; return; }
@@ -89,7 +89,7 @@ using UnityEditor;
 
         // Control use methods   
         async void MouseWheelTurn(){ await AttackPlannerUpdate();  }
-        async void ChangePos() {  if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
+        async void ChangePos() { if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
         
         // Standing methods
         void StandingIn()
@@ -185,10 +185,8 @@ using UnityEditor;
             // Attack planner
             AttackZone.Clear();
             if(SkillRealizer.ThisSkill.NoWalking) await MovePlannerUpdate();
-            await foreach(Attack attack in SkillRealizer.Realize())
-            {
-                AttackZone.Add(attack);
-            }
+            await foreach(Attack attack in SkillRealizer.Realize()) { AttackZone.Add(attack); }
+            
             Generation.DrawAttack(AttackZone, this);
             
             SkillRealizer.Graphics(); 
