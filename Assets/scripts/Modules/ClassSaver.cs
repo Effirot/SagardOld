@@ -328,18 +328,8 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
-    [System.Serializable] public class ParamsChanger
+    [System.Serializable] public class BalanceChanger
     {
-        public enum ItemQuality
-        {
-            Common,
-            Crafted,
-            Limited,
-            Famous,
-            InASingleCopy,
-        }
-
-        public ItemQuality Quality;
         public bool Throwable = true;
         public bool DestroyOnDeath = false;
         public bool UseInCrafts = true;
@@ -365,13 +355,13 @@ namespace SagardCL //Class library
 
         }
         
-        public static ParamsChanger CompoundParameters(params ParamsChanger[] items) 
+        public static BalanceChanger CompoundParameters(params BalanceChanger[] items) 
         {
-            var result = new ParamsChanger();
+            var result = new BalanceChanger();
             var resists = new List<Effect>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
-            foreach(ParamsChanger item in items)
+            foreach(BalanceChanger item in items)
             {
                 result.WalkDistance += item.WalkDistance;
 
@@ -396,13 +386,13 @@ namespace SagardCL //Class library
 
             return result; 
         }
-        public static ParamsChanger CompoundParameters(params Item[] items) 
+        public static BalanceChanger CompoundParameters(params Item[] items) 
         {
-            var result = new ParamsChanger();
+            var result = new BalanceChanger();
             var resists = new List<Effect>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
-            foreach(ParamsChanger item in items)
+            foreach(BalanceChanger item in items)
             {
                 result.WalkDistance += item.WalkDistance;
 

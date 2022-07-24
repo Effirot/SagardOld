@@ -26,7 +26,7 @@ MonoBehaviour:
     MinDistance: 0
     Damage: 4
     DamageScalingType: 1
-    damageType: 1
+    damageType: 5
     Debuff: []
   UsingStamina: 1
   DeleteWhenLowAmmo: 0

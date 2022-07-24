@@ -22,19 +22,11 @@ MonoBehaviour:
   Realizations:
   - HitBox: 0
     PointType: 0
-    damageType: 0
-    MaxDistance: 0
-    Damage: 0
-    DamageScalingType: 0
-    MinDistance: 0
-    Debuff: []
-  - HitBox: 0
-    PointType: 0
-    damageType: 5
     MaxDistance: 7
-    Damage: 6
-    DamageScalingType: 2
     MinDistance: 2
+    Damage: 7
+    DamageScalingType: 2
+    damageType: 0
     Debuff: []
   UsingStamina: 3
   DeleteWhenLowAmmo: 0

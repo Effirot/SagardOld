@@ -137,7 +137,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
             } }
 
-            public ParamsChanger AllItemStats;
+            public BalanceChanger AllItemStats;
 
             
         #endregion
@@ -169,12 +169,12 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             }
             void AfterInventoryUpdate()
             {
-                if(AllItemStats == ParamsChanger.CompoundParameters(Inventory.ToArray())) return;
-                AllItemStats = ParamsChanger.CompoundParameters(Inventory.ToArray()); 
+                if(AllItemStats == BalanceChanger.CompoundParameters(Inventory.ToArray())) return;
+                AllItemStats = BalanceChanger.CompoundParameters(Inventory.ToArray()); 
 
                 #region // health
                 {
-                    ParamsChanger ReplaceHealthBar = null;
+                    BalanceChanger ReplaceHealthBar = null;
                     if(Inventory.Find(a => a.ThisItem.ReplaceHealthBar)) ReplaceHealthBar = Inventory.Find(a => a.ThisItem.ReplaceHealthBar);
                     if(ReplaceHealthBar != null){
                         IHealthBar healthBar = ReplaceHealthBar.Health.Clone() as IHealthBar;
@@ -194,7 +194,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 #endregion
                 #region // Stamina
                 {
-                    ParamsChanger ReplaceStaminaBar = null;
+                    BalanceChanger ReplaceStaminaBar = null;
                     if(Inventory.Find(a => a.ThisItem.ReplaceStaminaBar)) ReplaceStaminaBar = Inventory.Find(a => a.ThisItem.ReplaceStaminaBar);
 
                     if(ReplaceStaminaBar != null){
@@ -215,7 +215,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 #endregion
                 #region // Sanity
                 {
-                    ParamsChanger ReplaceSanityBar = null;
+                    BalanceChanger ReplaceSanityBar = null;
                     if(Inventory.Find(a => a.ThisItem.ReplaceSanityBar)) ReplaceSanityBar = Inventory.Find(a => a.ThisItem.ReplaceSanityBar);
 
                     if(ReplaceSanityBar != null){
