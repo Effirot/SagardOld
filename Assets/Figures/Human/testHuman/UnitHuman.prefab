@@ -391,7 +391,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2125046302867321512}
-  - component: {fileID: 5881976563747058673}
+  - component: {fileID: 7965787113005852653}
   - component: {fileID: 8576715605070142110}
   - component: {fileID: 5098488114904647268}
   m_Layer: 0
@@ -416,7 +416,7 @@ Transform:
   m_Father: {fileID: 3838525804336366737}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5881976563747058673
+--- !u!114 &7965787113005852653
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -425,7 +425,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 447574044884308314}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 70a8d8cbdd4f8e548bb517023fd88cf4, type: 3}
+  m_Script: {fileID: 11500000, guid: 9c80335e3a8ec26459f05797da32df4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Corpse: 0
@@ -434,38 +434,20 @@ MonoBehaviour:
   AlwaysVisible: 0
   WallIgnoreVisible: 0
   _Health:
-    rid: 7033181638381273091
+    rid: 7033181733883215875
   _Sanity:
-    rid: 7033181638381273092
+    rid: 7033181733883215876
   _Stamina:
-    rid: 7033181638381273093
+    rid: 7033181733883215877
   _OtherStates: []
   _Debuff: []
   _Resists: []
-  _Inventory:
-  - {fileID: 11400000, guid: 37bd40e62f978464c96bc8063a36144b, type: 2}
-  InventorySize: 2
-  _ArtifacerItems: []
-  ArtifacerInventorySize: 1
-  AllItemStats:
-    Quality: 0
-    Throwable: 1
-    DestroyOnDeath: 0
-    UseInCrafts: 1
-    WalkDistance: 0
-    Health:
-      rid: 1000
-    ReplaceHealthBar: 0
-    Stamina:
-      rid: 1001
-    ReplaceStaminaBar: 0
-    Sanity:
-      rid: 1002
-    ReplaceSanityBar: 0
-    Resists: []
-    AdditionSkills: []
+  _Inventory: []
+  InventorySize: 1
+  _ArtifacerInventory: []
+  ArtifacerInventorySize: 0
   _SkillRealizer:
-    Unit: {fileID: 5881976563747058673}
+    Unit: {fileID: 7965787113005852653}
     From:
       Planer: {fileID: 8182480761862019246}
       Model: {fileID: 447574044884308314}
@@ -478,51 +460,31 @@ MonoBehaviour:
     - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
     - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
     AdditionBaseSkills: []
+  WillRest: 1
   Team: {r: 0, g: 0, b: 0, a: 0}
   CanControl: 1
-  WillRest: 1
   references:
     version: 2
     RefIds:
-    - rid: 1000
-      type: {class: Health, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _ArmorMelee: 0
-        _ArmorRange: 0
-    - rid: 1001
-      type: {class: Stamina, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _RestEffect: 0
-        _WalkUseStamina: 0
-    - rid: 1002
-      type: {class: Sanity, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _SanityShield: 0
-    - rid: 7033181638381273091
+    - rid: 7033181733883215875
       type: {class: HealthOver, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 14
-        _Max: 14
-        _OverMax: 3
-        _ArmorMelee: 3
-        _ArmorRange: 4
-    - rid: 7033181638381273092
+        _Value: 10
+        _Max: 10
+        _OverMax: 5
+        _ArmorMelee: 4
+        _ArmorRange: 2
+    - rid: 7033181733883215876
       type: {class: Sanity, ns: , asm: Assembly-CSharp}
       data:
         _Value: 9
         _Max: 9
-        _SanityShield: 0
-    - rid: 7033181638381273093
+        _SanityShield: 1
+    - rid: 7033181733883215877
       type: {class: Stamina, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 9
-        _Max: 9
+        _Value: 11
+        _Max: 11
         _RestEffect: 5
         _WalkUseStamina: 1
 --- !u!33 &8576715605070142110

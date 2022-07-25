@@ -1420,6 +1420,62 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: _Debuff.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: _Debuff.Array.data[0]
+      value: 7033181733883215892
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: _Debuff.Array.data[1]
+      value: 7033181733883215893
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[-2]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215890]
+      value: Assembly-CSharp Bleed
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215891]
+      value: Assembly-CSharp Bleed
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215892]
+      value: Assembly-CSharp Bleed
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215893]
+      value: Assembly-CSharp Bleed
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215892]._Name
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215893]._Name
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215892]._Sprite
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215893]._Sprite
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215892]._Description
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[7033181733883215893]._Description
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
 --- !u!4 &1638526899 stripped

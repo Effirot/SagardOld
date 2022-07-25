@@ -14,7 +14,7 @@ using UnityEditor;
 #endif
 
 
-[Serializable] public abstract class CharacterController : CharacterCore
+[Serializable] public sealed class CharacterController : CharacterCore
 {
 
     #region // ============================================================ Useful Stuff ==================================================================================================
@@ -25,7 +25,7 @@ using UnityEditor;
         static Checkers LastPose = new Checkers();
         Checkers CursorPos { get { Checkers pos = CursorController.Pos; if(LastPose != pos) { LastPose = pos; ChangePos(); } return pos; } }
 
-        protected bool WalkChecker(bool Other = true)
+        bool WalkChecker(bool Other = true)
         {        
             if(!Other) return false;
             
@@ -161,7 +161,7 @@ using UnityEditor;
             await MovePlannerUpdate();
             await AttackPlannerUpdate();
         }
-        protected async Task MovePlannerUpdate()
+        async Task MovePlannerUpdate()
         {
             await Task.Delay(1);
 
@@ -178,7 +178,7 @@ using UnityEditor;
                 MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
             }
         }
-        protected async Task AttackPlannerUpdate()
+        async Task AttackPlannerUpdate()
         {
             await Task.Delay(1);
             APlaner.position = new Checkers(APlaner.position);

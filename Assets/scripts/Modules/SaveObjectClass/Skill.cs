@@ -37,7 +37,7 @@ public class Skill : Descript, Sendable
         public DamageScaling DamageScalingType;
         public DamageType damageType;
         [Space]
-        public Effect[] Debuff;
+        public IEffect[] Debuff;
     }
     public bool isEmpty => Realizations.Count == 0;
 }
@@ -59,7 +59,7 @@ public class Skill : Descript, Sendable
     public List<Skill> AdditionBaseSkills;
     public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>( AvailbleBaseSkills, AdditionBaseSkills, Unit.AllItemStats.AdditionSkills );
 
-    public Skill ThisSkill => AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)];
+    public Skill ThisSkill { get{ try { return AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)]; } catch { return null; } } }
     private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
     private Checkers endPos => new Checkers(To.position, 0f);
     private Checkers FinalPoint(TargetPointGuidanceType PointType) {switch (PointType)

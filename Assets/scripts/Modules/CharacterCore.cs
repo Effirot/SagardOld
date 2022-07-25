@@ -113,10 +113,10 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         #endregion
         #region // ================================== effects
             
-            [SerializeReference, SubclassSelector] List<Effect> _Debuff;
-            public List<Effect> Debuff { get { return _Debuff; } set { _Debuff = value; } }
-            [SerializeReference, SubclassSelector] List<Effect> _Resists;
-            public List<Effect> Resists { get { return _Resists; } set { _Resists = value; } }
+            [SerializeReference, SubclassSelector] List<IEffect> _Debuff;
+            public List<IEffect> Debuff { get { return _Debuff; } set { _Debuff = value; } }
+            [SerializeReference, SubclassSelector] List<IEffect> _Resists;
+            public List<IEffect> Resists { get { return _Resists; } set { _Resists = value; } }
 
         #endregion
         #region // ================================== inventory
@@ -137,7 +137,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
             } }
 
-            public BalanceChanger AllItemStats;
+            [NonSerialized] public BalanceChanger AllItemStats;
 
             
         #endregion

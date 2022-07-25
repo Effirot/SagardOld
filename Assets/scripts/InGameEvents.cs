@@ -59,10 +59,13 @@ public class InGameEvents : MonoBehaviour
         if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(TargetObject, 0); TargetObject = null; }
     }
 
+
+
     enum Step : int
     {
         Walking,
         Attacking,
+        EffectSet,
         DamageMath,
         Dead,
         Rest

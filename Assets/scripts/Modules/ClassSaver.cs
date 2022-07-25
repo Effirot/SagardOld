@@ -5,6 +5,7 @@ using UnityEngine;
 using System;
 using UnityEngine.Events;
 using SagardCL.IParameterManipulate;
+using System.Reflection;
 
 namespace SagardCL //Class library
 {
@@ -47,12 +48,12 @@ namespace SagardCL //Class library
             public Checkers Position;
             public int Damage;
             public DamageType DamageType;
-            public Effect[] Effects;
+            public IEffect[] Effects;
 
         #endregion
 
         // Overloads
-        public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
+        public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params IEffect[] debuff)
         {
             Sender = Who;
             Position = where;
@@ -345,7 +346,7 @@ namespace SagardCL //Class library
         
         public List<IOtherBar> AdditionState;
 
-        public List<Effect> Resists = new List<Effect>();
+        public List<IEffect> Resists = new List<IEffect>();
         [Space]
         public List<Skill> AdditionSkills = new List<Skill>();
 
@@ -358,7 +359,7 @@ namespace SagardCL //Class library
         public static BalanceChanger CompoundParameters(params BalanceChanger[] items) 
         {
             var result = new BalanceChanger();
-            var resists = new List<Effect>();
+            var resists = new List<IEffect>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
             foreach(BalanceChanger item in items)
@@ -389,7 +390,7 @@ namespace SagardCL //Class library
         public static BalanceChanger CompoundParameters(params Item[] items) 
         {
             var result = new BalanceChanger();
-            var resists = new List<Effect>();
+            var resists = new List<IEffect>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
             foreach(BalanceChanger item in items)
@@ -443,90 +444,118 @@ namespace SagardCL //Class library
             void StepEnd();
         }
         
-        public interface IStateBar
-        {
-            object Clone();
+        #region // State management
             
-            Color BarColor{ get; }
-
-            int Value { get; set; }
-            int Max { get; set; }  
-        }
-
-        public interface IHealthBar : IStateBar
-        {
-            int ArmorMelee { get; set; } 
-            int ArmorRange { get; set; }
-
-            void Damage(Attack attack);
-        }
-        public interface IStaminaBar : IStateBar
-        {
-            void GetTired(int value);
-            int RestEffectivity{ get; set; }
-            int WalkUseStamina{ get; set; }
-
-            void Rest();
-        }
-        public interface ISanityBar : IStateBar
-        {
-            int SanityShield { get; set; } 
-        }
-        public interface IOtherBar : IStateBar
-        {
-
-        }
-
-
-
-        public interface ObjectOnMap
-        {
-            public const int standardVisibleDistance = 10;
-            bool nowVisible(CharacterCore Object);
-
-            List<Effect> Resists { get; set; }
-            List<Effect> Debuff { get; set; }
-        }
-        public interface NetSendable
-        {
-
-        }
-
-        public interface Killable : ObjectOnMap
-        {
-            IHealthBar Health { get; set; }
-        }
-        public interface GetableCrazy : ObjectOnMap
-        {
-            ISanityBar Sanity { get; set; }
-        }
-        public interface Tiredable : ObjectOnMap
-        {
-            IStaminaBar Stamina { get; set; }
-        }
-        public interface Storage : ObjectOnMap
-        {
-            public List<Item> Inventory { get; set; }
-        }
-        public interface Attacker : ObjectOnMap
-        {
-            public SkillCombiner SkillRealizer { get; set; }
-        }
-
-        public interface HaveName : ObjectOnMap
-        {
-            protected enum Names
+            public interface IStateBar
             {
-                Jessy,
-                Yohan,
-                Ulfrik,
-                Sakarok,
-                Ung,
-                Shung
+                object Clone();
+                
+                Color BarColor{ get; }
+
+                int Value { get; set; }
+                int Max { get; set; }  
             }
 
-            protected static string GetName(){ return ((Names)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Names)).Length)).ToString(); }
-        }
+            public interface IHealthBar : IStateBar
+            {
+                int ArmorMelee { get; set; } 
+                int ArmorRange { get; set; }
 
+                void Damage(Attack attack);
+            }
+            public interface IStaminaBar : IStateBar
+            {
+                void GetTired(int value);
+                int RestEffectivity{ get; set; }
+                int WalkUseStamina{ get; set; }
+
+                void Rest();
+            }
+            public interface ISanityBar : IStateBar
+            {
+                int SanityShield { get; set; } 
+            }
+            public interface IOtherBar : IStateBar
+            {
+
+            }
+        
+        #endregion
+        #region // Map Object informations
+            
+            public interface ObjectOnMap
+            {
+                public const int standardVisibleDistance = 10;
+                bool nowVisible(CharacterCore Object);
+
+                List<IEffect> Resists { get; set; }
+                List<IEffect> Debuff { get; set; }
+            }
+            public interface NetSendable
+            {
+
+            }
+
+            public interface Killable : ObjectOnMap
+            {
+                IHealthBar Health { get; set; }
+            }
+            public interface GetableCrazy : ObjectOnMap
+            {
+                ISanityBar Sanity { get; set; }
+            }
+            public interface Tiredable : ObjectOnMap
+            {
+                IStaminaBar Stamina { get; set; }
+            }
+            public interface Storage : ObjectOnMap
+            {
+                public List<Item> Inventory { get; set; }
+            }
+            public interface Attacker : ObjectOnMap
+            {
+                public SkillCombiner SkillRealizer { get; set; }
+            }
+
+            public interface HaveName : ObjectOnMap
+            {
+                protected enum Names
+                {
+                    Jessy,
+                    Yohan,
+                    Ulfrik,
+                    Sakarok,
+                    Ung,
+                    Shung
+                }
+
+                protected static string GetName(){ return ((Names)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Names)).Length)).ToString(); }
+            }
+        
+        #endregion
+        #region // Effects
+
+            public interface ICombineWithDuplicates
+            {
+                IEffect CombineDuplicates(IEffect a, IEffect b);
+            }
+
+            public interface IEffect
+            {
+                string Name { get; set; } 
+                Sprite Icon { get; set; } 
+                string Description { get; set; }
+
+                CharacterCore Target { get; set; }
+                
+                public void GetMethod(string name) { this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Invoke(this, parameters: null); } 
+
+                BalanceChanger Stats { get; set; }
+            }
+
+            public interface HiddenEffect : IEffect { }
+            public interface RacePassiveEffect : IEffect { string RaceName { get; set; } string RaceDescription { get; set; } }
+        
+        #endregion
     }
 }
