@@ -19,7 +19,6 @@ using UnityEditor;
 
     #region // ============================================================ Useful Stuff ==================================================================================================
 
-
         Collider Collider => GetComponent<MeshCollider>();
 
         static Checkers LastPose = new Checkers();
@@ -46,8 +45,8 @@ using UnityEditor;
         }
     
         public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
+    
     #endregion
-
     #region // ================================== controlling
     
         [SerializeField] Color Team;
@@ -152,47 +151,45 @@ using UnityEditor;
             await AttackPlannerUpdate();
         }
 
-
-    #region // =============================== Update methods
-
-        
-        internal override async void ParametersUpdate()
-        {
-            await MovePlannerUpdate();
-            await AttackPlannerUpdate();
-        }
-        async Task MovePlannerUpdate()
-        {
-            await Task.Delay(1);
-
-
-            // Move planner
-            if(!WalkChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
-            MPlaner.LineRenderer.enabled = true;
-            WalkWay.Clear();
-            if (WalkChecker()){
-
-                WalkWay = Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position), 20);
-
-                MPlaner.LineRenderer.positionCount = WalkWay.Count;
-                MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
+        #region // =============================== Update methods
+            
+            internal override async void ParametersUpdate()
+            {
+                await MovePlannerUpdate();
+                await AttackPlannerUpdate();
             }
-        }
-        async Task AttackPlannerUpdate()
-        {
-            await Task.Delay(1);
-            APlaner.position = new Checkers(APlaner.position);
-            // Attack planner
-            AttackZone.Clear();
-            if(SkillRealizer.ThisSkill.NoWalking) await MovePlannerUpdate();
-            await foreach(Attack attack in SkillRealizer.Realize()) { AttackZone.Add(attack); }
-            
-            Generation.DrawAttack(AttackZone, this);
-            
-            SkillRealizer.Graphics(); 
-        }
+            async Task MovePlannerUpdate()
+            {
+                await Task.Delay(1);
 
-    #endregion
+
+                // Move planner
+                if(!WalkChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
+                MPlaner.LineRenderer.enabled = true;
+                WalkWay.Clear();
+                if (WalkChecker()){
+
+                    WalkWay = Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position), 20);
+
+                    MPlaner.LineRenderer.positionCount = WalkWay.Count;
+                    MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
+                }
+            }
+            async Task AttackPlannerUpdate()
+            {
+                await Task.Delay(1);
+                APlaner.position = new Checkers(APlaner.position);
+                // Attack planner
+                AttackZone.Clear();
+                if(SkillRealizer.ThisSkill.NoWalking) await MovePlannerUpdate();
+                await foreach(Attack attack in SkillRealizer.Realize()) { AttackZone.Add(attack); }
+                
+                Generation.DrawAttack(AttackZone, this);
+                
+                SkillRealizer.Graphics(); 
+            }
+
+        #endregion
     
     #endregion
 }

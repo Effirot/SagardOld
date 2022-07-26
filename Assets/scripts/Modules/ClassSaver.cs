@@ -18,6 +18,7 @@ namespace SagardCL //Class library
         Pure,
         Heal,
         Repair,
+        Effect,
     }  
     public enum HitType
     {
@@ -39,7 +40,21 @@ namespace SagardCL //Class library
         Descending,
         Addition,
     }
-    
+                
+    public enum Race
+    {
+        Human,
+        Robot,
+        Lubiak,
+        Draif,
+        HalfVampire,
+        Vampire,
+        Brassy,
+        LivingArtifact,
+        Foctotoum,
+    }
+
+
     public struct Attack
     {
         #region // Constructor parameters
@@ -48,20 +63,32 @@ namespace SagardCL //Class library
             public Checkers Position;
             public int Damage;
             public DamageType DamageType;
-            public IEffect[] Effects;
+            public Effect[] Effects;
+
+        #endregion
+        #region // Overloads
+
+            public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
+            {
+                Sender = Who;
+                Position = where;
+                Damage = Mathf.Clamp(Dam, 0, 10000);
+
+                DamageType = Type;
+                Effects = debuff;
+            }
+            public Attack(int Dam, DamageType Type, params Effect[] debuff)
+            {
+                Sender = null;
+                Position = new Checkers();
+                Damage = Mathf.Clamp(Dam, 0, 10000);
+
+                DamageType = Type;
+                Effects = debuff;
+            }
 
         #endregion
 
-        // Overloads
-        public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params IEffect[] debuff)
-        {
-            Sender = Who;
-            Position = where;
-            Damage = Mathf.Clamp(Dam, 0, 10000);
-
-            DamageType = Type;
-            Effects = debuff;
-        }
         public Color Color() 
         { 
             switch (DamageType)
@@ -77,22 +104,22 @@ namespace SagardCL //Class library
     
         public struct AttackCombiner
         {
-            Dictionary<DamageType, List<Attack>> Sorter;
+            public Dictionary<DamageType, List<Attack>> Sorter{ get; private set; }
             public HashSet<CharacterCore> Senders;
 
-            Checkers pos;
 
             public AttackCombiner(params Attack[] attacks) {Sorter = new Dictionary<DamageType, List<Attack>>(); 
                                                             Senders = new HashSet<CharacterCore>();
-                                                            pos = attacks[0].Position;
 
                                                             foreach(Attack attack in attacks) { Add(attack); Senders.Add(attack.Sender); } 
                                                             foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }}
 
-            public void Add(Attack attack)
+            public AttackCombiner Add(Attack attack)
             {
-                Senders.Add(attack.Sender);
+                if(attack.Sender != null) Senders.Add(attack.Sender);
                 Sorter[attack.DamageType].Add(attack);
+
+                return this;
             }
             public void Clear()
             {
@@ -108,11 +135,24 @@ namespace SagardCL //Class library
                 foreach (var attacks in Sorter)
                 {
                     int Damage = 0;
+                    List<Effect> effects = new List<Effect>();
+                    foreach (Attack attack in attacks.Value) { Damage += attack.Damage; effects.AddRange(attack.Effects); }
+                    result.Add(new Attack(Damage, attacks.Key, effects.ToArray()));
+                }
+                return result;
+            }
+            public List<Attack> Combine(Checkers pos)
+            {
+                List<Attack> result = new List<Attack>();
+                foreach (var attacks in Sorter)
+                {
+                    int Damage = 1;
                     foreach (Attack attack in attacks.Value) { Damage += attack.Damage; }
                     result.Add(new Attack(null, pos, Damage, attacks.Key));
                 }
                 return result;
             }
+            
             public Color CombinedColor()
             {
                 Color result = new Color();
@@ -121,8 +161,8 @@ namespace SagardCL //Class library
                     int Damage = 0;
                     foreach (Attack attack in attacks.Value) { Damage += attack.Damage; }
                     
-                    if(result == new Color()) new Attack(null, pos, Damage, attacks.Key).Color();
-                    else result += new Attack(null, pos, Damage, attacks.Key).Color();
+                    if(result == new Color()) new Attack(Damage, attacks.Key).Color();
+                    else result += new Attack(Damage, attacks.Key).Color();
                 }
                 return result;
             }
@@ -369,6 +409,7 @@ namespace SagardCL //Class library
                 result.Health.Max += item.Health.Max;
                 result.Health.ArmorMelee += item.Health.ArmorMelee;
                 result.Health.ArmorRange += item.Health.ArmorRange;
+                result.Health.Immunity += item.Health.Immunity;
 
                 result.Stamina.Max += item.Stamina.Max;
                 result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
@@ -461,6 +502,8 @@ namespace SagardCL //Class library
                 int ArmorMelee { get; set; } 
                 int ArmorRange { get; set; }
 
+                float Immunity { get; set; }
+
                 void Damage(Attack attack);
             }
             public interface IStaminaBar : IStateBar
@@ -481,19 +524,17 @@ namespace SagardCL //Class library
             }
         
         #endregion
-        #region // Map Object informations
+        #region // Map Object information's
             
             public interface ObjectOnMap
             {
                 public const int standardVisibleDistance = 10;
                 bool nowVisible(CharacterCore Object);
 
-                List<IEffect> Resists { get; set; }
-                List<IEffect> Debuff { get; set; }
-            }
-            public interface NetSendable
-            {
+                List<Effect> Effects { get; set; }
+                List<Effect> Resists { get; set; }
 
+                protected delegate Type IEffect<T>() where T : IEffect;
             }
 
             public interface Killable : ObjectOnMap
@@ -542,19 +583,20 @@ namespace SagardCL //Class library
 
             public interface IEffect
             {
-                string Name { get; set; } 
-                Sprite Icon { get; set; } 
-                string Description { get; set; }
+                string Name { get; } 
+                Sprite Icon { get; } 
+                string Description { get; }
 
                 CharacterCore Target { get; set; }
                 
-                public void GetMethod(string name) { this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).Invoke(this, parameters: null); } 
+                public void GetMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
+                                                     if(info != null) info.Invoke(this, parameters: null); } 
 
                 BalanceChanger Stats { get; set; }
             }
-
-            public interface HiddenEffect : IEffect { }
-            public interface RacePassiveEffect : IEffect { string RaceName { get; set; } string RaceDescription { get; set; } }
+            public interface Effect : IEffect { bool ExistReasons(); }
+            public interface HiddenEffect : Effect { }
+            public interface RacePassiveEffect : IEffect { Race RaceName { get; set; } string RaceDescription { get; set; } }
         
         #endregion
     }

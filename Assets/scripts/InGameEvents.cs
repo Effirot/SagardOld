@@ -65,7 +65,7 @@ public class InGameEvents : MonoBehaviour
     {
         Walking,
         Attacking,
-        EffectSet,
+        EffectUpdate,
         DamageMath,
         Dead,
         Rest

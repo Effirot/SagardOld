@@ -67,19 +67,26 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             InGameEvents.StepSystem.Add(FindStepStage);
             InGameEvents.AttackTransporter.AddListener((a) => { 
                 Attack find = a.Find((a) => a.Position == new Checkers(position));
-                if(find.Position == new Checkers(position)){
+                if(find.Position == new Checkers(position) & this.Effects.Exists(a=>a.GetType()==typeof(Decomposition))){
                     TakeDamageList.Add(find);
                 }
             });
             InGameEvents.StepEnd.AddListener(EveryStepEnd);
 
+            foreach(Effect effect in Effects)
+            {
+                effect.Target = this;
+            }
             
             AfterInventoryUpdate();
 
             await Task.Delay(10);
             position = new Checkers(position);
         }
-        
+
+        public Race _Race;
+        Race RaceName { get{ return _Race; } set{ _Race = value; } }
+
         [SerializeField] internal bool Corpse = false;
         [SerializeField] internal int WalkDistance = 5;
 
@@ -112,11 +119,13 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
 
         #endregion
         #region // ================================== effects
-            
-            [SerializeReference, SubclassSelector] List<IEffect> _Debuff;
-            public List<IEffect> Debuff { get { return _Debuff; } set { _Debuff = value; } }
-            [SerializeReference, SubclassSelector] List<IEffect> _Resists;
-            public List<IEffect> Resists { get { return _Resists; } set { _Resists = value; } }
+
+            public RacePassiveEffect RaceEffect { get; private set; } 
+
+            [SerializeReference, SubclassSelector] List<Effect> _Effects;
+            public List<Effect> Effects { get { return _Effects; } set { _Effects = value; } }
+            [SerializeReference, SubclassSelector] List<Effect> _Resists;
+            public List<Effect> Resists { get { return _Resists; } set { _Resists = value; } }
 
         #endregion
         #region // ================================== inventory
@@ -151,7 +160,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         protected List<Attack> AttackZone = new List<Attack>();
         protected List<Checkers> WalkWay = new List<Checkers>();
 
-        private Attack.AttackCombiner TakeDamageList = new Attack.AttackCombiner();
+        public Attack.AttackCombiner TakeDamageList = new Attack.AttackCombiner();
 
         #region // =============================== Update methods
             
@@ -161,10 +170,11 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             {
                 if(Health is HealthCorpse) { Destroy(transform.parent.gameObject); }
                 else {
-                    Health = new HealthCorpse() { Max = Health.Max, Value = Health.Max, ArmorMelee = Health.ArmorMelee, ArmorRange = Health.ArmorRange };
+                    Corpse = true;
+                    this.Health.Value = this.Health.Max;
+                    _Effects.Add(new Decomposition() { Target = this });
 
                     ChangeFigureColor(new Color(0.6f, 0.6f, 0.6f), 0.2f);
-                    
                 }
             }
             void AfterInventoryUpdate()
@@ -234,7 +244,24 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
                 #endregion
             } 
-            
+                        
+            void UpdateParameter(IStateBar parameter)
+            {
+                if(!(parameter is IStepEndUpdate)) return;
+                
+                Type type = typeof(IStepEndUpdate);
+                MethodInfo info = type.GetMethod("StepEnd", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                if(info != null) info.Invoke(parameter, parameters: null);
+            }
+            void UpdateEffects(string Method)
+            {
+                Effects.RemoveAll(a=>!a.ExistReasons());
+                foreach(Effect effect in Effects)
+                {
+                    effect.GetMethod(Method);
+                }
+            }
         #endregion
         #region // =============================== Step System
             Task FindStepStage(string id){ 
@@ -280,15 +307,21 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
 
                 APlaner.position = MPlaner.position;
             }
+            async Task EffectUpdate()
+            {
+                await Task.Delay(10);
+                UpdateEffects("Update");
+
+                var a = TakeDamageList;
+            }
             async Task DamageMath()
             {
                 await Task.Delay(100);
                 int damage = 0;
 
                 List<Attack> attacks = TakeDamageList.Combine();
-                foreach(Attack attack in attacks) 
-                { Health.Damage(attack); damage += attack.Damage; }
-                
+                foreach(Attack attack in attacks) { Health.Damage(attack); }
+
                 if(damage > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 1);
 
                 TakeDamageList.Clear();
@@ -297,7 +330,6 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             { 
                 if(Health.Value > 0) return;
                 await Task.Delay(Random.Range(10, 100)); 
-                Corpse = true;
                 try { LostHealth(); } catch {}
             }
             async Task Rest() 
@@ -318,15 +350,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 UpdateParameter(Sanity);
                 foreach(IOtherBar otherState in OtherStates) UpdateParameter(otherState);
             }
-            void UpdateParameter(IStateBar parameter)
-            {
-                if(!(parameter is IStepEndUpdate)) return;
-                
-                Type type = typeof(IStepEndUpdate);
-                MethodInfo info = type.GetMethod("StepEnd", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-                if(info != null) info.Invoke(parameter, parameters: null);
-            }
+        
         #endregion
     #endregion
 }
