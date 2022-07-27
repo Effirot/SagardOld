@@ -6,6 +6,7 @@ using SagardCL;
 using SagardCL.IParameterManipulate;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 using System.Reflection;
 using Random = UnityEngine.Random;
 using UnityAsync;
@@ -66,22 +67,16 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             
             InGameEvents.StepSystem.Add(FindStepStage);
             InGameEvents.AttackTransporter.AddListener((a) => { 
-                Attack find = a.Find((a) => a.Position == new Checkers(position));
-                if(find.Position == new Checkers(position) & this.Effects.Exists(a=>a.GetType()==typeof(Decomposition))){
-                    TakeDamageList.Add(find);
-                }
+                List<Attack> find = a.FindAll((a) => a.Position == new Checkers(position));
+                foreach(Attack attack in find) if(attack.Position == new Checkers(position)) AddDamage(attack);
             });
             InGameEvents.StepEnd.AddListener(EveryStepEnd);
-
-            foreach(Effect effect in Effects)
-            {
-                effect.Target = this;
-            }
             
             AfterInventoryUpdate();
 
             await Task.Delay(10);
             position = new Checkers(position);
+            MPlaner.position = new Checkers(position);
         }
 
         public Race _Race;
@@ -101,7 +96,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                                                                 WallIgnoreVisible? Physics.Raycast(this.position, Object.position - this.position, Checkers.Distance(this.position, Object.position), LayerMask.NameToLayer("Object")) : true) | 
                                                                 AlwaysVisible; }
             
-            protected IHealthBar BaseHealth;
+            [SerializeField, SerializeReference]protected IHealthBar BaseHealth;
             [SerializeReference, SubclassSelector] IHealthBar _Health;
             public IHealthBar Health { get { return _Health; } set { _Health = value; } } 
 
@@ -146,7 +141,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
             } }
 
-            [NonSerialized] public BalanceChanger AllItemStats;
+            public BalanceChanger AllItemStats;
 
             
         #endregion
@@ -161,6 +156,14 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         protected List<Checkers> WalkWay = new List<Checkers>();
 
         public Attack.AttackCombiner TakeDamageList = new Attack.AttackCombiner();
+
+        public void AddDamage(Attack attack) {
+            if(attack.DamageType != DamageType.Heal | !Effects.Exists(a=>a.GetType() == typeof(Decomposition)))
+                TakeDamageList.Add(attack);
+        }
+        public void AddEffect(params Effect[] Effect) {
+            foreach(Effect effect in Effect) { effect.GetMethod("WhenAdded"); Effects.Add(effect); }
+        }
 
         #region // =============================== Update methods
             
@@ -199,6 +202,8 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                     }
                     Health.ArmorMelee = BaseHealth.ArmorMelee + AllItemStats.Health.ArmorMelee;
                     Health.ArmorRange = BaseHealth.ArmorRange + AllItemStats.Health.ArmorRange;
+                    Health.Immunity = BaseHealth.Immunity + AllItemStats.Health.Immunity;
+                    
                     Health.Max = BaseHealth.Max + AllItemStats.Health.Max;
                 }
                 #endregion
@@ -256,11 +261,12 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             }
             void UpdateEffects(string Method)
             {
-                Effects.RemoveAll(a=>!a.ExistReasons());
                 foreach(Effect effect in Effects)
                 {
+                    if(effect.Target == null) effect.Target = this;
                     effect.GetMethod(Method);
                 }
+                Effects.RemoveAll(a=>!a.ExistReasons());
             }
         #endregion
         #region // =============================== Step System
@@ -298,7 +304,6 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             protected virtual async Task Attacking()
             {
                 if(AttackZone.Count == 0) return;
-                if(SkillRealizer.ThisSkill.PriorityAttacking) return;
                 WillRest = false;
                 await Task.Delay(Random.Range(900, 2700));
 
@@ -306,23 +311,26 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 InGameEvents.AttackTransporter.Invoke(AttackZone);
 
                 APlaner.position = MPlaner.position;
+                MPlaner.Renderer.enabled = false;
             }
             async Task EffectUpdate()
             {
-                await Task.Delay(10);
+                await Task.Delay(10);                 
+                
                 UpdateEffects("Update");
-
-                var a = TakeDamageList;
             }
             async Task DamageMath()
             {
                 await Task.Delay(100);
-                int damage = 0;
 
-                List<Attack> attacks = TakeDamageList.Combine();
-                foreach(Attack attack in attacks) { Health.Damage(attack); }
+                foreach(Attack attack in TakeDamageList.Combine()) 
+                { 
+                    Health.Damage(attack); 
+                    
+                    AddEffect(attack.Effects);
+                }
 
-                if(damage > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 1);
+                if(TakeDamageList.Combine().Sum(a=>a.Damage) > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 1);
 
                 TakeDamageList.Clear();
             }

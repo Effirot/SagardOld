@@ -21,8 +21,8 @@ using UnityEngine.Events;
     [SerializeField] int _ArmorRange;
     public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
 
-    [SerializeField] float _Immunity;
-    public float Immunity{ get { return _Immunity; } set { _Immunity = value; } }
+    [Range(0, 1), SerializeField] float _Immunity;
+    public float Immunity{ get { return _Immunity; } set { _Immunity = Mathf.Clamp(value, 0, 1); } }
 
     public object Clone() { return this.MemberwiseClone(); }
 
@@ -39,7 +39,7 @@ using UnityEngine.Events;
             case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
             case DamageType.Repair: _Value -= 1; break;
 
-            case DamageType.Effect: _Value -= Mathf.Clamp(attack.Damage, 0, 1000); break;
+            case DamageType.Effect: _Value -= Mathf.Clamp((int)Mathf.Round(attack.Damage * (1 - Immunity)), 0, 1000); break;
         }
     }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
@@ -59,8 +59,8 @@ using UnityEngine.Events;
     [SerializeField] int _ArmorRange;
     public int ArmorRange{ get { return _ArmorRange; } set { _ArmorRange = value; } }
 
-    [SerializeField] float _Immunity;
-    public float Immunity{ get { return _Immunity; } set { _Immunity = value; } }
+    [Range(0, 1), SerializeField] float _Immunity;
+    public float Immunity{ get { return _Immunity; } set { _Immunity = Mathf.Clamp(value, 0, 1); } }
 
     public void StepEnd()
     {
@@ -82,7 +82,7 @@ using UnityEngine.Events;
             case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
             case DamageType.Repair: _Value -= 1; break;
 
-            case DamageType.Effect: _Value -= Mathf.Clamp((int)Mathf.Round(attack.Damage * Immunity), 0, 1000); break;
+            case DamageType.Effect: _Value -= Mathf.Clamp((int)Mathf.Round(attack.Damage * (1 - Immunity)), 0, 1000); break;
         }
     }
     public Color BarColor{ get{ return new Color(1, 0.1f, 0); } }

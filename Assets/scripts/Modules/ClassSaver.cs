@@ -6,6 +6,7 @@ using System;
 using UnityEngine.Events;
 using SagardCL.IParameterManipulate;
 using System.Reflection;
+using System.Linq;
 
 namespace SagardCL //Class library
 {
@@ -104,15 +105,18 @@ namespace SagardCL //Class library
     
         public struct AttackCombiner
         {
-            public Dictionary<DamageType, List<Attack>> Sorter{ get; private set; }
+            public Dictionary<DamageType, List<Attack>> Sorter;
             public HashSet<CharacterCore> Senders;
 
 
-            public AttackCombiner(params Attack[] attacks) {Sorter = new Dictionary<DamageType, List<Attack>>(); 
-                                                            Senders = new HashSet<CharacterCore>();
+            public AttackCombiner(params Attack[] attacks) 
+            {   
+                Sorter = new Dictionary<DamageType, List<Attack>>(); 
+                Senders = new HashSet<CharacterCore>();
 
-                                                            foreach(Attack attack in attacks) { Add(attack); Senders.Add(attack.Sender); } 
-                                                            foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }}
+                foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
+                foreach(Attack attack in attacks) { Add(attack); } 
+            }
 
             public AttackCombiner Add(Attack attack)
             {
@@ -134,10 +138,9 @@ namespace SagardCL //Class library
                 List<Attack> result = new List<Attack>();
                 foreach (var attacks in Sorter)
                 {
-                    int Damage = 0;
                     List<Effect> effects = new List<Effect>();
-                    foreach (Attack attack in attacks.Value) { Damage += attack.Damage; effects.AddRange(attack.Effects); }
-                    result.Add(new Attack(Damage, attacks.Key, effects.ToArray()));
+                    if(attacks.Value.Count > 0) foreach (Attack attack in attacks.Value) { effects.AddRange(attack.Effects); }
+                    result.Add(new Attack(attacks.Value.Sum(a=>a.Damage), attacks.Key, effects.ToArray()));
                 }
                 return result;
             }
@@ -146,9 +149,7 @@ namespace SagardCL //Class library
                 List<Attack> result = new List<Attack>();
                 foreach (var attacks in Sorter)
                 {
-                    int Damage = 1;
-                    foreach (Attack attack in attacks.Value) { Damage += attack.Damage; }
-                    result.Add(new Attack(null, pos, Damage, attacks.Key));
+                    result.Add(new Attack(null, pos, attacks.Value.Sum(a=>a.Damage), attacks.Key));
                 }
                 return result;
             }
@@ -371,9 +372,6 @@ namespace SagardCL //Class library
 
     [System.Serializable] public class BalanceChanger
     {
-        public bool Throwable = true;
-        public bool DestroyOnDeath = false;
-        public bool UseInCrafts = true;
         [Space]
         public int WalkDistance = 0;
 
@@ -390,11 +388,6 @@ namespace SagardCL //Class library
         [Space]
         public List<Skill> AdditionSkills = new List<Skill>();
 
-        public void ThrowThis(Checkers position)
-        {
-            if(!Throwable) return;
-
-        }
         
         public static BalanceChanger CompoundParameters(params BalanceChanger[] items) 
         {

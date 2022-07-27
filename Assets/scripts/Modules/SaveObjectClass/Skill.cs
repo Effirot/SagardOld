@@ -13,7 +13,6 @@ public class Skill : Descript, Sendable
 {
     [Space(2)]
     [Header("Parameters")]
-    public bool PriorityAttacking;
     public bool NoWalking;
     public int MaxCursorDistance;
     public List<HitBoxParameters> Realizations;
@@ -37,12 +36,10 @@ public class Skill : Descript, Sendable
         public DamageScaling DamageScalingType;
         public DamageType damageType;
         [Space]
-        public IEffect[] Debuff;
+        [SerializeReference, SubclassSelector] public Effect[] Debuff;
     }
     public bool isEmpty => Realizations.Count == 0;
 }
-
-
 
 
 [System.Serializable] public class SkillCombiner{

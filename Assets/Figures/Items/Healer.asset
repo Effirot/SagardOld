@@ -18,10 +18,6 @@ MonoBehaviour:
   image: {fileID: 0}
   Artifacer: 1
   ThisItem:
-    Quality: 0
-    Throwable: 1
-    DestroyOnDeath: 0
-    UseInCrafts: 1
     WalkDistance: -2
     Health:
       rid: 2078022220337643583
@@ -32,7 +28,6 @@ MonoBehaviour:
     Sanity:
       rid: 2078022220337643585
     ReplaceSanityBar: 0
-    Resists: []
     AdditionSkills:
     - {fileID: 11400000, guid: f3e216baac536c94e97c60a3ca8a0e55, type: 2}
   references:
@@ -45,6 +40,7 @@ MonoBehaviour:
         _Max: 0
         _ArmorMelee: 0
         _ArmorRange: 0
+        _Immunity: 0.667
     - rid: 2078022220337643584
       type: {class: Stamina, ns: , asm: Assembly-CSharp}
       data:
