@@ -134,7 +134,8 @@ public class Skill : Descript, Sendable
                             continue;
                         if(Checkers.Distance(NowChecking, startPos) > NowHit.MaxDistance)
                             continue;
-                        yield return(new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.damageType, NowHit.Debuff));
+                        if(NowChecking != startPos)
+                            yield return(new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.damageType, NowHit.Debuff));
                     }
                     yield return(new Attack(Unit, FinalPoint, NowHit.Damage, NowHit.damageType));
 

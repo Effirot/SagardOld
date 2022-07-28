@@ -40,15 +40,16 @@ using SagardCL.ParameterManipulate;
 
         CharacterCore _Target; public CharacterCore Target { get{ return _Target; } set{ _Target = value; } }
 
-        [SerializeField] BalanceChanger _Stats; public BalanceChanger Stats { get{ return _Stats; } set { _Stats = value; } }
+        ReBalancer _Stats; public ReBalancer Stats { get{ return _Stats; } set { _Stats = value; } }
 
         public bool Workable() { return Timer > 0 & Damage > 0 & !Target.Corpse; }
 
         int StartTimer;
+        [SerializeField] ReBalancer Stat;
         [SerializeField][Range(1, 20)] int Timer;
         [SerializeField][Range(0, 10)] int Damage;
 
-        void WhenAdded() { StartTimer = Timer; }
+        void WhenAdded() { StartTimer = Timer; Stats = Stat; }
         void Update() 
         {
             Target.AddDamage(new Attack(Damage, DamageType.Effect));
@@ -70,7 +71,7 @@ using SagardCL.ParameterManipulate;
 
         CharacterCore _Target; public CharacterCore Target { get{ return _Target; } set{ _Target = value; } }
 
-        [SerializeField] BalanceChanger _Stats; public BalanceChanger Stats { get{ return _Stats; } set { _Stats = value; } }
+        [SerializeField] ReBalancer _Stats; public ReBalancer Stats { get{ return _Stats; } set { _Stats = value; } }
 
         public bool Workable() { return Timer > 0 & !Target.Corpse; }
 
@@ -95,7 +96,7 @@ using SagardCL.ParameterManipulate;
 
         CharacterCore _Target; public CharacterCore Target { get{ return _Target; } set{ _Target = value; } }
 
-        [SerializeField] BalanceChanger _Stats; public BalanceChanger Stats { get{ return _Stats; } set { _Stats = value; } }
+        [SerializeField] ReBalancer _Stats; public ReBalancer Stats { get{ return _Stats; } set { _Stats = value; } }
 
         public bool Workable() { return !Target.Corpse; }
 
@@ -125,7 +126,7 @@ using SagardCL.ParameterManipulate;
 
         CharacterCore _Target; public CharacterCore Target { get{ return _Target; } set{ _Target = value; } }
 
-        public BalanceChanger Stats { get; set; }
+        public ReBalancer Stats { get{ return new ReBalancer(); } set{  } }
 
         public bool Workable() { return Target.Corpse; }
 

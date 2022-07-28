@@ -87,6 +87,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         set { 
             if(value) 
             {
+                Effects.RemoveAll(a=>a is OneUse);
                 Effects.Add(Decomposition.Base(this));
 
                 ChangeFigureColor(new Color(0.5f, 0.5f, 0.5f), 0.2f);
@@ -157,8 +158,8 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
             } }
 
-            public BalanceChanger AllBalanceChanges;
-            public List<BalanceChanger> PermanentsEffects = new List<BalanceChanger>();
+            public ReBalancer AllBalanceChanges;
+            public List<ReBalancer> PermanentsEffects = new List<ReBalancer>();
         #endregion
         #region // ================================== Skills
 
@@ -191,7 +192,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         }
         
         public void AddEffect(params Effect[] Effect) {
-            foreach(Effect effect in Effect) { if(!effect.Workable() ) continue; effect.InvokeMethod("WhenAdded"); Effects.Add(effect); }
+            foreach(Effect effect in Effect) { effect.Target = this; if(!effect.Workable() ) continue; effect.InvokeMethod("WhenAdded"); Effects.Add(effect); }
         }
         public void RemoveEffect() {
             List<Effect> Effect = Effects.FindAll(a=>!a.Workable());
@@ -269,13 +270,13 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             }
             void AfterInventoryUpdate()
             {
-                List<BalanceChanger> FromItems = new List<BalanceChanger>(); foreach(Item item in Inventory) FromItems.Add(item.Stats);
-                List<BalanceChanger> FromEffects = new List<BalanceChanger>(); foreach(Effect effect in Effects) FromEffects.Add(effect.Stats);
+                List<ReBalancer> FromItems = new List<ReBalancer>(); foreach(Item item in Inventory) FromItems.Add(item.Stats);
+                List<ReBalancer> FromEffects = new List<ReBalancer>(); if(Effects.Count != 0)foreach(Effect effect in Effects) FromEffects.Add(effect.Stats);
                 
-                BalanceChanger result = BalanceChanger.Combine(FieldManipulate.CombineLists<BalanceChanger>(FromEffects, PermanentsEffects, FromItems).ToArray());
+                ReBalancer result = ReBalancer.Combine(FieldManipulate.CombineLists<ReBalancer>(FromEffects, PermanentsEffects, FromItems).ToArray());
 
-                if(AllBalanceChanges == BalanceChanger.Combine(FromItems.ToArray())) return;
-                AllBalanceChanges = BalanceChanger.Combine(FromItems.ToArray()); 
+                if(AllBalanceChanges == ReBalancer.Combine(FromItems.ToArray())) return;
+                AllBalanceChanges = ReBalancer.Combine(FromItems.ToArray()); 
 
                 #region // health
                 {

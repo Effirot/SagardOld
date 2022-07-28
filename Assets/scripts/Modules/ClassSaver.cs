@@ -342,14 +342,14 @@ namespace SagardCL //Class library
                 return a;
             }
 
-            private PathPoint NewPathPoint(Checkers point, float pathLenghtFromStart, float heuristicEstimatePathLenght, EMoveAction moveAction, PathPoint ppoint)
+            private PathPoint NewPathPoint(Checkers point, float pathLenghtFromStart, float heuristicEstimatePathLenght, EMoveAction moveAction, PathPoint pPoint)
             {
                 PathPoint a = new PathPoint();
                 a.point = point;
                 a.pathLenghtFromStart = pathLenghtFromStart;
                 a.heuristicEstimatePathLenght = heuristicEstimatePathLenght;
                 a.moveAction = moveAction;
-                a.cameFrom = ppoint;
+                a.cameFrom = pPoint;
                 return a;
             }
         }
@@ -374,7 +374,7 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
-    [System.Serializable] public class BalanceChanger
+    [System.Serializable] public class ReBalancer
     {
         [Space]
         public int WalkDistance = 0;
@@ -386,37 +386,39 @@ namespace SagardCL //Class library
         [SerializeReference, SubclassSelector]public ISanityBar Sanity = new Sanity();
         public bool ReplaceSanityBar = false;
         
-        public List<IOtherBar> AdditionState;
+        public List<IOtherBar> AdditionState = new List<IOtherBar>();
 
         public List<IEffect> Resists = new List<IEffect>();
         [Space]
         public List<Skill> AdditionSkills = new List<Skill>();
 
         
-        public static BalanceChanger Combine(params BalanceChanger[] items) 
+        public static ReBalancer Combine(params ReBalancer[] items) 
         {
-            var result = new BalanceChanger();
+            List<ReBalancer> InList = items.ToList() ?? new List<ReBalancer>();
+
+            var result = new ReBalancer();
             var resists = new List<IEffect>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
 
-            if(items.ToList().Exists(a=>a.ReplaceHealthBar)) 
+            if(InList.Exists(a=>a.ReplaceHealthBar))
             {
                 result.ReplaceHealthBar = true;
                 result.Health = items.ToList().Find(a=>a.ReplaceHealthBar).Health.Clone() as IHealthBar;
             }
-            if(items.ToList().Exists(a=>a.ReplaceSanityBar)) 
+            if(InList.Exists(a=>a.ReplaceSanityBar))
             {
                 result.ReplaceHealthBar = true;
                 result.Sanity = items.ToList().Find(a=>a.ReplaceSanityBar).Health.Clone() as ISanityBar;
             }
-            if(items.ToList().Exists(a=>a.ReplaceStaminaBar)) 
+            if(InList.Exists(a=>a.ReplaceStaminaBar))
             {
                 result.ReplaceHealthBar = true;
                 result.Stamina = items.ToList().Find(a=>a.ReplaceStaminaBar).Health.Clone() as IStaminaBar;
             }
             
-            foreach(BalanceChanger item in items)
+            foreach(ReBalancer item in items)
             {
                 result.WalkDistance += item.WalkDistance;
 
@@ -602,7 +604,7 @@ namespace SagardCL //Class library
                 public void InvokeMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
                                                      if(info != null) info.Invoke(this, parameters: null); } 
 
-                BalanceChanger Stats { get; set; }
+                ReBalancer Stats { get; set; }
             }
             public interface Effect : IEffect { bool Workable(); }
             public interface HiddenEffect : Effect { }

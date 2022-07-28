@@ -9,8 +9,8 @@ using SagardCL.ParameterManipulate;
 public class Item : Descript, Sendable
 {
     public bool Artifacer = false;
-    public BalanceChanger Stats;
-    public static implicit operator BalanceChanger(Item item) { return item.Stats; }
+    public ReBalancer Stats;
+    public static implicit operator ReBalancer(Item item) { return item.Stats; }
 
 }
 
