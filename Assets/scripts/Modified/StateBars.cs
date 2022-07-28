@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using UnityEngine;
 using SagardCL;
-using SagardCL.IParameterManipulate;
+using SagardCL.ParameterManipulate;
 using System;
 using UnityEngine.Events;
 
@@ -26,22 +26,6 @@ using UnityEngine.Events;
 
     public object Clone() { return this.MemberwiseClone(); }
 
-    public void Damage(Attack attack)
-    {
-        if(attack.Damage > 0)
-        switch(attack.DamageType)
-        {
-            case DamageType.Pure: _Value -= Mathf.Clamp(attack.Damage, 0, 1000); break;
-            case DamageType.Melee: _Value -= Mathf.Clamp(attack.Damage - ArmorMelee, 0, 1000); break;
-            case DamageType.Range: _Value -= Mathf.Clamp(attack.Damage - ArmorRange, 0, 1000); break;
-            case DamageType.Rezo: _Value -= Mathf.Clamp(attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
- 
-            case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); break;
-            case DamageType.Repair: _Value -= 1; break;
-
-            case DamageType.Effect: _Value -= Mathf.Clamp((int)Mathf.Round(attack.Damage * (1 - Immunity)), 0, 1000); break;
-        }
-    }
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
 }
 [Serializable]public class HealthOver : IHealthBar, IStepEndUpdate
@@ -69,22 +53,6 @@ using UnityEngine.Events;
 
     public object Clone() { return this.MemberwiseClone(); }
 
-    public void Damage(Attack attack)
-    {
-        if(attack.Damage > 0)
-        switch(attack.DamageType)
-        {
-            case DamageType.Pure: _Value -= Mathf.Clamp(attack.Damage, 0, 1000); break;
-            case DamageType.Melee: _Value -= Mathf.Clamp(attack.Damage - ArmorMelee, 0, 1000); break;
-            case DamageType.Range: _Value -= Mathf.Clamp(attack.Damage - ArmorRange, 0, 1000); break;
-            case DamageType.Rezo: _Value -= Mathf.Clamp(attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
- 
-            case DamageType.Heal: _Value = Mathf.Clamp(Value + attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max + OverMax); break;
-            case DamageType.Repair: _Value -= 1; break;
-
-            case DamageType.Effect: _Value -= Mathf.Clamp((int)Mathf.Round(attack.Damage * (1 - Immunity)), 0, 1000); break;
-        }
-    }
     public Color BarColor{ get{ return new Color(1, 0.1f, 0); } }
 }
 [Serializable]public class HealthCorpse : IHealthBar, IStepEndUpdate
@@ -111,21 +79,6 @@ using UnityEngine.Events;
 
     public object Clone() { return this.MemberwiseClone(); }
 
-    public void Damage(Attack attack)
-    {
-        switch(attack.DamageType)
-        {
-            case DamageType.Pure: _Value -= Mathf.Clamp((attack.Damage / 2), 0, 1000); break;
-            case DamageType.Melee: _Value -= Mathf.Clamp((attack.Damage / 2) - ArmorMelee, 0, 1000); break;
-            case DamageType.Range: _Value -= Mathf.Clamp((attack.Damage / 2) - ArmorRange, 0, 1000); break;
-            case DamageType.Rezo: _Value -= Mathf.Clamp((attack.Damage / 2) - (int)Mathf.Round((ArmorRange + ArmorMelee) * 1.25f), 0, 1000); break;
- 
-            case DamageType.Heal: CorpseTimer += attack.Damage; break;
-            case DamageType.Repair: _Value -= 999; break;
-
-            case DamageType.Effect: _Value -= Mathf.Clamp((int)Mathf.Round(attack.Damage * Immunity), 0, 1000); break;
-        }
-    }
     public Color BarColor{ get{ return new Color(0, 0, 0); } }
 }
 [Serializable]public class Metal : IHealthBar
@@ -146,21 +99,9 @@ using UnityEngine.Events;
 
     public object Clone() { return this.MemberwiseClone(); }
 
-    public void Damage(Attack attack)
-    {
-        switch(attack.DamageType)
-        {
-            case DamageType.Pure: _Value -= Mathf.Clamp(attack.Damage, 0, 1000); break;
-            case DamageType.Melee: _Value -= Mathf.Clamp(attack.Damage - ArmorMelee, 0, 1000); break;
-            case DamageType.Range: _Value -= Mathf.Clamp(attack.Damage - ArmorRange, 0, 1000); break;
-            case DamageType.Rezo: _Value -= Mathf.Clamp(attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); break;
- 
-            case DamageType.Heal: _Value -= attack.Damage / 2; break;
-            case DamageType.Repair: _Value =  Mathf.Clamp(Value + attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.2f), 0, Max); ; break;
+    int IHealthBar.Repair(Attack attack) { return (int)Mathf.Clamp(Value + attack.Damage, 0, Max - Value); }
+    int IHealthBar.Heal(Attack attack) { return -2; }
 
-            case DamageType.Effect: _Value -= Mathf.Clamp((int)Mathf.Round(attack.Damage * Immunity), 0, 1000); break;
-        }
-    }
     public Color BarColor{ get{ return new Color(1, 0.7f, 0); } }
 }
 // ================================================================= Stamina Bar ===========================================================================================================

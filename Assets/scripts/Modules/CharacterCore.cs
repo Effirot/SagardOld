@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
-using SagardCL.IParameterManipulate;
+using SagardCL.ParameterManipulate;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
@@ -82,7 +82,23 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         public Race _Race;
         Race RaceName { get{ return _Race; } set{ _Race = value; } }
 
-        [SerializeField] internal bool Corpse = false;
+        [SerializeField] bool _Corpse = false;
+        internal bool Corpse { get { return _Corpse; } 
+        set { 
+            if(value) 
+            {
+                Effects.Add(Decomposition.Base(this));
+
+                ChangeFigureColor(new Color(0.5f, 0.5f, 0.5f), 0.2f);
+            }
+            else 
+            {
+                Effects.Remove(Decomposition.Base(this));
+
+                ChangeFigureColor(new Color(1f, 1f, 1f), 0.2f);
+            }
+            _Corpse = value; } 
+        } 
         [SerializeField] internal int WalkDistance = 5;
 
         #region // ================================== parameters
@@ -110,7 +126,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             
             
             [SerializeReference, SubclassSelector] List<IOtherBar> _OtherStates;
-            public List<IOtherBar> OtherStates { get { return FieldManipulate.CombineLists<IOtherBar>(_OtherStates, AllItemStats.AdditionState); } set{ _OtherStates = value; } }
+            public List<IOtherBar> OtherStates { get { return FieldManipulate.CombineLists<IOtherBar>(_OtherStates, AllBalanceChanges.AdditionState); } set{ _OtherStates = value; } }
 
         #endregion
         #region // ================================== effects
@@ -119,8 +135,8 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
 
             [SerializeReference, SubclassSelector] List<Effect> _Effects;
             public List<Effect> Effects { get { return _Effects; } set { _Effects = value; } }
-            [SerializeReference, SubclassSelector] List<Effect> _Resists;
-            public List<Effect> Resists { get { return _Resists; } set { _Resists = value; } }
+            [SerializeReference, SubclassSelector] List<Type> _Resists;
+            public List<Type> Resists { get { return _Resists; } set { _Resists = value; } }
 
         #endregion
         #region // ================================== inventory
@@ -141,9 +157,8 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
             } }
 
-            public BalanceChanger AllItemStats;
-
-            
+            public BalanceChanger AllBalanceChanges;
+            public List<BalanceChanger> PermanentsEffects = new List<BalanceChanger>();
         #endregion
         #region // ================================== Skills
 
@@ -157,40 +172,115 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
 
         public Attack.AttackCombiner TakeDamageList = new Attack.AttackCombiner();
 
-        public void AddDamage(Attack attack) {
+        public void AddDamage(Attack attack)
+        {
             if(attack.DamageType != DamageType.Heal | !Effects.Exists(a=>a.GetType() == typeof(Decomposition)))
                 TakeDamageList.Add(attack);
         }
-        public void AddEffect(params Effect[] Effect) {
-            foreach(Effect effect in Effect) { effect.GetMethod("WhenAdded"); Effects.Add(effect); }
+        public void AddSanity(int damage)
+        {
+            if(Sanity!=null) Sanity.Value = Mathf.Clamp(damage >= 0? damage : -(int)(Mathf.Clamp(MathF.Abs(damage) - Sanity.SanityShield, 0, 1000)) + Sanity.Value, 0, Sanity.Max);
         }
+        public void AddStamina(int damage)
+        {
+            Stamina.Value = Mathf.Clamp(damage + Stamina.Value, 0, Stamina.Max);
+        }
+        public void DrainOtherState<IOtherBar>(int value)
+        {
+
+        }
+        
+        public void AddEffect(params Effect[] Effect) {
+            foreach(Effect effect in Effect) { if(!effect.Workable() ) continue; effect.InvokeMethod("WhenAdded"); Effects.Add(effect); }
+        }
+        public void RemoveEffect() {
+            List<Effect> Effect = Effects.FindAll(a=>!a.Workable());
+            foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
+        }
+        public void RemoveEffect(params Effect[] Effect) {
+            foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
+        }
+
 
         #region // =============================== Update methods
             
-            internal virtual void ParametersUpdate() {}
-            internal virtual void DamageReaction(Attack attack) {}
-            internal virtual void LostHealth()
-            {
-                if(Health is HealthCorpse) { Destroy(transform.parent.gameObject); }
-                else {
-                    Corpse = true;
-                    this.Health.Value = this.Health.Max;
-                    _Effects.Add(new Decomposition() { Target = this });
-
-                    ChangeFigureColor(new Color(0.6f, 0.6f, 0.6f), 0.2f);
+            public bool WalkChecker(bool Other = true)
+            {        
+                if(!Other) return false;
+                
+                //OnOtherPlaner
+                foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
+                { 
+                    if(hit.collider.gameObject != MPlaner.Planer) { return false; }
                 }
+                
+                //OnSelf
+                if(new Checkers(position) == new Checkers(MPlaner.position))
+                    return false;
+                
+                //OnStamina
+                if(Stamina.WalkUseStamina > Stamina.Value) return false;
+                //OnDistance
+                return WalkDistance + AllBalanceChanges.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
+            }    
+            public async void ParametersUpdate()
+            {
+                await MovePlannerUpdate();
+                await AttackPlannerUpdate();
+            }
+            public async Task MovePlannerUpdate()
+            {
+                await Task.Delay(1);
+
+                // Move planner
+                if(!WalkChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
+                MPlaner.LineRenderer.enabled = true;
+                WalkWay.Clear();
+                if (WalkChecker()){
+
+                    WalkWay = Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position), 20);
+
+                    MPlaner.LineRenderer.positionCount = WalkWay.Count;
+                    MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
+                }
+            }
+            public async Task AttackPlannerUpdate()
+            {
+                await Task.Delay(1);
+                APlaner.position = new Checkers(APlaner.position);
+                // Attack planner
+                AttackZone.Clear();
+                if(SkillRealizer.ThisSkill.NoWalking) await MovePlannerUpdate();
+                await foreach(Attack attack in SkillRealizer.Realize()) { AttackZone.Add(attack); }
+
+                Generation.DrawAttack(AttackZone, this);
+                
+                SkillRealizer.Graphics(); 
+            }
+
+            void LostHealth()
+            {
+                if(Health is HealthCorpse) Destroy(transform.parent.gameObject);
+                else { 
+                    Corpse = true;
+                    this.Health.Value = this.Health.Max + this.Health.Value;
+                }
+                
             }
             void AfterInventoryUpdate()
             {
-                if(AllItemStats == BalanceChanger.CompoundParameters(Inventory.ToArray())) return;
-                AllItemStats = BalanceChanger.CompoundParameters(Inventory.ToArray()); 
+                List<BalanceChanger> FromItems = new List<BalanceChanger>(); foreach(Item item in Inventory) FromItems.Add(item.Stats);
+                List<BalanceChanger> FromEffects = new List<BalanceChanger>(); foreach(Effect effect in Effects) FromEffects.Add(effect.Stats);
+                
+                BalanceChanger result = BalanceChanger.Combine(FieldManipulate.CombineLists<BalanceChanger>(FromEffects, PermanentsEffects, FromItems).ToArray());
+
+                if(AllBalanceChanges == BalanceChanger.Combine(FromItems.ToArray())) return;
+                AllBalanceChanges = BalanceChanger.Combine(FromItems.ToArray()); 
 
                 #region // health
                 {
-                    BalanceChanger ReplaceHealthBar = null;
-                    if(Inventory.Find(a => a.ThisItem.ReplaceHealthBar)) ReplaceHealthBar = Inventory.Find(a => a.ThisItem.ReplaceHealthBar);
-                    if(ReplaceHealthBar != null){
-                        IHealthBar healthBar = ReplaceHealthBar.Health.Clone() as IHealthBar;
+                    if(AllBalanceChanges.ReplaceHealthBar){
+                        IHealthBar healthBar = AllBalanceChanges.Health.Clone() as IHealthBar;
                         healthBar.Value = Health.Value;
                         Health = healthBar;
                     }
@@ -200,20 +290,17 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                         healthBar.Value = Health.Value;
                         Health = healthBar;
                     }
-                    Health.ArmorMelee = BaseHealth.ArmorMelee + AllItemStats.Health.ArmorMelee;
-                    Health.ArmorRange = BaseHealth.ArmorRange + AllItemStats.Health.ArmorRange;
-                    Health.Immunity = BaseHealth.Immunity + AllItemStats.Health.Immunity;
+                    Health.ArmorMelee = BaseHealth.ArmorMelee + AllBalanceChanges.Health.ArmorMelee;
+                    Health.ArmorRange = BaseHealth.ArmorRange + AllBalanceChanges.Health.ArmorRange;
+                    Health.Immunity = BaseHealth.Immunity + AllBalanceChanges.Health.Immunity;
                     
-                    Health.Max = BaseHealth.Max + AllItemStats.Health.Max;
+                    Health.Max = BaseHealth.Max + AllBalanceChanges.Health.Max;
                 }
                 #endregion
                 #region // Stamina
                 {
-                    BalanceChanger ReplaceStaminaBar = null;
-                    if(Inventory.Find(a => a.ThisItem.ReplaceStaminaBar)) ReplaceStaminaBar = Inventory.Find(a => a.ThisItem.ReplaceStaminaBar);
-
-                    if(ReplaceStaminaBar != null){
-                        IStaminaBar staminaBar = ReplaceStaminaBar.Stamina.Clone() as IStaminaBar;
+                    if(AllBalanceChanges.ReplaceStaminaBar){
+                        IStaminaBar staminaBar = AllBalanceChanges.Stamina.Clone() as IStaminaBar;
                         staminaBar.Value = Stamina.Value;
                         Stamina = staminaBar;
                     }
@@ -223,18 +310,15 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                         staminaBar.Value = Stamina.Value;
                         Stamina = staminaBar;
                     }
-                    Stamina.RestEffectivity = BaseStamina.RestEffectivity + AllItemStats.Stamina.RestEffectivity;
-                    Stamina.WalkUseStamina = BaseStamina.WalkUseStamina + AllItemStats.Stamina.WalkUseStamina;
-                    Stamina.Max = BaseStamina.Max + AllItemStats.Stamina.Max;
+                    Stamina.RestEffectivity = BaseStamina.RestEffectivity + AllBalanceChanges.Stamina.RestEffectivity;
+                    Stamina.WalkUseStamina = BaseStamina.WalkUseStamina + AllBalanceChanges.Stamina.WalkUseStamina;
+                    Stamina.Max = BaseStamina.Max + AllBalanceChanges.Stamina.Max;
                 }
                 #endregion
                 #region // Sanity
                 {
-                    BalanceChanger ReplaceSanityBar = null;
-                    if(Inventory.Find(a => a.ThisItem.ReplaceSanityBar)) ReplaceSanityBar = Inventory.Find(a => a.ThisItem.ReplaceSanityBar);
-
-                    if(ReplaceSanityBar != null){
-                        ISanityBar sanityBar = ReplaceSanityBar.Stamina.Clone() as ISanityBar;
+                    if(AllBalanceChanges.ReplaceSanityBar){
+                        ISanityBar sanityBar = AllBalanceChanges.Stamina.Clone() as ISanityBar;
                         sanityBar.Value = Sanity.Value;
                         Sanity = sanityBar;
                     }
@@ -244,8 +328,8 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                         sanityBar.Value = Sanity.Value;
                         Sanity = sanityBar;
                     }
-                    Sanity.SanityShield = BaseSanity.SanityShield + AllItemStats.Sanity.SanityShield;
-                    Sanity.Max = BaseSanity.Max + AllItemStats.Sanity.Max;
+                    Sanity.SanityShield = BaseSanity.SanityShield + AllBalanceChanges.Sanity.SanityShield;
+                    Sanity.Max = BaseSanity.Max + AllBalanceChanges.Sanity.Max;
                 }
                 #endregion
             } 
@@ -259,17 +343,19 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
 
                 if(info != null) info.Invoke(parameter, parameters: null);
             }
-            void UpdateEffects(string Method)
+            void InvokeEffects(string Method)
             {
                 foreach(Effect effect in Effects)
                 {
                     if(effect.Target == null) effect.Target = this;
-                    effect.GetMethod(Method);
+                    effect.InvokeMethod(Method);
                 }
-                Effects.RemoveAll(a=>!a.ExistReasons());
+                RemoveEffect();
             }
-        #endregion
+        
+        #endregion      
         #region // =============================== Step System
+            
             Task FindStepStage(string id){ 
                 MethodInfo Method = type.GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
@@ -293,15 +379,22 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 async Task MPlanerMove()
                 {   
                     int PointNum = 1;
-                    for(float i = 0.0001f; position != WalkWay[WalkWay.Count - 1].ToVector3(); i *= 1.3f)
+                    for(float i = 0.0003f; position != WalkWay[WalkWay.Count - 1].ToVector3(); i *= 1.3f)
                     {
-                        await Await.Updates(7);
+                        await Await.Updates(1);
                         position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
                         if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
                     }
                 }
             }     
-            protected virtual async Task Attacking()
+            async Task EffectUpdate()
+            {
+                await Task.Delay(10);                 
+                
+                InvokeEffects("Update");
+                if(TakeDamageList.Checked) InvokeEffects("DamageReaction");
+            }
+            async Task Attacking()
             {
                 if(AttackZone.Count == 0) return;
                 WillRest = false;
@@ -313,24 +406,17 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 APlaner.position = MPlaner.position;
                 MPlaner.Renderer.enabled = false;
             }
-            async Task EffectUpdate()
-            {
-                await Task.Delay(10);                 
-                
-                UpdateEffects("Update");
-            }
             async Task DamageMath()
             {
+                List<Attack> attacks = TakeDamageList.Combine();
                 await Task.Delay(100);
 
-                foreach(Attack attack in TakeDamageList.Combine()) 
+                foreach(Attack attack in attacks) 
                 { 
                     Health.Damage(attack); 
-                    
                     AddEffect(attack.Effects);
                 }
-
-                if(TakeDamageList.Combine().Sum(a=>a.Damage) > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 1);
+                if(attacks.Sum(a=>a.Damage) > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 0.1f);
 
                 TakeDamageList.Clear();
             }
@@ -347,7 +433,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 Stamina.Rest();
             }
             
-            public bool WillRest = true;
+            bool WillRest = true;
 
             void EveryStepEnd()
             {
@@ -357,8 +443,11 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 UpdateParameter(Stamina);
                 UpdateParameter(Sanity);
                 foreach(IOtherBar otherState in OtherStates) UpdateParameter(otherState);
+
+                Effects.RemoveAll(a=>a is OneUse);
             }
         
         #endregion
+    
     #endregion
 }

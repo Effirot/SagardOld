@@ -10,24 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f1fa6c0c216d4d441a2764f694fac60c, type: 3}
-  m_Name: RandomItemSkill
+  m_Name: Repair
   m_EditorClassIdentifier: 
   Name: 
   Description: 
   BigDescription: 
   image: {fileID: 0}
-  NoWalking: 1
-  MaxCursorDistance: 0
+  NoWalking: 0
+  MaxCursorDistance: 8
   Realizations:
-  - HitBox: 0
-    PointType: 0
-    MaxDistance: 0
+  - HitBox: 2
+    PointType: 1
+    MaxDistance: 5
     MinDistance: 0
-    Damage: 0
+    Damage: 8
     DamageScalingType: 0
-    damageType: 0
+    damageType: 5
     Debuff: []
-  UsingStamina: 1
+  UsingStamina: 0
   DeleteWhenLowAmmo: 0
   references:
     version: 2

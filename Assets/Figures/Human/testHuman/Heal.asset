@@ -21,7 +21,7 @@ MonoBehaviour:
   Realizations:
   - HitBox: 4
     PointType: 0
-    MaxDistance: 3
+    MaxDistance: 10
     MinDistance: 0
     Damage: 5
     DamageScalingType: 1

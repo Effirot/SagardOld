@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
-using SagardCL.IParameterManipulate;
+using SagardCL.ParameterManipulate;
 using System.Threading.Tasks;
 using System;
 using Random = UnityEngine.Random;
@@ -23,28 +23,8 @@ using UnityEditor;
 
         static Checkers LastPose = new Checkers();
         Checkers CursorPos { get { Checkers pos = CursorController.Pos; if(LastPose != pos) { LastPose = pos; ChangePos(); } return pos; } }
-
-        bool WalkChecker(bool Other = true)
-        {        
-            if(!Other) return false;
-            
-            //OnOtherPlaner
-            foreach (RaycastHit hit in Physics.RaycastAll(new Vector3(0, 100, 0) + MPlaner.position, -Vector3.up, 105, LayerMask.GetMask("Object"))) 
-            { 
-                if(hit.collider.gameObject != MPlaner.Planer) { return false; }
-            }
-            
-            //OnSelf
-            if(new Checkers(position) == new Checkers(MPlaner.position))
-                return false;
-            
-            //OnStamina
-            if(Stamina.WalkUseStamina > Stamina.Value) return false;
-            //OnDistance
-            return WalkDistance + AllItemStats.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
-        }
     
-        public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { if(value != SkillRealizer.SkillIndex) MouseWheelTurn(); SkillRealizer.SkillIndex = value; } }
+        public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; } set { SkillRealizer.SkillIndex = value; } }
     
     #endregion
     #region // ================================== controlling
@@ -82,12 +62,9 @@ using UnityEditor;
                 default: return;
                 case 1: MovePlaningUpd(); return;
                 case 2: AttackPlaningUpd(); return;
-                case 4: break;
             }
         }
 
-        // Control use methods   
-        async void MouseWheelTurn(){ await AttackPlannerUpdate();  }
         async void ChangePos() { if(MouseTest == 2) await AttackPlannerUpdate(); if(MouseTest == 1) ParametersUpdate(); }
         
         // Standing methods
@@ -150,46 +127,6 @@ using UnityEditor;
 
             await AttackPlannerUpdate();
         }
-
-        #region // =============================== Update methods
-            
-            internal override async void ParametersUpdate()
-            {
-                await MovePlannerUpdate();
-                await AttackPlannerUpdate();
-            }
-            async Task MovePlannerUpdate()
-            {
-                await Task.Delay(1);
-
-
-                // Move planner
-                if(!WalkChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
-                MPlaner.LineRenderer.enabled = true;
-                WalkWay.Clear();
-                if (WalkChecker()){
-
-                    WalkWay = Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position), 20);
-
-                    MPlaner.LineRenderer.positionCount = WalkWay.Count;
-                    MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
-                }
-            }
-            async Task AttackPlannerUpdate()
-            {
-                await Task.Delay(1);
-                APlaner.position = new Checkers(APlaner.position);
-                // Attack planner
-                AttackZone.Clear();
-                if(SkillRealizer.ThisSkill.NoWalking) await MovePlannerUpdate();
-                await foreach(Attack attack in SkillRealizer.Realize()) { AttackZone.Add(attack); }
-                
-                Generation.DrawAttack(AttackZone, this);
-                
-                SkillRealizer.Graphics(); 
-            }
-
-        #endregion
     
     #endregion
 }

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SagardCL;
-using SagardCL.IParameterManipulate;
+using SagardCL.ParameterManipulate;
 using System.Threading.Tasks;
 using UnityEditor;
 using System.ComponentModel;
@@ -54,7 +54,7 @@ public class Skill : Descript, Sendable
     [NonSerialized] public int SkillIndex = 0;
     [SerializeField] private List<Skill> AvailbleBaseSkills;
     public List<Skill> AdditionBaseSkills;
-    public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>( AvailbleBaseSkills, AdditionBaseSkills, Unit.AllItemStats.AdditionSkills );
+    public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>( AvailbleBaseSkills, AdditionBaseSkills, Unit.AllBalanceChanges.AdditionSkills );
 
     public Skill ThisSkill { get{ try { return AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)]; } catch { return null; } } }
     private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
@@ -82,86 +82,85 @@ public class Skill : Descript, Sendable
 
     public async IAsyncEnumerable<Attack> Realize()
     {
-        if(Check()){
+        if(!Check()) yield break;
             await Task.Delay(0);
 
-            foreach(Skill.HitBoxParameters NowHit in ThisSkill.Realizations)
+        foreach(Skill.HitBoxParameters NowHit in ThisSkill.Realizations)
+        {
+            int DamageScalingDmg(float Distance) 
             {
-                int DamageScalingDmg(float Distance) 
+                switch(NowHit.DamageScalingType)
                 {
-                    switch(NowHit.DamageScalingType)
-                    {
-                        default: return 0;
-                        case DamageScaling.Descending: return (int)Mathf.Round(Distance / 5) - 3;
-                        case DamageScaling.Addition: return (int)Mathf.Round(-Distance / 5) + 3;
-                    }
+                    default: return 0;
+                    case DamageScaling.Descending: return (int)Mathf.Round(Distance / 5) - 3;
+                    case DamageScaling.Addition: return (int)Mathf.Round(-Distance / 5) + 3;
                 }
+            }
 
-                Checkers FinalPoint = this.FinalPoint(NowHit.PointType);
+            Checkers FinalPoint = this.FinalPoint(NowHit.PointType);
 
-                switch(NowHit.HitBox)
-                {
-                    default: yield break;
-                    case HitType.Arc:{
-                        for(int x = -NowHit.MaxDistance - 2; x <= NowHit.MaxDistance + 2; x++)
-                        {
-                            for(int z = -NowHit.MaxDistance - 2; z <= NowHit.MaxDistance + 2; z++)
-                            {
-                                Checkers NowChecking = FinalPoint + new Checkers(x, z);
-                                float dist = Checkers.Distance(startPos,  NowChecking);
+            switch(NowHit.HitBox)
+            {
+                default: continue;
+                case HitType.Arc:{
+                    for(int x = -NowHit.MaxDistance - 2; x <= NowHit.MaxDistance + 2; x++)
+                    for(int z = -NowHit.MaxDistance - 2; z <= NowHit.MaxDistance + 2; z++)
+                    {
+                        Checkers NowChecking = FinalPoint + new Checkers(x, z);
+                        float dist = Checkers.Distance(startPos,  NowChecking);
 
-                                if(dist > Checkers.Distance(endPos, startPos))
-                                    continue;
-                                // if(Checkers.Distance(endPos, NowChecking) > Checkers.Distance(endPos, startPos))
-                                //     continue;
-                                if(dist < NowHit.MinDistance * ((Checkers.Distance(endPos, startPos) / 8f))) 
-                                    continue;
-                                if(Physics.Raycast(new Checkers(startPos, 0.2f), NowChecking - startPos, dist, LayerMask.GetMask("Map")))
-                                    continue;
+                        if(dist > Checkers.Distance(endPos, startPos))
+                            continue;
+                        // if(Checkers.Distance(endPos, NowChecking) > Checkers.Distance(endPos, startPos))
+                        //     continue;
+                        if(dist < NowHit.MinDistance * ((Checkers.Distance(endPos, startPos) / 8f))) 
+                            continue;
+                        if(Physics.Raycast(new Checkers(startPos, 0.2f), NowChecking - startPos, dist, LayerMask.GetMask("Map")))
+                            continue;
 
-                                yield return(new Attack(Unit, 
-                                NowChecking, 
-                                NowHit.Damage - DamageScalingDmg(dist), 
-                                NowHit.damageType));
-                            }
-                        }
-                        break;
+                        yield return(new Attack(Unit, 
+                        NowChecking, 
+                        NowHit.Damage - DamageScalingDmg(dist), 
+                        NowHit.damageType,
+                        NowHit.Debuff));
+                        
                     }
-                    case HitType.Line:{
-                        foreach(Checkers NowChecking in Checkers.Line(startPos, FinalPoint))
-                        {
-                            if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance) 
-                                continue;
-                            if(Checkers.Distance(NowChecking, startPos) > NowHit.MaxDistance)
-                                continue;
-                            yield return(new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.damageType));
-                        }
-                        yield return(new Attack(Unit, FinalPoint, NowHit.Damage, NowHit.damageType));
-
-                        break;
+                    break;
+                }
+                case HitType.Line:{
+                    foreach(Checkers NowChecking in Checkers.Line(startPos, FinalPoint))
+                    {
+                        if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance) 
+                            continue;
+                        if(Checkers.Distance(NowChecking, startPos) > NowHit.MaxDistance)
+                            continue;
+                        yield return(new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.damageType, NowHit.Debuff));
                     }
-                    case HitType.Sphere:{
-                        for(int x = -NowHit.MaxDistance - 1; x < NowHit.MaxDistance + 1; x++)
-                        {
-                            for(int z = -NowHit.MaxDistance - 1; z <= NowHit.MaxDistance + 1; z++)
-                            {
-                                Checkers NowChecking = FinalPoint + new Checkers(x, z);
-                                if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance - 0.7f) 
-                                    continue;
-                                float dist = Checkers.Distance(FinalPoint, NowChecking);
-                                if(dist > Mathf.Abs(NowHit.MaxDistance + 1) - 0.9f)
-                                    continue;
-                                if(Physics.Raycast(new Checkers(FinalPoint, 0.2f), NowChecking - FinalPoint, dist, LayerMask.GetMask("Map")))
-                                    continue;
+                    yield return(new Attack(Unit, FinalPoint, NowHit.Damage, NowHit.damageType));
 
-                                yield return new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(dist), NowHit.damageType);
-                            }
-                        }
-                        break;
+                    break;
+                }
+                case HitType.Sphere:{
+                    for(int x = -NowHit.MaxDistance - 1; x < NowHit.MaxDistance + 1; x++)
+                    for(int z = -NowHit.MaxDistance - 1; z <= NowHit.MaxDistance + 1; z++)
+                    {
+                        Checkers NowChecking = FinalPoint + new Checkers(x, z);
+                        if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance - 0.7f) 
+                            continue;
+                        float dist = Checkers.Distance(FinalPoint, NowChecking);
+                        if(dist > Mathf.Abs(NowHit.MaxDistance + 1) - 0.9f)
+                            continue;
+                        if(Physics.Raycast(new Checkers(FinalPoint, 0.2f), NowChecking - FinalPoint, dist, LayerMask.GetMask("Map")))
+                            continue;
+
+                        yield return new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(dist), NowHit.damageType, NowHit.Debuff);
+                        
                     }
+                    break;
                 }
             }
         }
+        
     }
     public void Graphics()
     {

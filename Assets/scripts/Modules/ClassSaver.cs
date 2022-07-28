@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using System;
 using UnityEngine.Events;
-using SagardCL.IParameterManipulate;
+using SagardCL.ParameterManipulate;
 using System.Reflection;
 using System.Linq;
 
@@ -107,12 +107,15 @@ namespace SagardCL //Class library
         {
             public Dictionary<DamageType, List<Attack>> Sorter;
             public HashSet<CharacterCore> Senders;
-
+            
+            bool _Checked;
+            public bool Checked{ get{ return _Checked; } }
 
             public AttackCombiner(params Attack[] attacks) 
             {   
                 Sorter = new Dictionary<DamageType, List<Attack>>(); 
                 Senders = new HashSet<CharacterCore>();
+                _Checked = attacks.Sum(a=>a.Damage) > 0;
 
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
                 foreach(Attack attack in attacks) { Add(attack); } 
@@ -129,6 +132,8 @@ namespace SagardCL //Class library
             {
                 Sorter = new Dictionary<DamageType, List<Attack>>();
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
+
+                _Checked = false;
 
                 Senders = new HashSet<CharacterCore>();
             }
@@ -168,7 +173,6 @@ namespace SagardCL //Class library
                 return result;
             }
         }
-    
     }
     [System.Serializable] public struct Checkers
     {
@@ -276,7 +280,7 @@ namespace SagardCL //Class library
             while(pos1 != pos2) 
             {
                 
-
+                result.Add(pos1);
                 int error2 = error * 2;
                 if(error2 > -deltaZ) 
                 {
@@ -288,7 +292,7 @@ namespace SagardCL //Class library
                     error += deltaX;
                     pos1.Z += signZ;
                 }
-                result.Add(pos1);
+                
             }
 
             return result;
@@ -389,12 +393,29 @@ namespace SagardCL //Class library
         public List<Skill> AdditionSkills = new List<Skill>();
 
         
-        public static BalanceChanger CompoundParameters(params BalanceChanger[] items) 
+        public static BalanceChanger Combine(params BalanceChanger[] items) 
         {
             var result = new BalanceChanger();
             var resists = new List<IEffect>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
+
+            if(items.ToList().Exists(a=>a.ReplaceHealthBar)) 
+            {
+                result.ReplaceHealthBar = true;
+                result.Health = items.ToList().Find(a=>a.ReplaceHealthBar).Health.Clone() as IHealthBar;
+            }
+            if(items.ToList().Exists(a=>a.ReplaceSanityBar)) 
+            {
+                result.ReplaceHealthBar = true;
+                result.Sanity = items.ToList().Find(a=>a.ReplaceSanityBar).Health.Clone() as ISanityBar;
+            }
+            if(items.ToList().Exists(a=>a.ReplaceStaminaBar)) 
+            {
+                result.ReplaceHealthBar = true;
+                result.Stamina = items.ToList().Find(a=>a.ReplaceStaminaBar).Health.Clone() as IStaminaBar;
+            }
+            
             foreach(BalanceChanger item in items)
             {
                 result.WalkDistance += item.WalkDistance;
@@ -412,39 +433,8 @@ namespace SagardCL //Class library
                 result.Sanity.SanityShield += item.Sanity.SanityShield;
 
                 resists.AddRange(item.Resists);
-                additionStates.AddRange(item.AdditionState);
+                //additionStates.AddRange(item.AdditionState);
                 additionSkills.AddRange(item.AdditionSkills);
-            }
-            result.Resists = resists;
-            result.AdditionSkills = additionSkills;
-            result.AdditionState = additionStates;
-
-            return result; 
-        }
-        public static BalanceChanger CompoundParameters(params Item[] items) 
-        {
-            var result = new BalanceChanger();
-            var resists = new List<IEffect>();
-            var additionStates = new List<IOtherBar>();
-            var additionSkills = new List<Skill>();
-            foreach(BalanceChanger item in items)
-            {
-                result.WalkDistance += item.WalkDistance;
-
-                result.Health.Max += item.Health.Max;
-                result.Health.ArmorMelee += item.Health.ArmorMelee;
-                result.Health.ArmorRange += item.Health.ArmorRange;
-
-                result.Stamina.Max += item.Stamina.Max;
-                result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
-                result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
-                
-                result.Sanity.Max += item.Sanity.Max;
-                result.Sanity.SanityShield += item.Sanity.SanityShield;
-
-                if(item.Resists != null) resists.AddRange(item.Resists);
-                if(item.AdditionState != null) additionStates.AddRange(item.AdditionState);
-                if(item.AdditionSkills != null) additionSkills.AddRange(item.AdditionSkills);
             }
             result.Resists = resists;
             result.AdditionSkills = additionSkills;
@@ -466,7 +456,7 @@ namespace SagardCL //Class library
         }
     }
 
-    namespace IParameterManipulate
+    namespace ParameterManipulate
     {
         // All Interfaces 
         public interface Sendable
@@ -497,7 +487,34 @@ namespace SagardCL //Class library
 
                 float Immunity { get; set; }
 
-                void Damage(Attack attack);
+                public void Damage(Attack attack)
+                {
+                    if(attack.Damage > 0)
+                    switch(attack.DamageType)
+                    {
+                        case DamageType.Pure: Value -= Pure(attack); break;
+                        case DamageType.Melee: Value -= Melee(attack); break;
+                        case DamageType.Range: Value -= Range(attack); break;
+                        case DamageType.Rezo: Value -= Rezo(attack); break;
+            
+                        case DamageType.Heal: Value += Heal(attack); break;
+                        case DamageType.Repair: Value += Repair(attack); break;
+
+                        case DamageType.Effect: Value -= Effect(attack); break;
+                    }
+                }
+
+                protected virtual int Pure(Attack attack) { return Mathf.Clamp(attack.Damage, 0, 1000); }
+                protected virtual int Melee(Attack attack) { return Mathf.Clamp(attack.Damage - ArmorMelee, 0, 1000); }
+                protected virtual int Range(Attack attack) { return Mathf.Clamp(attack.Damage - ArmorRange, 0, 1000); }
+                protected virtual int Rezo(Attack attack) { return Mathf.Clamp(attack.Damage - (int)Mathf.Round((ArmorRange + ArmorMelee) * 0.75f), 0, 1000); }
+
+                protected virtual int Heal(Attack attack) { return Mathf.Clamp((int)Mathf.Round((Value + attack.Damage) * ((1 - Immunity) * 0.5f)), 0, Max - Value); }
+                protected virtual int Repair(Attack attack) { return -1; }
+
+                protected virtual int Effect(Attack attack) { return Mathf.Clamp((int)Mathf.Round(attack.Damage * (1 - Immunity)), 0, 1000); }
+
+                
             }
             public interface IStaminaBar : IStateBar
             {
@@ -525,7 +542,7 @@ namespace SagardCL //Class library
                 bool nowVisible(CharacterCore Object);
 
                 List<Effect> Effects { get; set; }
-                List<Effect> Resists { get; set; }
+                List<Type> Resists { get; set; }
 
                 protected delegate Type IEffect<T>() where T : IEffect;
             }
@@ -582,13 +599,15 @@ namespace SagardCL //Class library
 
                 CharacterCore Target { get; set; }
                 
-                public void GetMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
+                public void InvokeMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
                                                      if(info != null) info.Invoke(this, parameters: null); } 
 
                 BalanceChanger Stats { get; set; }
             }
-            public interface Effect : IEffect { bool ExistReasons(); }
+            public interface Effect : IEffect { bool Workable(); }
             public interface HiddenEffect : Effect { }
+            public interface OneUse : IEffect { }
+            public interface OnMap : IEffect { }
             public interface RacePassiveEffect : IEffect { Race RaceName { get; set; } string RaceDescription { get; set; } }
         
         #endregion

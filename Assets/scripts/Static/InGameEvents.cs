@@ -64,8 +64,8 @@ public class InGameEvents : MonoBehaviour
     enum Step : int
     {
         Walking,
-        Attacking,
         EffectUpdate,
+        Attacking,
         DamageMath,
         Dead,
         Rest

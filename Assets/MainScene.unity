@@ -331,12 +331,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: InventorySize
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: _Effects.Array.size
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: _Inventory.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[-2]
@@ -350,6 +354,10 @@ PrefabInstance:
       propertyPath: _Inventory.Array.data[0]
       value: 
       objectReference: {fileID: 11400000, guid: a4c067bf46b538b40a50c04ecc5f127b, type: 2}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: _Inventory.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 572decc748263e5488c7c947b9d4dae8, type: 2}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[7033181754952777728]
       value: Assembly-CSharp Bleed
@@ -1378,7 +1386,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1521680025}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b39358f1a489c634fa75894e180b4f10, type: 3}
+  m_Script: {fileID: 11500000, guid: 9d2beab83d5891d419463562dbd7cd5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!23 &1521680030
