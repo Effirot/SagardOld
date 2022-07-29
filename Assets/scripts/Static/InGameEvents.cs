@@ -29,7 +29,6 @@ public class InGameEvents : MonoBehaviour
         if(EventSystem.current.IsPointerOverGameObject()) return;
 
         if(Controllable) MouseControl();
-        if(Controllable & Input.GetKeyDown(KeyCode.Return)) CompleteModeSwitch(); 
     }
 
     GameObject TargetObject = null;
@@ -70,11 +69,13 @@ public class InGameEvents : MonoBehaviour
         Dead,
         Rest
     }
-    static async void CompleteModeSwitch()
+    public static async void CompleteModeSwitch()
     {
+        if(!Controllable) return;
         Controllable = false;   
         
         for(int i = 0; i < Enum.GetNames(typeof(Step)).Length; i++){
+            Debug.Log($"Now step: {(Step)i}");
             MapUpdate.Invoke();
             List<Task> task = new List<Task>();
 

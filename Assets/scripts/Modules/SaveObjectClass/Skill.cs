@@ -80,7 +80,7 @@ public class Skill : Descript, Sendable
         return t; 
     }
 
-    public async IAsyncEnumerable<Attack> Realize()
+    async IAsyncEnumerable<Attack> _Realize()
     {
         if(!Check()) yield break;
             await Task.Delay(0);
@@ -163,6 +163,13 @@ public class Skill : Descript, Sendable
         }
         
     }
+    public async Task<List<Attack>> Realize()
+    {
+        List<Attack> attackList = new List<Attack>();
+        await foreach(Attack attack in _Realize()) attackList.Add(attack);
+        return attackList;
+    }
+    
     public void Graphics()
     {
         LineRenderer renderer = To.LineRenderer;

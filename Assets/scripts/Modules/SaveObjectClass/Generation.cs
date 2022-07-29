@@ -165,7 +165,8 @@ public abstract class Generation : MonoBehaviour
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int PlayerNum, params PlatformPresets[] visual)
         {
             key = (uint)Random.Range(0, 99999999);
-            XScale = PlayerNum * 9 + (((int)key / 23)%7); ZScale = PlayerNum * 9 + (((int)key / 14)%7); 
+            XScale = PlayerNum * 15 + (((int)key / 23)%7); 
+            ZScale = PlayerNum * 15 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
             
             MaterialsList = new List<Material>();

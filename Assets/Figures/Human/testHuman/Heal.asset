@@ -17,15 +17,15 @@ MonoBehaviour:
   BigDescription: 
   image: {fileID: 21300000, guid: 305aea5541f2da24fbd3c4c0872783ab, type: 3}
   NoWalking: 0
-  MaxCursorDistance: 0
+  MaxCursorDistance: 10
   Realizations:
   - HitBox: 4
     PointType: 0
-    MaxDistance: 10
+    MaxDistance: 2
     MinDistance: 0
     Damage: 5
     DamageScalingType: 1
-    damageType: 5
+    damageType: 6
     Debuff: []
   UsingStamina: 2
   DeleteWhenLowAmmo: 0

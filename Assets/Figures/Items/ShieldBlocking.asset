@@ -17,7 +17,7 @@ MonoBehaviour:
   BigDescription: 
   image: {fileID: 21300000, guid: 305aea5541f2da24fbd3c4c0872783ab, type: 3}
   NoWalking: 1
-  MaxCursorDistance: 5
+  MaxCursorDistance: 300
   Realizations:
   - HitBox: 4
     PointType: 2
@@ -51,7 +51,7 @@ MonoBehaviour:
             rid: 7033181795884204148
           ReplaceSanityBar: 0
           AdditionSkills: []
-        Timer: 4
+        Timer: 7
     - rid: 7033181795884204146
       type: {class: Health, ns: , asm: Assembly-CSharp}
       data:
