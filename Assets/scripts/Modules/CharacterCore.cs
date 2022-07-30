@@ -65,6 +65,10 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             BaseStamina = _Stamina.Clone() as IStaminaBar;
             BaseSanity = _Sanity.Clone() as ISanityBar;
             
+            InGameEvents.MapUpdate.AddListener(async() => {
+                await MovePlannerSet(MPlaner.position, MPlaner.Renderer.enabled);
+                await AttackPlannerSet(APlaner.position, MPlaner.Renderer.enabled);
+            });
             InGameEvents.StepSystem.Add(FindStepStage);
             InGameEvents.AttackTransporter.AddListener((a) => { 
                 List<Attack> find = a.FindAll((a) => a.Position == new Checkers(position));
@@ -85,20 +89,22 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         [SerializeField] bool _Corpse = false;
         internal bool Corpse { get { return _Corpse; }
         set { 
-            if(value) 
-            {
-                Effects.RemoveAll(a=>a is OneUse);
-                Effects.Add(Decomposition.Base(this));
+                if(_Corpse != value)
+                    if(value) 
+                    {
+                        Effects.RemoveAll(a=>a is OneUse | !a.Workable());
+                        Effects.Add(Decomposition.Base(this));
 
-                ChangeFigureColor(new Color(0.5f, 0.5f, 0.5f), 0.2f);
-            }
-            else 
-            {
-                Effects.Remove(Decomposition.Base(this));
+                        ChangeFigureColor(new Color(0.5f, 0.5f, 0.5f), 0.2f);
+                    }
+                    else 
+                    {
+                        Effects.Remove(Decomposition.Base(this));
 
-                ChangeFigureColor(new Color(1f, 1f, 1f), 0.2f);
-            }
-            _Corpse = value; } 
+                        ChangeFigureColor(new Color(1f, 1f, 1f), 0.2f);
+                    }
+                _Corpse = value;
+            } 
         } 
         [SerializeField] internal int WalkDistance = 5;
 
@@ -213,7 +219,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
 
         #region // =============================== Update methods
             
-            public bool WalkChecker(bool Other = true)
+            public bool CheckPosition(Checkers position, bool Other = true)
             {        
                 if(!Other) return false;
                 
@@ -224,52 +230,62 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
                 
                 //OnSelf
-                if(new Checkers(position) == new Checkers(MPlaner.position))
+                if(new Checkers(position) == new Checkers(this.position))
                     return false;
                 
                 //OnStamina
                 if(Stamina.WalkUseStamina > Stamina.Value) return false;
                 //OnDistance
-                return WalkDistance + AllBalanceChanges.WalkDistance + 0.5f >= Checkers.Distance(MPlaner.position, position); 
+                return WalkDistance + AllBalanceChanges.WalkDistance + 0.5f >= Checkers.Distance(new Checkers(this.position), position); 
             }    
-            public async void ParametersUpdate()
+
+            public async Task MovePlannerSet(Checkers position, bool Draw = true, bool CustomWay = false)
             {
-                await MovePlannerUpdate();
-                await AttackPlannerUpdate();
-            }
-            public async Task MovePlannerUpdate()
-            {
-                await Task.Delay(1);
-
-                // Move planner
-                if(!WalkChecker()) { MPlaner.LineRenderer.enabled = false; WalkWay.Clear(); return; }
-                MPlaner.LineRenderer.enabled = true;
-                WalkWay.Clear();
-                if (WalkChecker()){
-
-                    WalkWay = Checkers.PatchWay.WayTo(new Checkers(position), new Checkers(MPlaner.position), 20);
-
-                    MPlaner.LineRenderer.positionCount = WalkWay.Count;
-                    MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
-                }
-            }
-            public async Task AttackPlannerUpdate()
-            {
-                await Task.Delay(1);
-                APlaner.position = new Checkers(APlaner.position);
-                // Attack planner
-                AttackZone.Clear();
-                if(SkillRealizer.ThisSkill.NoWalking) await MovePlannerUpdate();
-                await foreach(Attack attack in SkillRealizer.Realize()) { AttackZone.Add(attack); }
-
-                Generation.DrawAttack(AttackZone, this);
+                await Task.Delay(2);
                 
-                SkillRealizer.Graphics(); 
+                MPlaner.LineRenderer.enabled = CheckPosition(position) & Draw;
+                MPlaner.Renderer.enabled = CheckPosition(position) & Draw;
+
+                if(SkillRealizer.ThisSkill.NoWalking & position == new Checkers(this.position)) 
+                    await AttackPlannerSet(position);
+
+                if(!CustomWay) 
+                    WalkWay.Clear();
+
+                if (CheckPosition(position)){
+                    MPlaner.position = position;
+                    
+                    if(!CustomWay) 
+                        WalkWay = Checkers.PatchWay.WayTo(new Checkers(this.position), new Checkers(position), 20);
+                
+                    if(Draw) {
+                        MPlaner.LineRenderer.positionCount = WalkWay.Count;
+                        MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
+                    }
+                }
+                else 
+                    MPlaner.position = new Checkers(this.position);
+                
+            }
+            public async Task AttackPlannerSet(Checkers position, bool Draw = true, bool CustomZone = false)
+            {
+                APlaner.position = new Checkers(position);
+
+                if(SkillRealizer.ThisSkill.NoWalking) 
+                    await MovePlannerSet(this.position, false);
+                
+                if(!CustomZone) {
+                    AttackZone.Clear();
+                    AttackZone = await SkillRealizer.Realize();
+                }
+                if(Draw) {
+                    Generation.DrawAttack(AttackZone, this);
+                }
             }
 
             void LostHealth()
             {
-                if(Health is HealthCorpse) Destroy(transform.parent.gameObject);
+                if(Corpse) Destroy(transform.parent.gameObject);
                 else { 
                     Corpse = true;
                     this.Health.Value = this.Health.Max + this.Health.Value;
@@ -379,22 +395,20 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 WillRest = false;
                 await Task.Delay(30);
 
-
                 Stamina.GetTired(Stamina.WalkUseStamina);
-                await MPlanerMove();
+                await transport();
 
-                ParametersUpdate();
-
-                async Task MPlanerMove()
-                {   
+                async Task transport() {
                     int PointNum = 1;
                     for(float i = 0.0003f; position != WalkWay[WalkWay.Count - 1].ToVector3(); i *= 1.3f)
                     {
-                        await Await.Updates(1);
+                        await Await.Updates(2);
                         position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
                         if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
                     }
+                    await MovePlannerSet(this.position, false);
                 }
+                
             }     
             async Task EffectUpdate()
             {
@@ -412,8 +426,8 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 Stamina.GetTired(SkillRealizer.StaminaWaste());
                 InGameEvents.AttackTransporter.Invoke(AttackZone);
 
-                APlaner.position = MPlaner.position;
-                MPlaner.Renderer.enabled = false;
+
+                await AttackPlannerSet(MPlaner.position, true);
             }
             async Task DamageMath()
             {

@@ -204,13 +204,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 302834733322452018}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0.96000004, z: 0}
+  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2364575546336384460}
-  m_Father: {fileID: 5143704769373518800}
-  m_RootOrder: 1
+  m_Father: {fileID: 3838525804336366737}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!120 &6673325858917180796
 LineRenderer:
@@ -451,13 +451,13 @@ MonoBehaviour:
   AllBalanceChanges:
     WalkDistance: 0
     Health:
-      rid: 2078022691430596617
+      rid: 7033181825819738118
     ReplaceHealthBar: 0
     Stamina:
-      rid: 2078022691430596618
+      rid: 7033181825819738119
     ReplaceStaminaBar: 0
     Sanity:
-      rid: 2078022691430596619
+      rid: 7033181825819738120
     ReplaceSanityBar: 0
     AdditionSkills: []
   PermanentsEffects: []
@@ -470,40 +470,11 @@ MonoBehaviour:
       Planer: {fileID: 302834733322452018}
       Model: {fileID: 110499025132641117}
     AvailbleBaseSkills:
-    - Name: 
-      Description: 
-      BigDescription: 
-      image: {fileID: 0}
-      NoWalking: 0
-      MaxCursorDistance: 0
-      Realizations: []
-      UsingStamina: 0
-      DeleteWhenLowAmmo: 0
-    - Name: Shot
-      Description: 
-      BigDescription: 
-      image: {fileID: 21300000, guid: e84452a5a08499e4f81c2635271111f2, type: 3}
-      NoWalking: 0
-      MaxCursorDistance: 7
-      Realizations:
-      - HitBox: 2
-        PointType: 1
-        MaxDistance: 7
-        MinDistance: 0
-        DamagePercent: 1.25
-        DamageScalingType: 1
-        DamageType: 1
-        Debuff:
-        - rid: 2078022691430596620
-      UsingStamina: 1
-      DeleteWhenLowAmmo: 0
-  Strength: 7
-  Accuracy: 4
-  RezoOverclocking: 9
-  Healing: 5
-  Repairing: 3
-  DamagePure: 8
-  DamageRange: 9
+    - {fileID: 11400000, guid: 432caffd66a197644a2b0f0c9908b957, type: 2}
+    - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
+    - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
+    - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
+    AdditionBaseSkills: []
   Team: {r: 0, g: 0, b: 0, a: 0}
   CanControl: 1
   references:
@@ -511,68 +482,6 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 2078022691430596617
-      type: {class: Health, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _ArmorMelee: 0
-        _ArmorRange: 0
-        _Immunity: 0
-    - rid: 2078022691430596618
-      type: {class: Stamina, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _RestEffect: 0
-        _WalkUseStamina: 0
-    - rid: 2078022691430596619
-      type: {class: Sanity, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _SanityShield: 0
-    - rid: 2078022691430596620
-      type: {class: Bleed, ns: , asm: Assembly-CSharp}
-      data:
-        _Name: 
-        _Sprite: {fileID: 0}
-        _Description: 
-        Stat:
-          WalkDistance: 0
-          Health:
-            rid: 2078022691430596621
-          ReplaceHealthBar: 0
-          Stamina:
-            rid: 2078022691430596622
-          ReplaceStaminaBar: 0
-          Sanity:
-            rid: 2078022691430596623
-          ReplaceSanityBar: 0
-          AdditionSkills: []
-        Timer: 1
-        Damage: 2
-    - rid: 2078022691430596621
-      type: {class: Health, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _ArmorMelee: 0
-        _ArmorRange: 0
-        _Immunity: 0
-    - rid: 2078022691430596622
-      type: {class: Stamina, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _RestEffect: 0
-        _WalkUseStamina: 0
-    - rid: 2078022691430596623
-      type: {class: Sanity, ns: , asm: Assembly-CSharp}
-      data:
-        _Value: 0
-        _Max: 0
-        _SanityShield: 0
     - rid: 7033181733883215875
       type: {class: HealthOver, ns: , asm: Assembly-CSharp}
       data:
@@ -595,6 +504,27 @@ MonoBehaviour:
         _Max: 11
         _RestEffect: 5
         _WalkUseStamina: 1
+    - rid: 7033181825819738118
+      type: {class: Health, ns: , asm: Assembly-CSharp}
+      data:
+        _Value: 0
+        _Max: 0
+        _ArmorMelee: 0
+        _ArmorRange: 0
+        _Immunity: 0
+    - rid: 7033181825819738119
+      type: {class: Stamina, ns: , asm: Assembly-CSharp}
+      data:
+        _Value: 0
+        _Max: 0
+        _RestEffect: 0
+        _WalkUseStamina: 0
+    - rid: 7033181825819738120
+      type: {class: Sanity, ns: , asm: Assembly-CSharp}
+      data:
+        _Value: 0
+        _Max: 0
+        _SanityShield: 0
 --- !u!33 &8576715605070142110
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -855,6 +785,7 @@ Transform:
   m_Children:
   - {fileID: 2125046302867321512}
   - {fileID: 5143704769373518800}
+  - {fileID: 3331473634578936682}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3087,7 +3018,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5106959081763740686}
-  - {fileID: 3331473634578936682}
   m_Father: {fileID: 3838525804336366737}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

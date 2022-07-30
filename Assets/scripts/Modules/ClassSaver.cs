@@ -292,7 +292,6 @@ namespace SagardCL //Class library
                     error += deltaX;
                     pos1.Z += signZ;
                 }
-                
             }
 
             return result;
