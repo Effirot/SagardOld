@@ -83,7 +83,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         Race RaceName { get{ return _Race; } set{ _Race = value; } }
 
         [SerializeField] bool _Corpse = false;
-        internal bool Corpse { get { return _Corpse; } 
+        internal bool Corpse { get { return _Corpse; }
         set { 
             if(value) 
             {
@@ -145,7 +145,6 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             [SerializeField] List<Item> _Inventory;
             public int InventorySize = 1;
 
-
             [SerializeField] public List<Item> _ArtifacerInventory;
             public int ArtifacerInventorySize = 0;
 
@@ -160,11 +159,21 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
 
             public ReBalancer AllBalanceChanges;
             public List<ReBalancer> PermanentsEffects = new List<ReBalancer>();
+
         #endregion
         #region // ================================== Skills
 
             public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
             [SerializeField] SkillCombiner _SkillRealizer = new SkillCombiner();
+
+            [SerializeField] public int Strength;
+            [SerializeField] public int Accuracy;
+            [SerializeField] public int RezoOverclocking;
+            [SerializeField] public int Healing;
+            [SerializeField] public int Repairing;
+
+            [SerializeField] public int DamagePure = 8;
+            [SerializeField] public int DamageRange = 9;
 
         #endregion
 
@@ -201,7 +210,6 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         public void RemoveEffect(params Effect[] Effect) {
             foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
         }
-
 
         #region // =============================== Update methods
             

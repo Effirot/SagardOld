@@ -8,9 +8,14 @@ using UnityEditor;
 using System.ComponentModel;
 using System;
 
-[CreateAssetMenu(fileName = "BaseSkill", menuName = "SagardCL objects/Base Skill", order = 51)]
-public class Skill : Descript, Sendable
+[Serializable]public struct Skill
 {
+    [Space, Header("Description")]
+    public string Name;
+    public string Description;
+    public string BigDescription;
+    public Sprite image;
+
     [Space(2)]
     [Header("Parameters")]
     public bool NoWalking;
@@ -22,7 +27,7 @@ public class Skill : Descript, Sendable
     public int UsingStamina;
     [Space]
     public IStateBar Ammo;
-    public bool DeleteWhenLowAmmo = false;
+    public bool DeleteWhenLowAmmo;
 
     [Serializable]public class HitBoxParameters
     {
@@ -32,13 +37,13 @@ public class Skill : Descript, Sendable
         [Range(0, 40)]public int MaxDistance;
         [Range(0, 10)]public int MinDistance;
         [Header("Damage")]
-        [Range(0, 20)]public int Damage;
+        [Range(0.1f, 5f)]public float DamagePercent;
         public DamageScaling DamageScalingType;
-        public DamageType damageType;
+        public DamageType DamageType;
         [Space]
         [SerializeReference, SubclassSelector] public Effect[] Debuff;
     }
-    public bool isEmpty => Realizations.Count == 0;
+    public bool isEmpty => Realizations != null ? Realizations.Count == 0 : true;
 }
 
 
@@ -46,17 +51,16 @@ public class Skill : Descript, Sendable
     
     //--------------------------------------------------------------------------------------- All Parameters ----------------------------------------------------------------------------------------------------------   
     [Header("Controllers")]  
-    public CharacterController Unit;
+    public CharacterCore Target;
     [Space]
     public AllInOne From;
     public AllInOne To;
 
     [NonSerialized] public int SkillIndex = 0;
     [SerializeField] private List<Skill> AvailbleBaseSkills;
-    public List<Skill> AdditionBaseSkills;
-    public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>( AvailbleBaseSkills, AdditionBaseSkills, Unit.AllBalanceChanges.AdditionSkills );
+    public List<Skill> AvailbleSkills => FieldManipulate.CombineLists<Skill>( AvailbleBaseSkills, Target.AllBalanceChanges.AdditionSkills );
 
-    public Skill ThisSkill { get{ try { return AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)]; } catch { return null; } } }
+    public Skill ThisSkill { get{ try { return AvailbleSkills[Mathf.Clamp(SkillIndex, 0, AvailbleSkills.Count - 1)]; } catch { return new Skill(); } } }
     private Checkers startPos{ get{ return new Checkers(From.position, 0.8f); } set { From.position = value; } }
     private Checkers endPos => new Checkers(To.position, 0f);
     private Checkers FinalPoint(TargetPointGuidanceType PointType) {switch (PointType)
@@ -96,6 +100,20 @@ public class Skill : Descript, Sendable
                     case DamageScaling.Addition: return (int)Mathf.Round(-Distance / 5) + 3;
                 }
             }
+            int Damage()
+            {
+                switch(NowHit.DamageType)
+                {
+                    default: return 0;
+                    case DamageType.Melee: return (int)Mathf.Round(Target.Strength * NowHit.DamagePercent);
+                    case DamageType.Range: return (int)Mathf.Round(Target.DamageRange * NowHit.DamagePercent);
+                    case DamageType.Rezo: return (int)Mathf.Round(Target.RezoOverclocking * NowHit.DamagePercent);
+                    case DamageType.Pure: return (int)Mathf.Round(Target.DamagePure * NowHit.DamagePercent);
+
+                    case DamageType.Heal: return (int)Mathf.Round(Target.Healing * NowHit.DamagePercent);
+                    case DamageType.Repair: return (int)Mathf.Round(Target.Repairing * NowHit.DamagePercent);
+                }   
+            }
 
             Checkers FinalPoint = this.FinalPoint(NowHit.PointType);
 
@@ -118,10 +136,10 @@ public class Skill : Descript, Sendable
                         if(Physics.Raycast(new Checkers(startPos, 0.2f), NowChecking - startPos, dist, LayerMask.GetMask("Map")))
                             continue;
 
-                        yield return(new Attack(Unit, 
+                        yield return(new Attack(Target, 
                         NowChecking, 
-                        NowHit.Damage - DamageScalingDmg(dist), 
-                        NowHit.damageType,
+                        Damage() - DamageScalingDmg(dist), 
+                        NowHit.DamageType,
                         NowHit.Debuff));
                         
                     }
@@ -135,9 +153,9 @@ public class Skill : Descript, Sendable
                         if(Checkers.Distance(NowChecking, startPos) > NowHit.MaxDistance)
                             continue;
                         if(NowChecking != startPos)
-                            yield return(new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.damageType, NowHit.Debuff));
+                            yield return(new Attack(Target, NowChecking, Damage() - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.DamageType, NowHit.Debuff));
                     }
-                    yield return(new Attack(Unit, FinalPoint, NowHit.Damage, NowHit.damageType));
+                    yield return(new Attack(Target, FinalPoint, Damage(), NowHit.DamageType, NowHit.Debuff));
 
                     break;
                 }
@@ -154,7 +172,7 @@ public class Skill : Descript, Sendable
                         if(Physics.Raycast(new Checkers(FinalPoint, 0.2f), NowChecking - FinalPoint, dist, LayerMask.GetMask("Map")))
                             continue;
 
-                        yield return new Attack(Unit, NowChecking, NowHit.Damage - DamageScalingDmg(dist), NowHit.damageType, NowHit.Debuff);
+                        yield return new Attack(Target, NowChecking, Damage() - DamageScalingDmg(dist), NowHit.DamageType, NowHit.Debuff);
                         
                     }
                     break;
