@@ -45,8 +45,9 @@ public class UnitUIController : MonoBehaviour
         #region // Skill Vision
         {
             int count = 0;
+            List<Skill> skills = lifeParameters.SkillRealizer.AvailbleSkills;
             
-            foreach (Skill skill in lifeParameters.SkillRealizer.AvailbleSkills) 
+            foreach (Skill skill in skills) 
             { 
                 if(!skill.isEmpty){     
                     GameObject obj = Instantiate(SkillPreset, UI.transform.Find("Skills").transform);
