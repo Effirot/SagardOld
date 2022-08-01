@@ -428,22 +428,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c80335e3a8ec26459f05797da32df4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Race: 0
+  <Race>k__BackingField: 0
   _Corpse: 0
-  WalkDistance: 5
+  <WalkDistance>k__BackingField: 5
   visibleCoefficient: 1
   AlwaysVisible: 0
   WallIgnoreVisible: 0
   BaseHealth:
     rid: -2
-  _Health:
-    rid: 7033181733883215875
-  _Sanity:
-    rid: 7033181733883215876
-  _Stamina:
-    rid: 7033181733883215877
+  <Health>k__BackingField:
+    rid: 1478814578408685799
+  <Sanity>k__BackingField:
+    rid: 1478814578408685800
+  <Stamina>k__BackingField:
+    rid: 1478814578408685801
   _OtherStates: []
-  _Effects: []
+  <Effects>k__BackingField: []
   _Inventory: []
   InventorySize: 1
   _ArtifacerInventory: []
@@ -461,7 +461,16 @@ MonoBehaviour:
     ReplaceSanityBar: 0
     AdditionSkills: []
   PermanentsEffects: []
-  _SkillRealizer:
+  <AvailbleBaseSkills>k__BackingField: []
+  <FromPoint>k__BackingField:
+    X: 0
+    Z: 0
+    UP: 0
+  <EndPoint>k__BackingField:
+    X: 0
+    Z: 0
+    UP: 0
+  <SkillRealizer>k__BackingField:
     Target: {fileID: 7965787113005852653}
     From:
       Planer: {fileID: 8182480761862019246}
@@ -470,38 +479,56 @@ MonoBehaviour:
       Planer: {fileID: 302834733322452018}
       Model: {fileID: 110499025132641117}
     AvailbleBaseSkills:
-    - {fileID: 11400000, guid: 432caffd66a197644a2b0f0c9908b957, type: 2}
-    - {fileID: 11400000, guid: af47541d3d9a51f47b2e780b453a17cf, type: 2}
-    - {fileID: 11400000, guid: 01917641be8b3dc439f6ffebb88e58b9, type: 2}
-    - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
-    AdditionBaseSkills: []
-  Team: {r: 0, g: 0, b: 0, a: 0}
+    - Name: 
+      Description: 
+      BigDescription: 
+      image: {fileID: 0}
+      NoWalking: 0
+      MaxCursorDistance: 0
+      Realizations:
+      - HitBox: 2
+        PointType: 0
+        MaxDistance: 8
+        MinDistance: 0
+        DamagePercent: 1.47
+        DamageScalingType: 1
+        DamageType: 1
+        Debuff: []
+      UsingStamina: 0
+  <Strength>k__BackingField: 2
+  <Accuracy>k__BackingField: 2
+  <RezoOverclocking>k__BackingField: 2
+  <Healing>k__BackingField: 2
+  <Repairing>k__BackingField: 2
+  <DamagePure>k__BackingField: 2
+  <DamageRange>k__BackingField: 2
+  Theme: {r: 0, g: 0, b: 0, a: 0}
   CanControl: 1
   references:
     version: 2
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 7033181733883215875
+    - rid: 1478814578408685799
       type: {class: HealthOver, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 10
-        _Max: 10
+        _Value: 16
+        _Max: 16
         _OverMax: 5
-        _ArmorMelee: 4
+        _ArmorMelee: 3
         _ArmorRange: 2
         _Immunity: 0
-    - rid: 7033181733883215876
+    - rid: 1478814578408685800
       type: {class: Sanity, ns: , asm: Assembly-CSharp}
       data:
         _Value: 9
         _Max: 9
         _SanityShield: 1
-    - rid: 7033181733883215877
+    - rid: 1478814578408685801
       type: {class: Stamina, ns: , asm: Assembly-CSharp}
       data:
-        _Value: 11
-        _Max: 11
+        _Value: 9
+        _Max: 9
         _RestEffect: 5
         _WalkUseStamina: 1
     - rid: 7033181825819738118
