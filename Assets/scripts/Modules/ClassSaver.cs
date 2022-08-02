@@ -63,7 +63,7 @@ namespace SagardCL //Class library
     {
         #region // Constructor parameters
 
-            public CharacterCore Sender;
+            public IObjectOnMap Sender;
             public Checkers Position;
             public int Damage;
             public DamageType DamageType;
@@ -72,7 +72,7 @@ namespace SagardCL //Class library
         #endregion
         #region // Overloads
 
-            public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
+            public Attack(IObjectOnMap Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
             {
                 Sender = Who;
                 Position = where;
@@ -109,7 +109,7 @@ namespace SagardCL //Class library
         public struct AttackCombiner
         {
             public Dictionary<DamageType, List<Attack>> Sorter;
-            public HashSet<CharacterCore> Senders;
+            public HashSet<IObjectOnMap> Senders;
             
             bool _Checked;
             public bool Checked{ get{ return _Checked; } }
@@ -117,7 +117,7 @@ namespace SagardCL //Class library
             public AttackCombiner(params Attack[] attacks) 
             {   
                 Sorter = new Dictionary<DamageType, List<Attack>>(); 
-                Senders = new HashSet<CharacterCore>();
+                Senders = new HashSet<IObjectOnMap>();
                 _Checked = attacks.Sum(a=>a.Damage) > 0;
 
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
@@ -138,7 +138,7 @@ namespace SagardCL //Class library
 
                 _Checked = false;
 
-                Senders = new HashSet<CharacterCore>();
+                Senders = new HashSet<IObjectOnMap>();
             }
 
             public List<Attack> Combine()
@@ -177,7 +177,7 @@ namespace SagardCL //Class library
             }
         }
     }
-    [System.Serializable] public struct Checkers
+    [Serializable] public struct Checkers
     {
         [SerializeField] int X, Z;
         [SerializeField] float UP;
@@ -357,7 +357,7 @@ namespace SagardCL //Class library
         }
 
     }
-    [System.Serializable] public class AllInOne
+    [Serializable] public class AllInOne
     {
         public GameObject Planer;
         public GameObject Model;
@@ -378,136 +378,80 @@ namespace SagardCL //Class library
 
     [Serializable] public class Balancer
     {
-        public Race race;
-
-        public bool Corpse = false;
-        [Space]
-        public int WalkDistance = 0;
-        
-        public const int maxVisibleDistance = 10;
-        public float Visible = 0f;
-        [SerializeField] bool AlwaysVisible = false;
-        [SerializeField] bool WallIgnoreVisible = false;
-
-        [SerializeReference, SubclassSelector]public IHealthBar Health = new Health();
-        IHealthBar BaseHealth;
-        [SerializeReference, SubclassSelector]public IStaminaBar Stamina = new Stamina();
-        IStaminaBar BaseStamina;
-        [SerializeReference, SubclassSelector]public ISanityBar Sanity = new Sanity();
-        ISanityBar BaseSanity;
-        
-        public List<IOtherBar> AdditionState = new List<IOtherBar>();
-
-        public List<Effect> Effects = new List<Effect>();
-        public List<Type> Resists = new List<Type>();
-        [Space]
-        public List<Skill> Skills = new List<Skill>();
-
-        // public static Balancer Combine(params Balancer[] items) 
-        // {
-        //     List<Balancer> InList = items.ToList() ?? new List<Balancer>();
-
-        //     var result = new Balancer();
-        //     var resists = new List<IEffect>();
-        //     var additionStates = new List<IOtherBar>();
-        //     var additionSkills = new List<Skill>();
-
-        //     if(InList.Exists(a=>a.ReplaceHealthBar))
-        //     {
-        //         result.ReplaceHealthBar = true;
-        //         result.Health = items.ToList().Find(a=>a.ReplaceHealthBar).Health.Clone() as IHealthBar;
-        //     }
-        //     if(InList.Exists(a=>a.ReplaceSanityBar))
-        //     {
-        //         result.ReplaceHealthBar = true;
-        //         result.Sanity = items.ToList().Find(a=>a.ReplaceSanityBar).Health.Clone() as ISanityBar;
-        //     }
-        //     if(InList.Exists(a=>a.ReplaceStaminaBar))
-        //     {
-        //         result.ReplaceHealthBar = true;
-        //         result.Stamina = items.ToList().Find(a=>a.ReplaceStaminaBar).Health.Clone() as IStaminaBar;
-        //     }
-            
-        //     foreach(Balancer item in items)
-        //     {
-        //         result.WalkDistance += item.WalkDistance;
-
-        //         result.Health.Max += item.Health.Max;
-        //         result.Health.ArmorMelee += item.Health.ArmorMelee;
-        //         result.Health.ArmorRange += item.Health.ArmorRange;
-        //         result.Health.Immunity += item.Health.Immunity;
-
-        //         result.Stamina.Max += item.Stamina.Max;
-        //         result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
-        //         result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
-                
-        //         result.Sanity.Max += item.Sanity.Max;
-        //         result.Sanity.SanityShield += item.Sanity.SanityShield;
-
-        //         resists.AddRange(item.Resists);
-        //         //additionStates.AddRange(item.AdditionState);
-        //         additionSkills.AddRange(item.Skills);
-        //     }
-        //     result.Resists = resists;
-        //     result.Skills = additionSkills;
-        //     result.AdditionState = additionStates;
-
-        //     return result; 
-        // }
-    }
-    [Serializable] public struct ReBalancer
-    {
         [Space]
         public int WalkDistance;
 
         public float Visible;
-        [SerializeField] bool AlwaysVisible;
+        [SerializeField] bool AlwaysVisible = false;
 
-        [SerializeReference, SubclassSelector]public IHealthBar Health;
+        [SerializeReference, SubclassSelector]public IHealthBar Health = new Health();
         public bool ReplaceHealth;
-        [SerializeReference, SubclassSelector]public IStaminaBar Stamina;
+        [SerializeReference, SubclassSelector]public IStaminaBar Stamina = new Stamina();
         public bool ReplaceStamina;
-        [SerializeReference, SubclassSelector]public ISanityBar Sanity;
+        [SerializeReference, SubclassSelector]public ISanityBar Sanity = new Sanity();
         public bool ReplaceSanity;
 
         public List<IOtherBar> AdditionState;
-        public List<Type> Resists;
+        public List<Type> Resists = new List<Type>();
         [Space]
         public List<Skill> Skills;
 
-        public static ReBalancer operator +(ReBalancer left, ReBalancer right)
+        public static Balancer Combine(params Balancer[] items) 
         {
-            ReBalancer result = left;
+            List<Balancer> InList = items.ToList() ?? new List<Balancer>();
 
+            var result = new Balancer();
+            var resists = new List<Type>();
+            var additionStates = new List<IOtherBar>();
+            var additionSkills = new List<Skill>();
 
-
-            return result;
-        }
-    }
-
-
-
-    
-    public static class FieldManipulate
-    {
-        public static List<T> CombineLists<T>(params List<T>[] a)
-        {
-            List<T> result = new List<T>();
-            foreach(List<T> b in a)
+            if(InList.Exists(a=>a.ReplaceHealth))
             {
-                result.AddRange(b);
+                result.ReplaceHealth = true;
+                result.Health = items.ToList().Find(a=>a.ReplaceHealth).Health.Clone() as IHealthBar;
             }
-            return result;
+            if(InList.Exists(a=>a.ReplaceSanity))
+            {
+                result.ReplaceHealth = true;
+                result.Sanity = items.ToList().Find(a=>a.ReplaceSanity).Health.Clone() as ISanityBar;
+            }
+            if(InList.Exists(a=>a.ReplaceStamina))
+            {
+                result.ReplaceHealth = true;
+                result.Stamina = items.ToList().Find(a=>a.ReplaceStamina).Health.Clone() as IStaminaBar;
+            }
+            
+            foreach(Balancer item in items)
+            {
+                result.WalkDistance += item.WalkDistance;
+
+                result.Health.Max += item.Health.Max;
+                result.Health.ArmorMelee += item.Health.ArmorMelee;
+                result.Health.ArmorRange += item.Health.ArmorRange;
+                result.Health.Immunity += item.Health.Immunity;
+
+                result.Stamina.Max += item.Stamina.Max;
+                result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
+                result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
+                
+                result.Sanity.Max += item.Sanity.Max;
+                result.Sanity.SanityShield += item.Sanity.SanityShield;
+
+                resists.AddRange(item.Resists);
+                //additionStates.AddRange(item.AdditionState);
+                additionSkills.AddRange(item.Skills);
+            }
+            result.Resists = resists;
+            result.Skills = additionSkills;
+            result.AdditionState = additionStates;
+
+            result.AlwaysVisible = items.ToList().Exists(a=>a.AlwaysVisible);
+            return result; 
         }
     }
-
+    
     namespace ParameterManipulate
     {
-        // All Interfaces 
-        public interface Sendable
-        {
-
-        }
         public interface IStepEndUpdate
         {
             void StepEnd();
@@ -523,6 +467,11 @@ namespace SagardCL //Class library
 
                 int Value { get; set; }
                 int Max { get; set; }  
+
+                public void Use(int value) 
+                {
+                    Value += value;
+                }
             }
 
             public interface IHealthBar : IStateBar
@@ -539,6 +488,8 @@ namespace SagardCL //Class library
                     return result;
                 }
                 
+                void IStateBar.Use(int value) { }
+
                 int ArmorMelee { get; set; } 
                 int ArmorRange { get; set; }
 
@@ -576,6 +527,10 @@ namespace SagardCL //Class library
             public interface IStaminaBar : IStateBar
             {
                 void GetTired(int value);
+                void IStateBar.Use(int value)
+                {
+                    Value = Mathf.Clamp(Value + value, 0, Max);
+                }
                 int RestEffectivity{ get; set; }
                 int WalkUseStamina{ get; set; }
 
@@ -583,12 +538,18 @@ namespace SagardCL //Class library
             }
             public interface ISanityBar : IStateBar
             {
-                void Damage(int value) { Value = value>0? Value - Mathf.Clamp(value - SanityShield, 0, 1000) : Value + value; }
+                void IStateBar.Use(int value)
+                {
+                    Value = value<0? 
+                        Value - Mathf.Clamp(Mathf.Abs(value) - SanityShield, 0, 1000) : 
+                        Mathf.Clamp(Value + value, 0, Max);
+                }
                 int SanityShield { get; set; } 
             }
             public interface IOtherBar : IStateBar
             {
-
+                void IStateBar.Use(int value) { UseMath(value); }
+                void UseMath(int value);
             }
 
         #endregion
@@ -598,9 +559,16 @@ namespace SagardCL //Class library
             {
                 IObjectOnMap thisObject { get; set; }
                 public const int standardVisibleDistance = 10;
-                bool nowVisible(CharacterCore Object);
+                bool nowVisible { get{ return true; } }
 
-
+                protected static IObjectOnMap objectClassTo<T>(IObjectOnMap classObject) where T : IObjectOnMap
+                {
+                    lock(classObject)
+                    {
+                        if(classObject is T) return (T)classObject;
+                        else return (IObjectOnMap)classObject; 
+                    }
+                }
 
                 public Attack.AttackCombiner TakeDamageList { get; set; }
                 
@@ -612,6 +580,8 @@ namespace SagardCL //Class library
 
                 public void AddStamina(int damage) { }
 
+                public void AddState(IAnotherBars state) { }
+
                 public void AddEffect(params Effect[] Effect) { }
                 public void AutoRemoveEffect() { }
                 public void RemoveEffect(params Effect[] Effect) { }
@@ -621,6 +591,7 @@ namespace SagardCL //Class library
             public interface IKillable : IObjectOnMap
             {
                 IHealthBar Health { get; set; }
+                IHealthBar BaseHealth { get; }
                 
                 void IObjectOnMap.AddDamage(Attack attack) {
                     if(attack.DamageType == DamageType.Heal & Corpse) return;
@@ -628,18 +599,13 @@ namespace SagardCL //Class library
                     TakeDamageList.Add(attack);
                 }
 
-                async Task Dead() 
-                { 
-                    if(Health.Value > 0) return;
-                    await Task.Delay(Random.Range(10, 100)); 
-                    LostHealth();
-                }
-
                 void LostHealth();
             }
             public interface IGetableCrazy : IObjectOnMap
             {
                 ISanityBar Sanity { get; set; }
+                ISanityBar BaseSanity { get; }
+
                 void IObjectOnMap.AddSanity(int damage)
                 {
                     if(Sanity!=null) Sanity.Value = Mathf.Clamp(damage >= 0? damage : -(int)(Mathf.Clamp(MathF.Abs(damage) - Sanity.SanityShield, 0, 1000)) + Sanity.Value, 0, Sanity.Max);
@@ -648,6 +614,8 @@ namespace SagardCL //Class library
             public interface ITiredable : IObjectOnMap
             {
                 IStaminaBar Stamina { get; set; }
+                IStaminaBar BaseStamina { get; }
+
                 bool WillRest{ get; set; }
 
                 void IObjectOnMap.AddStamina(int damage)
@@ -655,6 +623,19 @@ namespace SagardCL //Class library
                     Stamina.Value = Mathf.Clamp(damage + Stamina.Value, 0, Stamina.Max);
                 }
             }
+            public interface IAnotherBars : IObjectOnMap
+            {
+
+            }
+            
+            public interface IInvisible : IObjectOnMap
+            {
+                bool AlwaysVisible { get; set; }
+                bool WallIgnoreVisible { get; set; }
+
+                new bool nowVisible();
+            }
+
             public interface IStorage : IObjectOnMap
             {
                 public List<Item> Inventory { get; set; }
@@ -689,7 +670,23 @@ namespace SagardCL //Class library
 
             public interface IAttacker : IObjectOnMap
             {
+                int SkillIndex { get; set; }
                 List<Skill> AvailbleBaseSkills { get; }
+                public Skill CurrentSkill { get{ try { return AvailbleBaseSkills[Mathf.Clamp(SkillIndex, 0, AvailbleBaseSkills.Count-1)]; } 
+                                              catch { return new Skill(); } } }
+
+                public async Task<List<Attack>> Realize(Checkers from, Checkers to, IAttacker target)
+                {
+                    List<Attack> attackList = new List<Attack>();
+                    HashSet<Checkers> Overrides = new HashSet<Checkers>();
+
+                    foreach(ZonePlacer NowHit in CurrentSkill.Realizations) 
+                        if(NowHit != null) await foreach(Attack attack in NowHit.GetAttackList(from, to, target)){ 
+                            if(!Overrides.Contains(attack.Position)) attackList.Add(attack); 
+                            if(NowHit.Override) Overrides.Add(attack.Position); }
+
+                    return attackList;
+                }
 
                 int Strength{ get; set; }
                 int DamageRange{ get; set; }
@@ -723,8 +720,6 @@ namespace SagardCL //Class library
         #endregion
         #region // Effects
 
-
-
             public interface IEffect
             {
                 string Name { get; } 
@@ -740,13 +735,15 @@ namespace SagardCL //Class library
             }
             
             public interface Effect : IEffect { bool Workable(); }
-            public interface ICombineWithDuplicates : Effect
-            {
-                Effect CombineDuplicates(Effect a, Effect b);
-            }
+            public interface ICombineWithDuplicates : Effect { Effect CombineDuplicates(Effect a, Effect b); }
             public interface HiddenEffect : Effect { }
             public interface OneUse : IEffect { }
-            public interface OnMap : IEffect { }
+            public interface OnMap : IEffect 
+            { 
+                new public IObjectOnMap Target { get { return null; } }
+                new public Balancer Stats { get{ return null; } }
+                
+            }
             
             public interface RacePassiveEffect : IEffect { Race RaceName { get; set; } string RaceDescription { get; set; } }
         

@@ -428,14 +428,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c80335e3a8ec26459f05797da32df4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <MPlaner>k__BackingField:
+    Planer: {fileID: 8182480761862019246}
+    Model: {fileID: 447574044884308314}
+  <APlaner>k__BackingField:
+    Planer: {fileID: 302834733322452018}
+    Model: {fileID: 110499025132641117}
   <Race>k__BackingField: 0
   _Corpse: 0
   <WalkDistance>k__BackingField: 5
   visibleCoefficient: 1
   AlwaysVisible: 0
   WallIgnoreVisible: 0
-  BaseHealth:
-    rid: -2
   <Health>k__BackingField:
     rid: 1478814578408685799
   <Sanity>k__BackingField:
@@ -450,18 +454,29 @@ MonoBehaviour:
   ArtifacerInventorySize: 0
   AllBalanceChanges:
     WalkDistance: 0
+    Visible: 0
+    AlwaysVisible: 0
     Health:
       rid: 7033181825819738118
-    ReplaceHealthBar: 0
+    ReplaceHealth: 0
     Stamina:
       rid: 7033181825819738119
-    ReplaceStaminaBar: 0
+    ReplaceStamina: 0
     Sanity:
       rid: 7033181825819738120
-    ReplaceSanityBar: 0
-    AdditionSkills: []
+    ReplaceSanity: 0
+    Skills: []
   PermanentsEffects: []
-  <AvailbleBaseSkills>k__BackingField: []
+  <AvailbleBaseSkills>k__BackingField:
+  - Name: 
+    Description: 
+    BigDescription: 
+    image: {fileID: 0}
+    NoWalking: 0
+    MaxCursorDistance: 0
+    Realizations:
+    - rid: 1478814607659499522
+    UsingStamina: 0
   <FromPoint>k__BackingField:
     X: 0
     Z: 0
@@ -470,31 +485,6 @@ MonoBehaviour:
     X: 0
     Z: 0
     UP: 0
-  <SkillRealizer>k__BackingField:
-    Target: {fileID: 7965787113005852653}
-    From:
-      Planer: {fileID: 8182480761862019246}
-      Model: {fileID: 447574044884308314}
-    To:
-      Planer: {fileID: 302834733322452018}
-      Model: {fileID: 110499025132641117}
-    AvailbleBaseSkills:
-    - Name: 
-      Description: 
-      BigDescription: 
-      image: {fileID: 0}
-      NoWalking: 0
-      MaxCursorDistance: 0
-      Realizations:
-      - HitBox: 2
-        PointType: 0
-        MaxDistance: 8
-        MinDistance: 0
-        DamagePercent: 1.47
-        DamageScalingType: 1
-        DamageType: 1
-        Debuff: []
-      UsingStamina: 0
   <Strength>k__BackingField: 2
   <Accuracy>k__BackingField: 2
   <RezoOverclocking>k__BackingField: 2
@@ -507,8 +497,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 1478814578408685799
       type: {class: HealthOver, ns: , asm: Assembly-CSharp}
       data:
@@ -531,6 +519,17 @@ MonoBehaviour:
         _Max: 9
         _RestEffect: 5
         _WalkUseStamina: 1
+    - rid: 1478814607659499522
+      type: {class: Sphere, ns: , asm: Assembly-CSharp}
+      data:
+        <DamagePercent>k__BackingField: 1
+        <Scaling>k__BackingField: 0
+        ScalingPower: 1
+        <DamageType>k__BackingField: 2
+        TargetingType: 0
+        StartRadius: 0
+        PlusRadius: 2
+        <Override>k__BackingField: 0
     - rid: 7033181825819738118
       type: {class: Health, ns: , asm: Assembly-CSharp}
       data:

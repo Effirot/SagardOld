@@ -21,7 +21,7 @@ using UnityEditor;
         Collider Collider => GetComponent<MeshCollider>();
         Checkers CursorPos { get { return CursorController.position; } }
     
-        public int CurrentSkillIndex { get { return SkillRealizer.SkillIndex; }  set { new Action(async () => await AttackPlannerSet(CursorPos)).Invoke(); SkillRealizer.SkillIndex = value; } }
+        public int CurrentSkillIndex { get { return SkillIndex; }  set { new Action(async () => await AttackPlannerSet(CursorPos)).Invoke(); SkillIndex = value; } }
     
     #endregion
     #region // ================================== controlling
@@ -67,7 +67,7 @@ using UnityEditor;
         // Standing methods
         void StandingIn() {
             //Attack planner
-            if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
+            //if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
 
             UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
             

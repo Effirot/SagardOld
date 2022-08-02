@@ -53,8 +53,10 @@
         "Temp/":true
     },
     "cSpell.ignoreWords": [
+        "Killable",
         "Rezo",
-        "Sagard"
+        "Sagard",
+        "Tiredable"
     ],
     "cSpell.words": [
         "Artifacer",

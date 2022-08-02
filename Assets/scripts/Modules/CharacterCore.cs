@@ -15,8 +15,10 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
     #region // ============================================================= Useful stuff =============================================================================================
         protected Vector3 position{ get{ return this.transform.position; } set{ this.transform.position = value; } }
 
-        private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
-        private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
+        [field: SerializeField] private protected AllInOne MPlaner { get; set; }
+        [field: SerializeField] private protected AllInOne APlaner { get; set; }
+
+        IAttacker Attacker => (IAttacker)IObjectOnMap.objectClassTo<IAttacker>(this);
                 
         public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
         public void ChangeFigureColor(Color color, float speed, Material[] material = null)
@@ -51,6 +53,16 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
         }
 
         public virtual Type type{ get{ return typeof(CharacterCore); } }
+
+        public static List<T> CombineLists<T>(params List<T>[] a)
+        {
+            List<T> result = new List<T>();
+            foreach(List<T> b in a)
+            {
+                result.AddRange(b);
+            }
+            return result;
+        }
     #endregion
     #region // =========================================================== All parameters =================================================================================================
     
@@ -121,18 +133,18 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                                                                 WallIgnoreVisible? Physics.Raycast(this.position, Object.position - this.position, Checkers.Distance(this.position, Object.position), LayerMask.NameToLayer("Object")) : true) | 
                                                                 AlwaysVisible; }
             
-            protected IHealthBar BaseHealth;
+            public IHealthBar BaseHealth { get; protected set; }
             [field: SerializeReference, SubclassSelector] public IHealthBar Health { get; set; } 
 
-            protected ISanityBar BaseSanity;
+            public ISanityBar BaseSanity { get; protected set; }
             [field: SerializeReference, SubclassSelector] public ISanityBar Sanity { get; set; }
 
-            protected IStaminaBar BaseStamina;
+            public IStaminaBar BaseStamina { get; protected set; }
             [field: SerializeReference, SubclassSelector] public IStaminaBar Stamina { get; set; }
             
             
             [SerializeReference, SubclassSelector] List<IOtherBar> _OtherStates;
-            public List<IOtherBar> OtherStates { get { return FieldManipulate.CombineLists<IOtherBar>(_OtherStates, AllBalanceChanges.AdditionState); } set{ _OtherStates = value; } }
+            public List<IOtherBar> OtherStates { get { return CombineLists<IOtherBar>(_OtherStates, AllBalanceChanges.AdditionState); } set{ _OtherStates = value; } }
 
         #endregion
         #region // ================================== effects
@@ -150,7 +162,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
             [SerializeField] public List<Item> _ArtifacerInventory;
             public int ArtifacerInventorySize = 0;
 
-            public List<Item> Inventory { get { return FieldManipulate.CombineLists<Item>(_Inventory, _ArtifacerInventory); } 
+            public List<Item> Inventory { get { return CombineLists<Item>(_Inventory, _ArtifacerInventory); } 
             set
             { 
                 foreach(Item item in value) {
@@ -165,12 +177,9 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
         #endregion
         #region // ================================== Skills
 
+            public int SkillIndex { get; set; }
+
             [field: SerializeField] public List<Skill> AvailbleBaseSkills { get; [SerializeField]private set; } = new List<Skill>();
-
-            [field: SerializeField] public Checkers FromPoint{ get; set; } = new Checkers();
-            [field: SerializeField] public Checkers EndPoint{ get; set; } = new Checkers();
-
-            [field: SerializeField] public SkillCombiner SkillRealizer { get; set; } = new SkillCombiner();
 
             [field: SerializeField] public int Strength { get; set; }
             [field: SerializeField] public int Accuracy { get; set; }
@@ -183,10 +192,10 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
         
         #endregion
 
+        public Attack.AttackCombiner TakeDamageList { get; set; }
+
         public List<Attack> AttackZone { get; set; } = new List<Attack>();
         public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
-
-        public Attack.AttackCombiner TakeDamageList { get; set;} = new Attack.AttackCombiner();
 
         public void DrainOtherState<IOtherBar>(int value)
         {
@@ -222,7 +231,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 MPlaner.LineRenderer.enabled = CheckPosition(position) & Draw;
                 MPlaner.Renderer.enabled = CheckPosition(position) & Draw;
 
-                if(SkillRealizer.ThisSkill.NoWalking & position == new Checkers(this.position)) 
+                if(Attacker.CurrentSkill.NoWalking & position == new Checkers(this.position)) 
                     await AttackPlannerSet(position);
 
                 if(!CustomWay) 
@@ -247,12 +256,12 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
             {
                 APlaner.position = new Checkers(position);
 
-                if(SkillRealizer.ThisSkill.NoWalking) 
+                if(Attacker.CurrentSkill.NoWalking) 
                     await MovePlannerSet(this.position, false);
                 
                 if(!CustomZone) {
                     AttackZone.Clear();
-                    AttackZone = await SkillRealizer.Realize();
+                    AttackZone = await Attacker.Realize(MPlaner.position, APlaner.position, this);
                 }
                 if(Draw) {
                     Generation.DrawAttack(AttackZone, this);
@@ -272,14 +281,14 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 List<Balancer> FromItems = new List<Balancer>(); foreach(Item item in Inventory) FromItems.Add(item.Stats);
                 List<Balancer> FromEffects = new List<Balancer>(); if(Effects.Count != 0)foreach(Effect effect in Effects) FromEffects.Add(effect.Stats);
                 
-                Balancer result = Balancer.Combine(FieldManipulate.CombineLists<Balancer>(FromEffects, PermanentsEffects, FromItems).ToArray());
+                Balancer result = Balancer.Combine(CombineLists<Balancer>(FromEffects, PermanentsEffects, FromItems).ToArray());
 
                 if(AllBalanceChanges == Balancer.Combine(FromItems.ToArray())) return;
                 AllBalanceChanges = Balancer.Combine(FromItems.ToArray()); 
 
                 #region // health
                 {
-                    if(AllBalanceChanges.ReplaceHealthBar){
+                    if(AllBalanceChanges.ReplaceHealth){
                         IHealthBar healthBar = AllBalanceChanges.Health.Clone() as IHealthBar;
                         healthBar.Value = Health.Value;
                         Health = healthBar;
@@ -299,7 +308,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 #endregion
                 #region // Stamina
                 {
-                    if(AllBalanceChanges.ReplaceStaminaBar){
+                    if(AllBalanceChanges.ReplaceStamina){
                         IStaminaBar staminaBar = AllBalanceChanges.Stamina.Clone() as IStaminaBar;
                         staminaBar.Value = Stamina.Value;
                         Stamina = staminaBar;
@@ -317,7 +326,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 #endregion
                 #region // Sanity
                 {
-                    if(AllBalanceChanges.ReplaceSanityBar){
+                    if(AllBalanceChanges.ReplaceSanity){
                         ISanityBar sanityBar = AllBalanceChanges.Stamina.Clone() as ISanityBar;
                         sanityBar.Value = Sanity.Value;
                         Sanity = sanityBar;
@@ -378,7 +387,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 WillRest = false;
                 await Task.Delay(Random.Range(900, 2700));
 
-                Stamina.GetTired(SkillRealizer.StaminaWaste());
+                Stamina.GetTired(Attacker.CurrentSkill.UsingStamina);
                 InGameEvents.AttackTransporter.Invoke(AttackZone);
 
 
@@ -405,6 +414,12 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
 
                 TakeDamageList.Clear();
             }       
+            async Task Dead() 
+            { 
+                if(Health.Value > 0) return;
+                await Task.Delay(Random.Range(10, 100)); 
+                LostHealth();
+            }
             async Task Rest() 
             { 
                 if(!WillRest) { WillRest = true; return; }

@@ -6,7 +6,7 @@ using System;
 using SagardCL.ParameterManipulate;
 
 [CreateAssetMenu(fileName = "Item", menuName = "SagardCL objects/Standard Item", order = 51)]
-public class Item : Descript, Sendable
+public class Item : Descript
 {
     public bool Artifacer = false;
     public Balancer Stats;

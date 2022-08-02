@@ -221,6 +221,50 @@ PrefabInstance:
       propertyPath: managedReferences[7033181594492862469]
       value: Assembly-CSharp Stamina
       objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[-2]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520]
+      value: Assembly-CSharp Sphere
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499521]
+      value: Assembly-CSharp Sphere
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].PlusRadius
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].StartRadius
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].ScalingPower
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].TargetingType
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].<Scaling>k__BackingField
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].<Override>k__BackingField
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].<DamageType>k__BackingField
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814607659499520].<DamagePercent>k__BackingField
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
 --- !u!1 &493143289
@@ -2266,6 +2310,18 @@ PrefabInstance:
     - target: {fileID: 5881976563747058673, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[7033181276535259179]._WalkUseStamina
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814578408685789]
+      value: Assembly-CSharp HealthOver
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814578408685790]
+      value: Assembly-CSharp Sanity
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814578408685791]
+      value: Assembly-CSharp Stamina
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
