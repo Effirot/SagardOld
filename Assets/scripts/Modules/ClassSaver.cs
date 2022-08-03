@@ -7,6 +7,9 @@ using UnityEngine.Events;
 using SagardCL.ParameterManipulate;
 using System.Reflection;
 using System.Linq;
+using System.Threading.Tasks;
+using Random = UnityEngine.Random;
+using UnityAsync;
 
 namespace SagardCL //Class library
 {
@@ -60,7 +63,7 @@ namespace SagardCL //Class library
     {
         #region // Constructor parameters
 
-            public CharacterCore Sender;
+            public IObjectOnMap Sender;
             public Checkers Position;
             public int Damage;
             public DamageType DamageType;
@@ -69,7 +72,7 @@ namespace SagardCL //Class library
         #endregion
         #region // Overloads
 
-            public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
+            public Attack(IObjectOnMap Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
             {
                 Sender = Who;
                 Position = where;
@@ -106,7 +109,7 @@ namespace SagardCL //Class library
         public struct AttackCombiner
         {
             public Dictionary<DamageType, List<Attack>> Sorter;
-            public HashSet<CharacterCore> Senders;
+            public HashSet<IObjectOnMap> Senders;
             
             bool _Checked;
             public bool Checked{ get{ return _Checked; } }
@@ -114,7 +117,7 @@ namespace SagardCL //Class library
             public AttackCombiner(params Attack[] attacks) 
             {   
                 Sorter = new Dictionary<DamageType, List<Attack>>(); 
-                Senders = new HashSet<CharacterCore>();
+                Senders = new HashSet<IObjectOnMap>();
                 _Checked = attacks.Sum(a=>a.Damage) > 0;
 
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
@@ -135,7 +138,7 @@ namespace SagardCL //Class library
 
                 _Checked = false;
 
-                Senders = new HashSet<CharacterCore>();
+                Senders = new HashSet<IObjectOnMap>();
             }
 
             public List<Attack> Combine()
@@ -174,15 +177,15 @@ namespace SagardCL //Class library
             }
         }
     }
-    [System.Serializable] public struct Checkers
+    [Serializable] public struct Checkers
     {
         [SerializeField] int X, Z;
         [SerializeField] float UP;
 
-        public int x { get{ return X; } }
-        public int z { get{ return Z; } }
-        public float up { get{ return this.UP + YUpPos(); } }
-        public float clearUp { get{ return UP; } }
+        public int x =>  X;
+        public int z => Z;
+        public float up => this.UP + YUpPos();
+        public float clearUp => UP;
 
         float YUpPos()
         {
@@ -193,111 +196,111 @@ namespace SagardCL //Class library
 
         #region // =============================== Realizations
 
-        public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = UPadd; }
-        public Checkers(Vector3 Vector3add, float UPadd = 0) { X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = UPadd; }
-        public Checkers(Vector2 Vector2add, float UPadd = 0) { X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = UPadd; }
-        public Checkers(Transform Transformadd, float UPadd = 0) { X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = UPadd; }
+            public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = UPadd; }
+            public Checkers(Vector3 Vector3add, float UPadd = 0) { X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = UPadd; }
+            public Checkers(Vector2 Vector2add, float UPadd = 0) { X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = UPadd; }
+            public Checkers(Transform Transformadd, float UPadd = 0) { X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = UPadd; }
 
-        public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
-        public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
+            public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
+            public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
 
-        public static Checkers operator +(Checkers a, Checkers b) { return new Checkers(a.x + b.x, a.z + b.z, a.up); }
-        public static Checkers operator -(Checkers a, Checkers b) { return new Checkers(a.x - b.x, a.z - b.z, a.up); }
-        public static Checkers operator *(Checkers a, float b) { return new Checkers(a.x * b, a.z * b, a.up); }
-        public static Checkers operator *(float b, Checkers a) { return new Checkers(a.x * b, a.z * b, a.up); }
-        public static bool operator ==(Checkers a, Checkers b) { return a.x == b.x & a.z == b.z; }
-        public static bool operator !=(Checkers a, Checkers b) { return !(a.x == b.x & a.z == b.z); }
-        
-        public override int GetHashCode() { return 0; }  
-        public override bool Equals(object o) { return true; } 
+            public static Checkers operator +(Checkers a, Checkers b) { return new Checkers(a.x + b.x, a.z + b.z, a.up); }
+            public static Checkers operator -(Checkers a, Checkers b) { return new Checkers(a.x - b.x, a.z - b.z, a.up); }
+            public static Checkers operator *(Checkers a, float b) { return new Checkers(a.x * b, a.z * b, a.up); }
+            public static Checkers operator *(float b, Checkers a) { return new Checkers(a.x * b, a.z * b, a.up); }
+            public static bool operator ==(Checkers a, Checkers b) { return a.x == b.x & a.z == b.z; }
+            public static bool operator !=(Checkers a, Checkers b) { return !(a.x == b.x & a.z == b.z); }
+            
+            public override int GetHashCode() { return 0; }  
+            public override bool Equals(object o) { return true; } 
 
-        public Checkers WithUp(float a){ return new Checkers(this, a); }
+            public Checkers WithUp(float a){ return new Checkers(this, a); }
 
         #endregion // =============================== Realizations
         #region // =============================== Math
 
-        public enum CheckersDistanceMode{ NoHeight, Height, OnlyHeight, }
-        public static float Distance(Checkers a, Checkers b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
-        {
-            if(Mode == CheckersDistanceMode.OnlyHeight) return Mathf.Abs(a.up - b.up);
-            if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
-            return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
-        }
-        public static float Distance(Vector3 a, Vector3 b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
-        {
-            if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
-            return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
-        }
-
-        public Vector3 ToVector3(){ return new Vector3(x, up, z); }
-        public static List<Vector3> ToVector3List(List<Checkers> checkers) 
-        { 
-            List<Vector3> list = new List<Vector3>();
-            foreach(Checkers checker in checkers){ list.Add(checker.ToVector3()); }
-            return list;        
-        }
-        public static List<Checkers> ToCheckersList(List<Vector3> vector3, float up = 0) 
-        { 
-            List<Checkers> list = new List<Checkers>();
-            foreach(Checkers vector in vector3){ list.Add(new Checkers(vector, up)); }
-            return list;        
-        }
-
-        public static bool CheckCoords(Checkers Coordinates) 
-        {
-            return Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
-        }
-        public static bool CheckCoords(int x, int z) 
-        {
-            return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
-        }
-        
-        public static Checkers Lerp(Checkers pos1, Checkers pos2, float StepSize)
-        {
-            float x = pos1.x + (pos2.x - pos1.x) * (StepSize);
-            float z = pos1.z + (pos2.z - pos1.z) * (StepSize);
-
-            return new Checkers(x, z);
-        }
-        public static Checkers MoveTowards(Checkers pos1, Checkers pos2, float StepSize)
-        {
-            return Checkers.Lerp(pos1, pos2, Distance(pos1, pos2) / StepSize);
-        }
-
-        public static List<Checkers> Line(Checkers pos1, Checkers pos2) {
-            List<Checkers> result = new List<Checkers>();
-            
-            int deltaX = Mathf.Abs(pos2.x - pos1.x);
-            int deltaZ = Mathf.Abs(pos2.z - pos1.z);
-            
-            int signX = pos1.x < pos2.x ? 1 : -1;
-            int signZ = pos1.z < pos2.z ? 1 : -1;
-            
-            int error = deltaX - deltaZ;
-
-            result.Add(pos2);
-
-            while(pos1 != pos2) 
+            public enum CheckersDistanceMode{ NoHeight, Height, OnlyHeight, }
+            public static float Distance(Checkers a, Checkers b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
             {
-                
-                result.Add(pos1);
-                int error2 = error * 2;
-                if(error2 > -deltaZ) 
-                {
-                    error -= deltaZ;
-                    pos1.X += signX;
-                }
-                if(error2 < deltaX) 
-                {
-                    error += deltaX;
-                    pos1.Z += signZ;
-                }
+                if(Mode == CheckersDistanceMode.OnlyHeight) return Mathf.Abs(a.up - b.up);
+                if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
+                return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
+            }
+            public static float Distance(Vector3 a, Vector3 b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
+            {
+                if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
+                return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
             }
 
-            return result;
+            public Vector3 ToVector3(){ return new Vector3(x, up, z); }
+            public static List<Vector3> ToVector3List(List<Checkers> checkers) 
+            { 
+                List<Vector3> list = new List<Vector3>();
+                foreach(Checkers checker in checkers){ list.Add(checker.ToVector3()); }
+                return list;        
+            }
+            public static List<Checkers> ToCheckersList(List<Vector3> vector3, float up = 0) 
+            { 
+                List<Checkers> list = new List<Checkers>();
+                foreach(Checkers vector in vector3){ list.Add(new Checkers(vector, up)); }
+                return list;        
+            }
 
-        }
-        
+            public static bool CheckCoords(Checkers Coordinates) 
+            {
+                return Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+            }
+            public static bool CheckCoords(int x, int z) 
+            {
+                return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+            }
+            
+            public static Checkers Lerp(Checkers pos1, Checkers pos2, float StepSize)
+            {
+                float x = pos1.x + (pos2.x - pos1.x) * (StepSize);
+                float z = pos1.z + (pos2.z - pos1.z) * (StepSize);
+
+                return new Checkers(x, z);
+            }
+            public static Checkers MoveTowards(Checkers pos1, Checkers pos2, float StepSize)
+            {
+                return Checkers.Lerp(pos1, pos2, Distance(pos1, pos2) / StepSize);
+            }
+
+            public static List<Checkers> Line(Checkers pos1, Checkers pos2) {
+                List<Checkers> result = new List<Checkers>();
+                
+                int deltaX = Mathf.Abs(pos2.x - pos1.x);
+                int deltaZ = Mathf.Abs(pos2.z - pos1.z);
+                
+                int signX = pos1.x < pos2.x ? 1 : -1;
+                int signZ = pos1.z < pos2.z ? 1 : -1;
+                
+                int error = deltaX - deltaZ;
+
+                result.Add(pos2);
+
+                while(pos1 != pos2) 
+                {
+                    
+                    result.Add(pos1);
+                    int error2 = error * 2;
+                    if(error2 > -deltaZ) 
+                    {
+                        error -= deltaZ;
+                        pos1.X += signX;
+                    }
+                    if(error2 < deltaX) 
+                    {
+                        error += deltaX;
+                        pos1.Z += signZ;
+                    }
+                }
+
+                return result;
+
+            }
+            
         #endregion // =============================== Math
 
         public static class PatchWay
@@ -354,7 +357,7 @@ namespace SagardCL //Class library
         }
 
     }
-    [System.Serializable] public class AllInOne
+    [Serializable] public class AllInOne
     {
         public GameObject Planer;
         public GameObject Model;
@@ -373,51 +376,52 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
-    [System.Serializable] public class ReBalancer
+    [Serializable] public class Balancer
     {
         [Space]
-        public int WalkDistance = 0;
+        public int WalkDistance;
+
+        public float Visible;
+        [SerializeField] bool AlwaysVisible = false;
 
         [SerializeReference, SubclassSelector]public IHealthBar Health = new Health();
-        public bool ReplaceHealthBar = false;
+        public bool ReplaceHealth;
         [SerializeReference, SubclassSelector]public IStaminaBar Stamina = new Stamina();
-        public bool ReplaceStaminaBar = false;
+        public bool ReplaceStamina;
         [SerializeReference, SubclassSelector]public ISanityBar Sanity = new Sanity();
-        public bool ReplaceSanityBar = false;
-        
-        public List<IOtherBar> AdditionState = new List<IOtherBar>();
+        public bool ReplaceSanity;
 
-        public List<IEffect> Resists = new List<IEffect>();
+        public List<IOtherBar> AdditionState;
+        public List<Type> Resists = new List<Type>();
         [Space]
-        public List<Skill> AdditionSkills = new List<Skill>();
+        public List<Skill> Skills;
 
-        
-        public static ReBalancer Combine(params ReBalancer[] items) 
+        public static Balancer Combine(params Balancer[] items) 
         {
-            List<ReBalancer> InList = items.ToList() ?? new List<ReBalancer>();
+            List<Balancer> InList = items.ToList() ?? new List<Balancer>();
 
-            var result = new ReBalancer();
-            var resists = new List<IEffect>();
+            var result = new Balancer();
+            var resists = new List<Type>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
 
-            if(InList.Exists(a=>a.ReplaceHealthBar))
+            if(InList.Exists(a=>a.ReplaceHealth))
             {
-                result.ReplaceHealthBar = true;
-                result.Health = items.ToList().Find(a=>a.ReplaceHealthBar).Health.Clone() as IHealthBar;
+                result.ReplaceHealth = true;
+                result.Health = items.ToList().Find(a=>a.ReplaceHealth).Health.Clone() as IHealthBar;
             }
-            if(InList.Exists(a=>a.ReplaceSanityBar))
+            if(InList.Exists(a=>a.ReplaceSanity))
             {
-                result.ReplaceHealthBar = true;
-                result.Sanity = items.ToList().Find(a=>a.ReplaceSanityBar).Health.Clone() as ISanityBar;
+                result.ReplaceHealth = true;
+                result.Sanity = items.ToList().Find(a=>a.ReplaceSanity).Health.Clone() as ISanityBar;
             }
-            if(InList.Exists(a=>a.ReplaceStaminaBar))
+            if(InList.Exists(a=>a.ReplaceStamina))
             {
-                result.ReplaceHealthBar = true;
-                result.Stamina = items.ToList().Find(a=>a.ReplaceStaminaBar).Health.Clone() as IStaminaBar;
+                result.ReplaceHealth = true;
+                result.Stamina = items.ToList().Find(a=>a.ReplaceStamina).Health.Clone() as IStaminaBar;
             }
             
-            foreach(ReBalancer item in items)
+            foreach(Balancer item in items)
             {
                 result.WalkDistance += item.WalkDistance;
 
@@ -435,35 +439,19 @@ namespace SagardCL //Class library
 
                 resists.AddRange(item.Resists);
                 //additionStates.AddRange(item.AdditionState);
-                additionSkills.AddRange(item.AdditionSkills);
+                additionSkills.AddRange(item.Skills);
             }
             result.Resists = resists;
-            result.AdditionSkills = additionSkills;
+            result.Skills = additionSkills;
             result.AdditionState = additionStates;
 
+            result.AlwaysVisible = items.ToList().Exists(a=>a.AlwaysVisible);
             return result; 
         }
     }
-    public static class FieldManipulate
-    {
-        public static List<T> CombineLists<T>(params List<T>[] a)
-        {
-            List<T> result = new List<T>();
-            foreach(List<T> b in a)
-            {
-                result.AddRange(b);
-            }
-            return result;
-        }
-    }
-
+    
     namespace ParameterManipulate
     {
-        // All Interfaces 
-        public interface Sendable
-        {
-
-        }
         public interface IStepEndUpdate
         {
             void StepEnd();
@@ -479,10 +467,29 @@ namespace SagardCL //Class library
 
                 int Value { get; set; }
                 int Max { get; set; }  
+
+                public void Use(int value) 
+                {
+                    Value += value;
+                }
             }
 
             public interface IHealthBar : IStateBar
             {
+                public static IHealthBar operator + (IHealthBar a, IHealthBar b) 
+                {
+                    IHealthBar result = a.Clone() as IHealthBar;
+
+                    result.Max += b.Max;
+                    result.ArmorMelee += b.ArmorMelee;
+                    result.ArmorRange += b.ArmorRange;
+                    result.Immunity += b.Immunity;
+
+                    return result;
+                }
+                
+                void IStateBar.Use(int value) { }
+
                 int ArmorMelee { get; set; } 
                 int ArmorRange { get; set; }
 
@@ -520,6 +527,10 @@ namespace SagardCL //Class library
             public interface IStaminaBar : IStateBar
             {
                 void GetTired(int value);
+                void IStateBar.Use(int value)
+                {
+                    Value = Mathf.Clamp(Value + value, 0, Max);
+                }
                 int RestEffectivity{ get; set; }
                 int WalkUseStamina{ get; set; }
 
@@ -527,49 +538,171 @@ namespace SagardCL //Class library
             }
             public interface ISanityBar : IStateBar
             {
+                void IStateBar.Use(int value)
+                {
+                    Value = value<0? 
+                        Value - Mathf.Clamp(Mathf.Abs(value) - SanityShield, 0, 1000) : 
+                        Mathf.Clamp(Value + value, 0, Max);
+                }
                 int SanityShield { get; set; } 
             }
             public interface IOtherBar : IStateBar
             {
-
+                void IStateBar.Use(int value) { UseMath(value); }
+                void UseMath(int value);
             }
-        
+
         #endregion
         #region // Map Object information's
             
-            public interface ObjectOnMap
+            public interface IObjectOnMap
             {
+                IObjectOnMap thisObject { get; set; }
                 public const int standardVisibleDistance = 10;
-                bool nowVisible(CharacterCore Object);
+                bool nowVisible { get{ return true; } }
 
+                protected static IObjectOnMap objectClassTo<T>(IObjectOnMap classObject) where T : IObjectOnMap
+                {
+                    lock(classObject)
+                    {
+                        if(classObject is T) return (T)classObject;
+                        else return (IObjectOnMap)classObject; 
+                    }
+                }
+
+                public Attack.AttackCombiner TakeDamageList { get; set; }
+                
+                bool Corpse { get; set; }
+
+                public void AddDamage(Attack attack) { }
+
+                public void AddSanity(int damage) { }
+
+                public void AddStamina(int damage) { }
+
+                public void AddState(IAnotherBars state) { }
+
+                public void AddEffect(params Effect[] Effect) { }
+                public void AutoRemoveEffect() { }
+                public void RemoveEffect(params Effect[] Effect) { }
+                public void InvokeEffects(string Method) { }
+            }
+
+            public interface IKillable : IObjectOnMap
+            {
+                IHealthBar Health { get; set; }
+                IHealthBar BaseHealth { get; }
+                
+                void IObjectOnMap.AddDamage(Attack attack) {
+                    if(attack.DamageType == DamageType.Heal & Corpse) return;
+
+                    TakeDamageList.Add(attack);
+                }
+
+                void LostHealth();
+            }
+            public interface IGetableCrazy : IObjectOnMap
+            {
+                ISanityBar Sanity { get; set; }
+                ISanityBar BaseSanity { get; }
+
+                void IObjectOnMap.AddSanity(int damage)
+                {
+                    if(Sanity!=null) Sanity.Value = Mathf.Clamp(damage >= 0? damage : -(int)(Mathf.Clamp(MathF.Abs(damage) - Sanity.SanityShield, 0, 1000)) + Sanity.Value, 0, Sanity.Max);
+                }
+            }
+            public interface ITiredable : IObjectOnMap
+            {
+                IStaminaBar Stamina { get; set; }
+                IStaminaBar BaseStamina { get; }
+
+                bool WillRest{ get; set; }
+
+                void IObjectOnMap.AddStamina(int damage)
+                {
+                    Stamina.Value = Mathf.Clamp(damage + Stamina.Value, 0, Stamina.Max);
+                }
+            }
+            public interface IAnotherBars : IObjectOnMap
+            {
+
+            }
+            
+            public interface IInvisible : IObjectOnMap
+            {
+                bool AlwaysVisible { get; set; }
+                bool WallIgnoreVisible { get; set; }
+
+                new bool nowVisible();
+            }
+
+            public interface IStorage : IObjectOnMap
+            {
+                public List<Item> Inventory { get; set; }
+            }
+            public interface IEffector : IObjectOnMap
+            {
                 List<Effect> Effects { get; set; }
                 List<Type> Resists { get; set; }
 
                 protected delegate Type IEffect<T>() where T : IEffect;
+
+                void IObjectOnMap.AddEffect(params Effect[] Effect) {
+                    foreach(Effect effect in Effect) { effect.Target = (IEffector)this; if(!effect.Workable() ) continue; effect.InvokeMethod("WhenAdded"); Effects.Add(effect); }
+                }
+                void IObjectOnMap.AutoRemoveEffect() {
+                    List<Effect> Effect = Effects.FindAll(a=>!a.Workable());
+                    foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
+                }
+                void IObjectOnMap.RemoveEffect(params Effect[] Effect) {
+                    foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
+                }
+
+                void IObjectOnMap.InvokeEffects(string Method)
+                {
+                    foreach(Effect effect in Effects)
+                    {
+                        effect.InvokeMethod(Method);
+                    }
+                    ((IObjectOnMap)this).AutoRemoveEffect();
+                }
             }
 
-            public interface Killable : ObjectOnMap
+            public interface IAttacker : IObjectOnMap
             {
-                IHealthBar Health { get; set; }
-            }
-            public interface GetableCrazy : ObjectOnMap
-            {
-                ISanityBar Sanity { get; set; }
-            }
-            public interface Tiredable : ObjectOnMap
-            {
-                IStaminaBar Stamina { get; set; }
-            }
-            public interface Storage : ObjectOnMap
-            {
-                public List<Item> Inventory { get; set; }
-            }
-            public interface Attacker : ObjectOnMap
-            {
-                public SkillCombiner SkillRealizer { get; set; }
-            }
+                int SkillIndex { get; set; }
+                List<Skill> AvailbleBaseSkills { get; }
+                public Skill CurrentSkill { get{ try { return AvailbleBaseSkills[Mathf.Clamp(SkillIndex, 0, AvailbleBaseSkills.Count-1)]; } 
+                                              catch { return new Skill(); } } }
 
-            public interface HaveName : ObjectOnMap
+                public async Task<List<Attack>> Realize(Checkers from, Checkers to, IAttacker target)
+                {
+                    List<Attack> attackList = new List<Attack>();
+                    HashSet<Checkers> Overrides = new HashSet<Checkers>();
+
+                    foreach(ZonePlacer NowHit in CurrentSkill.Realizations) 
+                        if(NowHit != null) await foreach(Attack attack in NowHit.GetAttackList(from, to, target)){ 
+                            if(!Overrides.Contains(attack.Position)) attackList.Add(attack); 
+                            if(NowHit.Override) Overrides.Add(attack.Position); }
+
+                    return attackList;
+                }
+
+                int Strength{ get; set; }
+                int DamageRange{ get; set; }
+                int RezoOverclocking{ get; set; }
+                int DamagePure{ get; set; }
+
+                int Healing{ get; set; }
+                int Repairing{ get; set; }
+            }
+            public interface IWalk : IObjectOnMap, ITiredable
+            {
+                int WalkDistance { get; set; }
+                List<Checkers> WalkWay { get; set; } 
+            }
+            
+            public interface HaveName : IObjectOnMap
             {
                 protected enum Names
                 {
@@ -587,28 +720,31 @@ namespace SagardCL //Class library
         #endregion
         #region // Effects
 
-            public interface ICombineWithDuplicates
-            {
-                IEffect CombineDuplicates(IEffect a, IEffect b);
-            }
-
             public interface IEffect
             {
                 string Name { get; } 
                 Sprite Icon { get; } 
                 string Description { get; }
 
-                CharacterCore Target { get; set; }
+                IObjectOnMap Target { get; set; }
                 
                 public void InvokeMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
                                                      if(info != null) info.Invoke(this, parameters: null); } 
 
-                ReBalancer Stats { get; set; }
+                Balancer Stats { get; set; }
             }
+            
             public interface Effect : IEffect { bool Workable(); }
+            public interface ICombineWithDuplicates : Effect { Effect CombineDuplicates(Effect a, Effect b); }
             public interface HiddenEffect : Effect { }
             public interface OneUse : IEffect { }
-            public interface OnMap : IEffect { }
+            public interface OnMap : IEffect 
+            { 
+                new public IObjectOnMap Target { get { return null; } }
+                new public Balancer Stats { get{ return null; } }
+                
+            }
+            
             public interface RacePassiveEffect : IEffect { Race RaceName { get; set; } string RaceDescription { get; set; } }
         
         #endregion

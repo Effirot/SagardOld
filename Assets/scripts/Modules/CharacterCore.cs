@@ -11,12 +11,14 @@ using System.Reflection;
 using Random = UnityEngine.Random;
 using UnityAsync;
 
-public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, Storage, Attacker, HaveName {
+public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable, IStorage, IAttacker, IWalk, HaveName {
     #region // ============================================================= Useful stuff =============================================================================================
         protected Vector3 position{ get{ return this.transform.position; } set{ this.transform.position = value; } }
 
-        private protected AllInOne MPlaner { get{ return SkillRealizer.From; } set { SkillRealizer.From = value; } }
-        private protected AllInOne APlaner { get{ return SkillRealizer.To; } set { SkillRealizer.To = value; } }
+        [field: SerializeField] private protected AllInOne MPlaner { get; set; }
+        [field: SerializeField] private protected AllInOne APlaner { get; set; }
+
+        IAttacker Attacker => (IAttacker)IObjectOnMap.objectClassTo<IAttacker>(this);
                 
         public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
         public void ChangeFigureColor(Color color, float speed, Material[] material = null)
@@ -51,6 +53,16 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         }
 
         public virtual Type type{ get{ return typeof(CharacterCore); } }
+
+        public static List<T> CombineLists<T>(params List<T>[] a)
+        {
+            List<T> result = new List<T>();
+            foreach(List<T> b in a)
+            {
+                result.AddRange(b);
+            }
+            return result;
+        }
     #endregion
     #region // =========================================================== All parameters =================================================================================================
     
@@ -58,12 +70,14 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
         {
             TakeDamageList.Clear();
 
+            thisObject = (IObjectOnMap)this;
+
             transform.parent.name = HaveName.GetName();
             name += $"({transform.parent.name})";
 
-            BaseHealth = _Health.Clone() as IHealthBar;
-            BaseStamina = _Stamina.Clone() as IStaminaBar;
-            BaseSanity = _Sanity.Clone() as ISanityBar;
+            BaseHealth = Health.Clone() as IHealthBar;
+            BaseStamina = Stamina.Clone() as IStaminaBar;
+            BaseSanity = Sanity.Clone() as ISanityBar;
             
             InGameEvents.MapUpdate.AddListener(async() => {
                 await MovePlannerSet(MPlaner.position, MPlaner.Renderer.enabled);
@@ -72,7 +86,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             InGameEvents.StepSystem.Add(FindStepStage);
             InGameEvents.AttackTransporter.AddListener((a) => { 
                 List<Attack> find = a.FindAll((a) => a.Position == new Checkers(position));
-                foreach(Attack attack in find) if(attack.Position == new Checkers(position)) AddDamage(attack);
+                foreach(Attack attack in find) if(attack.Position == new Checkers(position)) ((IKillable)this).AddDamage(attack);
             });
             InGameEvents.StepEnd.AddListener(EveryStepEnd);
             
@@ -83,31 +97,31 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             MPlaner.position = new Checkers(position);
         }
 
-        public Race _Race;
-        Race RaceName { get{ return _Race; } set{ _Race = value; } }
+        public IObjectOnMap thisObject { get; set; } 
+        [field: SerializeField] public Race Race { get; private set; }
 
         [SerializeField] bool _Corpse = false;
-        internal bool Corpse { get { return _Corpse; }
+        public bool Corpse { get { return _Corpse; }
         set { 
                 if(_Corpse != value)
                     if(value) 
                     {
                         Effects.RemoveAll(a=>a is OneUse | !a.Workable());
-                        Effects.Add(Decomposition.Base(this));
+                        //Effects.Add(Decomposition.Base(this));
 
                         ChangeFigureColor(new Color(0.5f, 0.5f, 0.5f), 0.2f);
                     }
                     else 
                     {
-                        Effects.Remove(Decomposition.Base(this));
+                        Effects.Remove(Effects.Find(a=>a is Decomposition));
 
                         ChangeFigureColor(new Color(1f, 1f, 1f), 0.2f);
                     }
                 _Corpse = value;
-            } 
+            }
         } 
-        [SerializeField] internal int WalkDistance = 5;
-
+        [field: SerializeField]public int WalkDistance { get; set; } = 5;
+        
         #region // ================================== parameters
 
             public const int maxVisibleDistance = 10;
@@ -119,42 +133,36 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                                                                 WallIgnoreVisible? Physics.Raycast(this.position, Object.position - this.position, Checkers.Distance(this.position, Object.position), LayerMask.NameToLayer("Object")) : true) | 
                                                                 AlwaysVisible; }
             
-            [SerializeField, SerializeReference]protected IHealthBar BaseHealth;
-            [SerializeReference, SubclassSelector] IHealthBar _Health;
-            public IHealthBar Health { get { return _Health; } set { _Health = value; } } 
+            public IHealthBar BaseHealth { get; protected set; }
+            [field: SerializeReference, SubclassSelector] public IHealthBar Health { get; set; } 
 
-            protected ISanityBar BaseSanity;
-            [SerializeReference, SubclassSelector] ISanityBar _Sanity;
-            public ISanityBar Sanity { get { return _Sanity; } set { _Sanity = value; } }
+            public ISanityBar BaseSanity { get; protected set; }
+            [field: SerializeReference, SubclassSelector] public ISanityBar Sanity { get; set; }
 
-            protected IStaminaBar BaseStamina;
-            [SerializeReference, SubclassSelector] IStaminaBar _Stamina;
-            public IStaminaBar Stamina { get { return _Stamina; } set { _Stamina = value; } }
+            public IStaminaBar BaseStamina { get; protected set; }
+            [field: SerializeReference, SubclassSelector] public IStaminaBar Stamina { get; set; }
             
             
             [SerializeReference, SubclassSelector] List<IOtherBar> _OtherStates;
-            public List<IOtherBar> OtherStates { get { return FieldManipulate.CombineLists<IOtherBar>(_OtherStates, AllBalanceChanges.AdditionState); } set{ _OtherStates = value; } }
+            public List<IOtherBar> OtherStates { get { return CombineLists<IOtherBar>(_OtherStates, AllBalanceChanges.AdditionState); } set{ _OtherStates = value; } }
 
         #endregion
         #region // ================================== effects
 
             public RacePassiveEffect RaceEffect { get; private set; } 
 
-            [SerializeReference, SubclassSelector] List<Effect> _Effects;
-            public List<Effect> Effects { get { return _Effects; } set { _Effects = value; } }
-            [SerializeReference, SubclassSelector] List<Type> _Resists;
-            public List<Type> Resists { get { return _Resists; } set { _Resists = value; } }
+            [field: SerializeReference, SubclassSelector] public List<Effect> Effects { get; set; } 
+            [field: SerializeReference, SubclassSelector] public List<Type> Resists { get; set; }
 
         #endregion
         #region // ================================== inventory
         
             [SerializeField] List<Item> _Inventory;
             public int InventorySize = 1;
-
             [SerializeField] public List<Item> _ArtifacerInventory;
             public int ArtifacerInventorySize = 0;
 
-            public List<Item> Inventory { get { return FieldManipulate.CombineLists<Item>(_Inventory, _ArtifacerInventory); } 
+            public List<Item> Inventory { get { return CombineLists<Item>(_Inventory, _ArtifacerInventory); } 
             set
             { 
                 foreach(Item item in value) {
@@ -163,58 +171,35 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 }
             } }
 
-            public ReBalancer AllBalanceChanges;
-            public List<ReBalancer> PermanentsEffects = new List<ReBalancer>();
+            public Balancer AllBalanceChanges;
+            public List<Balancer> PermanentsEffects = new List<Balancer>();
 
         #endregion
         #region // ================================== Skills
 
-            public SkillCombiner SkillRealizer { get{ return _SkillRealizer; } set { _SkillRealizer = value; } }
-            [SerializeField] SkillCombiner _SkillRealizer = new SkillCombiner();
+            public int SkillIndex { get; set; }
 
-            [SerializeField] public int Strength;
-            [SerializeField] public int Accuracy;
-            [SerializeField] public int RezoOverclocking;
-            [SerializeField] public int Healing;
-            [SerializeField] public int Repairing;
+            [field: SerializeField] public List<Skill> AvailbleBaseSkills { get; [SerializeField]private set; } = new List<Skill>();
 
-            [SerializeField] public int DamagePure = 8;
-            [SerializeField] public int DamageRange = 9;
+            [field: SerializeField] public int Strength { get; set; }
+            [field: SerializeField] public int Accuracy { get; set; }
+            [field: SerializeField] public int RezoOverclocking { get; set; }
+            [field: SerializeField] public int Healing { get; set; }
+            [field: SerializeField] public int Repairing { get; set; }
 
+            [field: SerializeField] public int DamagePure { get; set; }
+            [field: SerializeField] public int DamageRange { get; set; }
+        
         #endregion
 
-        protected List<Attack> AttackZone = new List<Attack>();
-        protected List<Checkers> WalkWay = new List<Checkers>();
+        public Attack.AttackCombiner TakeDamageList { get; set; }
 
-        public Attack.AttackCombiner TakeDamageList = new Attack.AttackCombiner();
+        public List<Attack> AttackZone { get; set; } = new List<Attack>();
+        public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
 
-        public void AddDamage(Attack attack)
-        {
-            if(attack.DamageType != DamageType.Heal | !Effects.Exists(a=>a.GetType() == typeof(Decomposition)))
-                TakeDamageList.Add(attack);
-        }
-        public void AddSanity(int damage)
-        {
-            if(Sanity!=null) Sanity.Value = Mathf.Clamp(damage >= 0? damage : -(int)(Mathf.Clamp(MathF.Abs(damage) - Sanity.SanityShield, 0, 1000)) + Sanity.Value, 0, Sanity.Max);
-        }
-        public void AddStamina(int damage)
-        {
-            Stamina.Value = Mathf.Clamp(damage + Stamina.Value, 0, Stamina.Max);
-        }
         public void DrainOtherState<IOtherBar>(int value)
         {
 
-        }
-        
-        public void AddEffect(params Effect[] Effect) {
-            foreach(Effect effect in Effect) { effect.Target = this; if(!effect.Workable() ) continue; effect.InvokeMethod("WhenAdded"); Effects.Add(effect); }
-        }
-        public void RemoveEffect() {
-            List<Effect> Effect = Effects.FindAll(a=>!a.Workable());
-            foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
-        }
-        public void RemoveEffect(params Effect[] Effect) {
-            foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
         }
 
         #region // =============================== Update methods
@@ -246,7 +231,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 MPlaner.LineRenderer.enabled = CheckPosition(position) & Draw;
                 MPlaner.Renderer.enabled = CheckPosition(position) & Draw;
 
-                if(SkillRealizer.ThisSkill.NoWalking & position == new Checkers(this.position)) 
+                if(Attacker.CurrentSkill.NoWalking & position == new Checkers(this.position)) 
                     await AttackPlannerSet(position);
 
                 if(!CustomWay) 
@@ -271,40 +256,39 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             {
                 APlaner.position = new Checkers(position);
 
-                if(SkillRealizer.ThisSkill.NoWalking) 
+                if(Attacker.CurrentSkill.NoWalking) 
                     await MovePlannerSet(this.position, false);
                 
                 if(!CustomZone) {
                     AttackZone.Clear();
-                    AttackZone = await SkillRealizer.Realize();
+                    AttackZone = await Attacker.Realize(MPlaner.position, APlaner.position, this);
                 }
                 if(Draw) {
                     Generation.DrawAttack(AttackZone, this);
                 }
             }
 
-            void LostHealth()
+            public void LostHealth()
             {
                 if(Corpse) Destroy(transform.parent.gameObject);
                 else { 
                     Corpse = true;
                     this.Health.Value = this.Health.Max + this.Health.Value;
                 }
-                
             }
             void AfterInventoryUpdate()
             {
-                List<ReBalancer> FromItems = new List<ReBalancer>(); foreach(Item item in Inventory) FromItems.Add(item.Stats);
-                List<ReBalancer> FromEffects = new List<ReBalancer>(); if(Effects.Count != 0)foreach(Effect effect in Effects) FromEffects.Add(effect.Stats);
+                List<Balancer> FromItems = new List<Balancer>(); foreach(Item item in Inventory) FromItems.Add(item.Stats);
+                List<Balancer> FromEffects = new List<Balancer>(); if(Effects.Count != 0)foreach(Effect effect in Effects) FromEffects.Add(effect.Stats);
                 
-                ReBalancer result = ReBalancer.Combine(FieldManipulate.CombineLists<ReBalancer>(FromEffects, PermanentsEffects, FromItems).ToArray());
+                Balancer result = Balancer.Combine(CombineLists<Balancer>(FromEffects, PermanentsEffects, FromItems).ToArray());
 
-                if(AllBalanceChanges == ReBalancer.Combine(FromItems.ToArray())) return;
-                AllBalanceChanges = ReBalancer.Combine(FromItems.ToArray()); 
+                if(AllBalanceChanges == Balancer.Combine(FromItems.ToArray())) return;
+                AllBalanceChanges = Balancer.Combine(FromItems.ToArray()); 
 
                 #region // health
                 {
-                    if(AllBalanceChanges.ReplaceHealthBar){
+                    if(AllBalanceChanges.ReplaceHealth){
                         IHealthBar healthBar = AllBalanceChanges.Health.Clone() as IHealthBar;
                         healthBar.Value = Health.Value;
                         Health = healthBar;
@@ -324,7 +308,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 #endregion
                 #region // Stamina
                 {
-                    if(AllBalanceChanges.ReplaceStaminaBar){
+                    if(AllBalanceChanges.ReplaceStamina){
                         IStaminaBar staminaBar = AllBalanceChanges.Stamina.Clone() as IStaminaBar;
                         staminaBar.Value = Stamina.Value;
                         Stamina = staminaBar;
@@ -342,7 +326,7 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 #endregion
                 #region // Sanity
                 {
-                    if(AllBalanceChanges.ReplaceSanityBar){
+                    if(AllBalanceChanges.ReplaceSanity){
                         ISanityBar sanityBar = AllBalanceChanges.Stamina.Clone() as ISanityBar;
                         sanityBar.Value = Sanity.Value;
                         Sanity = sanityBar;
@@ -360,40 +344,28 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
             } 
                         
             void UpdateParameter(IStateBar parameter)
-            {
-                if(!(parameter is IStepEndUpdate)) return;
-                
-                Type type = typeof(IStepEndUpdate);
-                MethodInfo info = type.GetMethod("StepEnd", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            {        
+                MethodInfo info = parameter.GetType().GetMethod("StepEnd", BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
                 if(info != null) info.Invoke(parameter, parameters: null);
-            }
-            void InvokeEffects(string Method)
-            {
-                foreach(Effect effect in Effects)
-                {
-                    if(effect.Target == null) effect.Target = this;
-                    effect.InvokeMethod(Method);
-                }
-                RemoveEffect();
             }
         
         #endregion      
         #region // =============================== Step System
-            
+            public bool WillRest { get; set; } = true;
+
             Task FindStepStage(string id){ 
-                MethodInfo Method = type.GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                MethodInfo Method = thisObject.GetType().GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
                 if(Method == null) return new Task(() => { });
-                return (Task)Method?.Invoke(this, parameters: null);
+                return (Task)Method?.Invoke(thisObject, parameters: null);
             }   
-
+  
             async Task Walking()
             {
                 if(WalkWay.Count == 0) return;
 
                 WillRest = false;
-                await Task.Delay(30);
 
                 Stamina.GetTired(Stamina.WalkUseStamina);
                 await transport();
@@ -406,28 +378,27 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                         position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
                         if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
                     }
-                    await MovePlannerSet(this.position, false);
+                    WalkWay.Clear();
                 }
-                
-            }     
-            async Task EffectUpdate()
-            {
-                await Task.Delay(10);                 
-                
-                InvokeEffects("Update");
-                if(TakeDamageList.Checked) InvokeEffects("DamageReaction");
-            }
+            }  
             async Task Attacking()
             {
                 if(AttackZone.Count == 0) return;
                 WillRest = false;
                 await Task.Delay(Random.Range(900, 2700));
 
-                Stamina.GetTired(SkillRealizer.StaminaWaste());
+                Stamina.GetTired(Attacker.CurrentSkill.UsingStamina);
                 InGameEvents.AttackTransporter.Invoke(AttackZone);
 
 
                 await AttackPlannerSet(MPlaner.position, true);
+            }
+            async Task EffectUpdate()
+            {
+                await Task.Delay(10);                 
+                
+                ((IObjectOnMap)this).InvokeEffects("Update");
+                if(TakeDamageList.Checked) ((IObjectOnMap)this).InvokeEffects("DamageReaction");
             }
             async Task DamageMath()
             {
@@ -437,26 +408,25 @@ public class CharacterCore : MonoBehaviour, Killable, GetableCrazy, Tiredable, S
                 foreach(Attack attack in attacks) 
                 { 
                     Health.Damage(attack); 
-                    AddEffect(attack.Effects);
+                    ((IObjectOnMap)this).AddEffect(attack.Effects);
                 }
                 if(attacks.Sum(a=>a.Damage) > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 0.1f);
 
                 TakeDamageList.Clear();
-            }
+            }       
             async Task Dead() 
             { 
                 if(Health.Value > 0) return;
                 await Task.Delay(Random.Range(10, 100)); 
-                try { LostHealth(); } catch {}
+                LostHealth();
             }
             async Task Rest() 
             { 
                 if(!WillRest) { WillRest = true; return; }
                 await Task.Delay(Random.Range(0, 2300)); 
                 Stamina.Rest();
+                WillRest = true;
             }
-            
-            bool WillRest = true;
 
             void EveryStepEnd()
             {
