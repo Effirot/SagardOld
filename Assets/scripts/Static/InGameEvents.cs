@@ -7,9 +7,14 @@ using UnityEngine.EventSystems;
 using SagardCL;
 using System;
 using System.Reflection;
+using TMPro;
 
 public class InGameEvents : MonoBehaviour
 {
+    public static int StepNumber = 0;
+    public TextMeshProUGUI StepEndPanelLink;
+    public static TextMeshProUGUI StepEndPanel;
+
     internal static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
     public delegate Task TaskStepStage(string StepStage);
     
@@ -24,7 +29,7 @@ public class InGameEvents : MonoBehaviour
     private static bool _Controllable = true;
     public static bool Controllable { get { return _Controllable; } set { _Controllable = value; } }
 
-
+    void Start() { StepEndPanel = StepEndPanelLink; StepEnd.AddListener(()=> {StepEndPanel.text = StepNumber.ToString();}); }
     void Update(){
         if(EventSystem.current.IsPointerOverGameObject()) return;
 
@@ -58,8 +63,6 @@ public class InGameEvents : MonoBehaviour
         if (Input.GetMouseButtonUp(1) ) {MouseController.Invoke(TargetObject, 0); TargetObject = null; }
     }
 
-
-
     enum Step : int
     {
         Walking,
@@ -73,6 +76,8 @@ public class InGameEvents : MonoBehaviour
     {
         if(!Controllable) return;
         Controllable = false;   
+
+        Debug.ClearDeveloperConsole();
         
         for(int i = 0; i < Enum.GetNames(typeof(Step)).Length; i++){
             Debug.Log($"Now step: {(Step)i}");
@@ -82,9 +87,11 @@ public class InGameEvents : MonoBehaviour
             Step step = (Step)i;
 
             foreach(TaskStepStage summon in StepSystem) { task.Add(summon(step.ToString())); }
-            await Task.WhenAll(task.ToArray());
+            try{ await Task.WhenAll(task.ToArray()); } catch(Exception e) { Debug.LogError(e); }
         }
         StepEnd.Invoke();
+        
+        StepNumber++;
         
         Controllable = true;
     }

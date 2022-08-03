@@ -7,9 +7,22 @@ using System.Threading.Tasks;
 using UnityEditor;
 using System.ComponentModel;
 using System;
+using System.Linq;
 
 [Serializable]public struct Skill
 {
+    public static Skill Empty()
+    {
+        return new Skill()
+        {
+            Name = "Empty",
+            Description = "Empty Skill Description",
+            NoWalking = false,
+            Realizations = new List<ZonePlacer>(),
+            UsingStamina = 0
+        };
+    }
+
     [Space, Header("Description")]
     public string Name;
     public string Description;
@@ -19,7 +32,6 @@ using System;
     [Space(2)]
     [Header("Parameters")]
     public bool NoWalking;
-    public int MaxCursorDistance;
     [SerializeReference, SubclassSelector] public List<ZonePlacer> Realizations;
 
     [Space(3)]
@@ -52,15 +64,27 @@ public interface ZonePlacer
 
     bool Override { get; }
 
-    
+    protected static Checkers PointTargeting(Checkers from, Checkers to, TargetPointGuidanceType PointType, int MaxDistance, int MinDistance = 0) {switch (PointType)
+        {
+            default: return from;
+            case TargetPointGuidanceType.ToCursor: {
+                return MovementTo(from, to);
+            }
+            case TargetPointGuidanceType.ToCursorWithWalls: 
+            {
+                return MovementTo(from, ToPoint(from, to));
+            }
+            case TargetPointGuidanceType.ToFromPoint: return from;
+        }
 
-    protected static Checkers PointTargeting(Checkers from, Checkers to, TargetPointGuidanceType PointType) {switch (PointType)
-    {
-        default: return from;
-        case TargetPointGuidanceType.ToCursor: return to;
-        case TargetPointGuidanceType.ToCursorWithWalls: return ToPoint(from, to);
-        case TargetPointGuidanceType.ToFromPoint: return from;
-    }}
+        Checkers MovementTo(Checkers from, Checkers to){
+            Checkers vector = to - from;
+            List<Checkers> points = Checkers.Line(from, from + vector * 10);
+            points.RemoveAll(a=>Checkers.Distance(from, a) >= MaxDistance | Checkers.Distance(from, a) <= MinDistance);
+            
+            return ;
+        }
+    }
     protected static Checkers ToPoint(Vector3 from, Vector3 to, float Up = 0.4f)
     {
         if(Physics.Raycast(from, to - from, out RaycastHit hit, Vector3.Distance(from, to), LayerMask.GetMask("Object", "Map")))
@@ -101,16 +125,21 @@ public interface ZonePlacer
     [SerializeField, Range(0, 5)] float ScalingPower;
     [field: SerializeField] public DamageType DamageType { get; set; }
     [Space]
+    [SerializeField, Range(0, 8)] public int StartDistance;
+    [SerializeField, Range(1, 20)] public int AdditionDistance;
+    [Space]
     [SerializeField] TargetPointGuidanceType TargetingType;
     [SerializeField, Range(0, 5)] int StartRadius;
     [SerializeField, Range(1, 6)] int PlusRadius;
+    [SerializeField] bool WallPiercing;
+    [field: SerializeReference, SubclassSelector] List<Effect> Effects { get; set; } 
     
     [field: Space, SerializeField] public bool Override{ get; set; }
 
     public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target)
     {
         await Task.Delay(0);
-        Checkers FinalPoint = ZonePlacer.PointTargeting(from, to, TargetingType); 
+        Checkers FinalPoint = ZonePlacer.PointTargeting(from, to, TargetingType, StartDistance + AdditionDistance, StartDistance); 
 
         int Radius = StartRadius + PlusRadius;
         for(int x = -Radius - 2; x <= Radius + 2; x++)
@@ -118,8 +147,10 @@ public interface ZonePlacer
         {
             Checkers NowChecking = FinalPoint + new Checkers(x, z);
             int Damage = (int)Mathf.Round((Radius / Checkers.Distance(NowChecking, FinalPoint)) * 
-            (ZonePlacer.Damage(DamageType, DamagePercent, Target) + DamageScaling(Checkers.Distance()))); 
+                                          (ZonePlacer.Damage(DamageType, DamagePercent, Target) + 
+                                           ZonePlacer.DamageDistanceScaling(Checkers.Distance(from, NowChecking), Scaling, ScalingPower))); 
             
+            if(!WallPiercing | Physics.Raycast(from.Up(0.3f), NowChecking - from, LayerMask.GetMask("Object", "Map")))
             if(Checkers.Distance(NowChecking, FinalPoint) + 1f > StartRadius)
             if(Checkers.Distance(NowChecking, FinalPoint) + 0.5f < Radius)
                 yield return new Attack(Target, NowChecking, Damage, DamageType);
@@ -128,29 +159,34 @@ public interface ZonePlacer
 }
 [Serializable] public struct Line : ZonePlacer 
 {
-    [field: SerializeField]public float DamagePercent { get; set; }
+    [field: SerializeField] public float DamagePercent { get; set; }
     [field: SerializeField] public DamageScaling Scaling { get; set; }
     [SerializeField, Range(0, 5)] float ScalingPower;
-    [field: SerializeField]public DamageType DamageType { get; }
+    [field: SerializeField] public DamageType DamageType { get; set; }
     [Space]
     [SerializeField] TargetPointGuidanceType TargetingType;
     [Space]
-    [SerializeField, Range(0, 10)] int MinDistance;
-    [SerializeField, Range(5, 20)] int MaxDistance;
+    [SerializeField, Range(0, 10)] int StartDistance;
+    [SerializeField, Range(5, 20)] int Distance;
+    [field: SerializeReference, SubclassSelector] List<Effect> Effects { get; set; } 
 
     [field: SerializeField]public bool Override { get; set; }
 
-
     public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target)
     {
-        Checkers FinalPoint = ZonePlacer.PointTargeting(from, to, TargetingType); 
+        Checkers FinalPoint = ZonePlacer.PointTargeting(from, to, TargetingType, StartDistance + Distance, StartDistance); 
+        
+        List<Checkers> line = Checkers.Line(from, FinalPoint);
 
-        foreach(Checkers NowChecking in Checkers.Line(from, FinalPoint))
+        foreach(Checkers NowChecking in line)
         {
-            if(Checkers.Distance(NowChecking, from) > MinDistance) 
-            if(Checkers.Distance(NowChecking, from) < MinDistance + MaxDistance)
+            if(Checkers.Distance(NowChecking, from) > StartDistance) 
+            if(Checkers.Distance(NowChecking, from) < StartDistance + Distance)
             if(NowChecking != from)
-                yield return(new Attack(Target, NowChecking, Damage() - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.DamageType, NowHit.Debuff));
+                yield return new Attack(Target, NowChecking, 
+                                        ZonePlacer.Damage(DamageType, DamagePercent, Target) + ZonePlacer.DamageDistanceScaling(Checkers.Distance(NowChecking, from), Scaling, ScalingPower),
+                                        DamageType, 
+                                        Effects.ToArray());
         }
         await Task.Delay(0);
     }
@@ -158,17 +194,6 @@ public interface ZonePlacer
 
     
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
     // switch(NowHit.HitBox)

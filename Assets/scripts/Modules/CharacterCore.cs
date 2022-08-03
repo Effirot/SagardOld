@@ -11,7 +11,7 @@ using System.Reflection;
 using Random = UnityEngine.Random;
 using UnityAsync;
 
-public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable, IStorage, IAttacker, IWalk, HaveName {
+public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable, IStorage, IAttacker, IWalk, HaveName {
     #region // ============================================================= Useful stuff =============================================================================================
         protected Vector3 position{ get{ return this.transform.position; } set{ this.transform.position = value; } }
 
@@ -70,14 +70,12 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
         {
             TakeDamageList.Clear();
 
-            thisObject = (IObjectOnMap)this;
-
             transform.parent.name = HaveName.GetName();
             name += $"({transform.parent.name})";
 
-            BaseHealth = Health.Clone() as IHealthBar;
-            BaseStamina = Stamina.Clone() as IStaminaBar;
-            BaseSanity = Sanity.Clone() as ISanityBar;
+            BaseHealth = Health;
+            BaseStamina = Stamina;
+            BaseSanity = Sanity;
             
             InGameEvents.MapUpdate.AddListener(async() => {
                 await MovePlannerSet(MPlaner.position, MPlaner.Renderer.enabled);
@@ -86,7 +84,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
             InGameEvents.StepSystem.Add(FindStepStage);
             InGameEvents.AttackTransporter.AddListener((a) => { 
                 List<Attack> find = a.FindAll((a) => a.Position == new Checkers(position));
-                foreach(Attack attack in find) if(attack.Position == new Checkers(position)) ((IKillable)this).AddDamage(attack);
+                foreach(Attack attack in find) if(attack.Position == new Checkers(position)) IObjectOnMap.objectClassTo<IAttacker>(this).AddDamage(attack);
             });
             InGameEvents.StepEnd.AddListener(EveryStepEnd);
             
@@ -97,7 +95,6 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
             MPlaner.position = new Checkers(position);
         }
 
-        public IObjectOnMap thisObject { get; set; } 
         [field: SerializeField] public Race Race { get; private set; }
 
         [SerializeField] bool _Corpse = false;
@@ -171,7 +168,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 }
             } }
 
-            public Balancer AllBalanceChanges;
+            Balancer AllBalanceChanges;
             public List<Balancer> PermanentsEffects = new List<Balancer>();
 
         #endregion
@@ -192,10 +189,11 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
         
         #endregion
 
-        public Attack.AttackCombiner TakeDamageList { get; set; }
+        public Attack.AttackCombiner TakeDamageList { get; set; } = Attack.AttackCombiner.Empty();
 
         public List<Attack> AttackZone { get; set; } = new List<Attack>();
         public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
+        
 
         public void DrainOtherState<IOtherBar>(int value)
         {
@@ -261,7 +259,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 
                 if(!CustomZone) {
                     AttackZone.Clear();
-                    AttackZone = await Attacker.Realize(MPlaner.position, APlaner.position, this);
+                    if(new Checkers(this.position) != position) AttackZone = await Attacker.Realize(MPlaner.position, APlaner.position, this);
                 }
                 if(Draw) {
                     Generation.DrawAttack(AttackZone, this);
@@ -289,13 +287,13 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 #region // health
                 {
                     if(AllBalanceChanges.ReplaceHealth){
-                        IHealthBar healthBar = AllBalanceChanges.Health.Clone() as IHealthBar;
+                        IHealthBar healthBar = AllBalanceChanges.Health as IHealthBar;
                         healthBar.Value = Health.Value;
                         Health = healthBar;
                     }
                     else
                     {
-                        IHealthBar healthBar = BaseHealth.Clone() as IHealthBar;
+                        IHealthBar healthBar = BaseHealth as IHealthBar;
                         healthBar.Value = Health.Value;
                         Health = healthBar;
                     }
@@ -309,13 +307,13 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 #region // Stamina
                 {
                     if(AllBalanceChanges.ReplaceStamina){
-                        IStaminaBar staminaBar = AllBalanceChanges.Stamina.Clone() as IStaminaBar;
+                        IStaminaBar staminaBar = AllBalanceChanges.Stamina as IStaminaBar;
                         staminaBar.Value = Stamina.Value;
                         Stamina = staminaBar;
                     }
                     else
                     {
-                        IStaminaBar staminaBar = BaseStamina.Clone() as IStaminaBar;
+                        IStaminaBar staminaBar = BaseStamina as IStaminaBar;
                         staminaBar.Value = Stamina.Value;
                         Stamina = staminaBar;
                     }
@@ -327,13 +325,13 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 #region // Sanity
                 {
                     if(AllBalanceChanges.ReplaceSanity){
-                        ISanityBar sanityBar = AllBalanceChanges.Stamina.Clone() as ISanityBar;
+                        ISanityBar sanityBar = AllBalanceChanges.Stamina as ISanityBar;
                         sanityBar.Value = Sanity.Value;
                         Sanity = sanityBar;
                     }
                     else
                     {
-                        ISanityBar sanityBar = BaseSanity.Clone() as ISanityBar;
+                        ISanityBar sanityBar = BaseSanity as ISanityBar;
                         sanityBar.Value = Sanity.Value;
                         Sanity = sanityBar;
                     }
@@ -355,10 +353,10 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
             public bool WillRest { get; set; } = true;
 
             Task FindStepStage(string id){ 
-                MethodInfo Method = thisObject.GetType().GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                MethodInfo Method = typeof(CharacterCore).GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
                 if(Method == null) return new Task(() => { });
-                return (Task)Method?.Invoke(thisObject, parameters: null);
+                return (Task)Method?.Invoke((this), parameters: null);
             }   
   
             async Task Walking()
@@ -372,9 +370,10 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
 
                 async Task transport() {
                     int PointNum = 1;
-                    for(float i = 0.0003f; position != WalkWay[WalkWay.Count - 1].ToVector3(); i *= 1.3f)
+                    for(float i = 0.0003f; position != WalkWay.Last().ToVector3(); i *= 1.3f)
                     {
-                        await Await.Updates(2);
+                        await new WaitForFixedUpdate();
+
                         position = Vector3.MoveTowards(position, WalkWay[PointNum], i);
                         if(position == WalkWay[PointNum].ToVector3() & position != WalkWay[WalkWay.Count - 1].ToVector3()){ PointNum++; }
                     }
@@ -390,8 +389,7 @@ public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable
                 Stamina.GetTired(Attacker.CurrentSkill.UsingStamina);
                 InGameEvents.AttackTransporter.Invoke(AttackZone);
 
-
-                await AttackPlannerSet(MPlaner.position, true);
+                await AttackPlannerSet(position, true);
             }
             async Task EffectUpdate()
             {
