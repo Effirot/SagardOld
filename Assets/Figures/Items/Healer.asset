@@ -29,7 +29,23 @@ MonoBehaviour:
       rid: 7033181795884204513
     ReplaceSanityBar: 0
     AdditionSkills:
-    - {fileID: 11400000, guid: c16e25781841d9249ad3ddcbdd20e565, type: 2}
+    - Name: 
+      Description: 
+      BigDescription: 
+      image: {fileID: 0}
+      NoWalking: 0
+      MaxCursorDistance: 11
+      Realizations:
+      - HitBox: 4
+        PointType: 0
+        MaxDistance: 4
+        MinDistance: 0
+        DamagePercent: 1.49
+        DamageScalingType: 1
+        DamageType: 5
+        Debuff: []
+      UsingStamina: 1
+      DeleteWhenLowAmmo: 0
   references:
     version: 2
     RefIds:
