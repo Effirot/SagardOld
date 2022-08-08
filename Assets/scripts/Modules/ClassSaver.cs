@@ -750,6 +750,10 @@ namespace SagardCL //Class library
         #region // Effects
             public interface IEffect
             {
+                string Name { get; } 
+                Sprite Icon { get; } 
+                string Description { get; }
+
                 IObjectOnMap Target { get; set; }
                 
                 public void InvokeMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
@@ -769,7 +773,6 @@ namespace SagardCL //Class library
 
                 MapEffect Effect { get; }
             }
-            //public static Effect MapEffectPlacer { return }
             
             public interface RacePassiveEffect : IEffect { string RaceDescription { get; } }
         
