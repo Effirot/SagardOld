@@ -11,8 +11,7 @@ using System.Reflection;
 using Random = UnityEngine.Random;
 using UnityAsync;
 
-public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable, IStorage, IAttacker, IWalk, HaveName {
-    
+public class CharacterCore : MonoBehaviour, IKillable, IGetableCrazy, ITiredable, IStorage, IAttacker, IWalk, HaveName {
     #region // ============================================================= Useful stuff =============================================================================================
         
         protected Vector3 position{ get{ return this.transform.position; } set{ this.transform.position = value; } }
@@ -76,7 +75,7 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
             InGameEvents.StepSystem.Add(FindStepStage);
             InGameEvents.AttackTransporter.AddListener((a) => { 
                 List<Attack> find = a.FindAll((a) => a.Position == new Checkers(position));
-                foreach(Attack attack in find) if(attack.Position == new Checkers(position)) { TakeDamageList.Add(attack); Debug.Log($"{TakeDamageList.Combine().Sum(a=>a.Damage)}"); }
+                foreach(Attack attack in find) if(attack.Position == new Checkers(position)) ((IKillable)this).AddDamage(attack);
             });
             InGameEvents.StepEnd.AddListener(EveryStepEnd);
             
@@ -186,11 +185,19 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
         
             [SerializeField] List<Item> _Inventory;
             public int InventorySize = 1;
+            [SerializeField] public List<Item> _ArtifacerInventory;
+            public int ArtifacerInventorySize = 0;
 
+            public List<Item> Inventory { get { return CombineLists<Item>(_Inventory, _ArtifacerInventory); } 
+            set
+            { 
+                foreach(Item item in value) {
+                    if(item.Artifacer) _ArtifacerInventory.Add(item);
+                    else _Inventory.Add(item);
+                }
+            } }
 
-            public List<Item> Inventory { get { return _Inventory; } set { _Inventory = value; } }
-
-            Balancer AllBalanceChanges = Balancer.Empty();
+            public Balancer AllBalanceChanges;
             public List<Balancer> PermanentsEffects = new List<Balancer>();
 
         #endregion
@@ -218,7 +225,7 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
         public Attack.AttackCombiner TakeDamageList { get; set; } = Attack.AttackCombiner.Empty();
 
         public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
-        
+
         public void DrainOtherState<IOtherBar>(int value)
         {
 
@@ -279,10 +286,15 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
                 AttackPose = new Checkers(position);
 
                 if(Attacker.CurrentSkill.NoWalking) 
-                    await MovePlannerSet(this.position, false);               
-
-                Generation.DrawAttack(await NowSkill.GetAttacks(MPlaner.position, AttackPose, this), this);
+                    await MovePlannerSet(this.position, false);
                 
+                if(!CustomZone) {
+                    AttackZone.Clear();
+                    AttackZone = await Attacker.Realize(MPlaner.position, APlaner.position, this);
+                }
+                if(Draw) {
+                    Generation.DrawAttack(AttackZone, this);
+                }
             }
 
             public void LostHealth()
@@ -295,32 +307,27 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
             }
             void AfterInventoryUpdate()
             {
-                List<Balancer> Balances = new List<Balancer>(); 
-
-                foreach(Item item in Inventory) 
-                    Balances.Add(item.Stats);
-
-                if(Effects.Count != 0)
-                    foreach(Effect effect in Effects) 
-                        Balances.Add(effect.Stats);
-
+                List<Balancer> FromItems = new List<Balancer>(); foreach(Item item in Inventory) FromItems.Add(item.Stats);
+                List<Balancer> FromEffects = new List<Balancer>(); if(Effects.Count != 0)foreach(Effect effect in Effects) FromEffects.Add(effect.Stats);
                 
-                // Balancer result = Balancer.Combine(CombineLists<Balancer>(FromEffects, PermanentsEffects, FromItems).ToArray());
-                Balancer result = Balancer.Combine(Balances.Union(PermanentsEffects).ToArray());
+                Balancer result = Balancer.Combine(CombineLists<Balancer>(FromEffects, PermanentsEffects, FromItems).ToArray());
 
-                if(AllBalanceChanges.Equals(result)) return;
-                AllBalanceChanges = result; 
+                if(AllBalanceChanges == Balancer.Combine(FromItems.ToArray())) return;
+                AllBalanceChanges = Balancer.Combine(FromItems.ToArray()); 
 
                 #region // health
                 {
-                    IHealthBar healthBar;
-                    if(AllBalanceChanges.ReplaceHealth)
-                        healthBar = Activator.CreateInstance(AllBalanceChanges.Health.GetType()) as IHealthBar;
-                    else healthBar = BaseHealth as IHealthBar;
-                    
-                    healthBar.Value = Health.Value;
-                    Health = healthBar;
-
+                    if(AllBalanceChanges.ReplaceHealth){
+                        IHealthBar healthBar = AllBalanceChanges.Health.Clone() as IHealthBar;
+                        healthBar.Value = Health.Value;
+                        Health = healthBar;
+                    }
+                    else
+                    {
+                        IHealthBar healthBar = BaseHealth.Clone() as IHealthBar;
+                        healthBar.Value = Health.Value;
+                        Health = healthBar;
+                    }
                     Health.ArmorMelee = BaseHealth.ArmorMelee + AllBalanceChanges.Health.ArmorMelee;
                     Health.ArmorRange = BaseHealth.ArmorRange + AllBalanceChanges.Health.ArmorRange;
                     Health.Immunity = BaseHealth.Immunity + AllBalanceChanges.Health.Immunity;
@@ -331,7 +338,7 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
                 #region // Stamina
                 {
                     if(AllBalanceChanges.ReplaceStamina){
-                        IStaminaBar staminaBar = Activator.CreateInstance(AllBalanceChanges.Stamina.GetType()) as IStaminaBar;
+                        IStaminaBar staminaBar = AllBalanceChanges.Stamina.Clone() as IStaminaBar;
                         staminaBar.Value = Stamina.Value;
                         Stamina = staminaBar;
                     }
@@ -349,7 +356,7 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
                 #region // Sanity
                 {
                     if(AllBalanceChanges.ReplaceSanity){
-                        ISanityBar sanityBar = Activator.CreateInstance(AllBalanceChanges.Stamina.GetType()) as ISanityBar;
+                        ISanityBar sanityBar = AllBalanceChanges.Stamina.Clone() as ISanityBar;
                         sanityBar.Value = Sanity.Value;
                         Sanity = sanityBar;
                     }
@@ -411,9 +418,11 @@ public class CharacterCore : MonoBehaviour, IDeadable, IGetableCrazy, ITiredable
                 WillRest = false;
                 await Task.Delay(Random.Range(900, 2700));
 
-                await NowSkill.Complete(MPlaner.position, AttackPose, this);
+                Stamina.GetTired(Attacker.CurrentSkill.UsingStamina);
+                InGameEvents.AttackTransporter.Invoke(AttackZone);
 
-                await AttackPlannerRender(position);
+
+                await AttackPlannerSet(MPlaner.position, true);
             }
             async Task EffectUpdate()
             {
