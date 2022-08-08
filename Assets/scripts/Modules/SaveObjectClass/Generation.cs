@@ -17,24 +17,19 @@ public abstract class Generation : MonoBehaviour
         AttackVisualsRealizers = new GameObject[map.XScale, map.ZScale];
         AllAttackZoneArchive = new List<Attack>[map.XScale, map.ZScale];
         
-
         for(int x = 0; x < map.XScale - 1; x++)
         for(int z = 0; z < map.ZScale - 1; z++)
         {
-            #region 
+            AllAttackZoneArchive[x, z] = new List<Attack>();
 
-                AllAttackZoneArchive[x, z] = new List<Attack>();
+            GameObject AttackGizmo = Instantiate<GameObject>(AttackVisual, new Checkers(x, z, 0.04f), AttackVisual.transform.rotation, transform);
+            AttackVisualsRealizers[x, z] = AttackGizmo;
+            AttackGizmo.name = $"{x}:{z}";
+            
+            AttackGizmo.SetActive(false);
 
-                GameObject AttackGizmo = Instantiate<GameObject>(AttackVisual, new Checkers(x, z, 0.04f), AttackVisual.transform.rotation, transform);
-                AttackVisualsRealizers[x, z] = AttackGizmo;
-                AttackGizmo.name = $"{x}:{z}";
-                
-                AttackGizmo.SetActive(false);
-
-                AttackGizmo.transform.position = new Checkers(x, z, 0.04f);
-
-            #endregion               
-        
+            AttackGizmo.transform.position = new Checkers(x, z, 0.04f);
+    
         }
     }
     private void ClearMap(){
@@ -70,17 +65,15 @@ public abstract class Generation : MonoBehaviour
             {
                 switch (attack.DamageType)
                 {
-                    default: result += Color.HSVToRGB(0.01f, 1, attack.Damage * 0.06f); break;
+                    default: result += Color.HSVToRGB(0.01f, 1, attack.Damage * 0.08f); break;
                     case DamageType.Repair: goto case DamageType.Heal; 
-                    case DamageType.Heal: result += Color.HSVToRGB(0.42f, 1, attack.Damage * 0.06f); break;
-                    case DamageType.Rezo: result += Color.HSVToRGB(67f / 360f, 1, attack.Damage * 0.06f); break;
-                    case DamageType.Pure: result += Color.HSVToRGB(274f / 360f, 1, attack.Damage * 0.06f); break;
+                    case DamageType.Heal: result += Color.HSVToRGB(0.42f, 1, attack.Damage * 0.08f); break;
+                    case DamageType.Rezo: result += Color.HSVToRGB(67f / 360f, 1, attack.Damage * 0.08f); break;
+                    case DamageType.Pure: result += Color.HSVToRGB(274f / 360f, 1, attack.Damage * 0.08f); break;
                 }
             }
             return result;
         }
-
-
     }
 }
 
@@ -94,9 +87,11 @@ public abstract class Generation : MonoBehaviour
         public int XScale { get; private set; }
         public int ZScale { get; private set; }
 
-        uint key { get; }
+        uint key;
 
         MapCell[,] PlatformMatrix;
+        MapEffect[,] EffectMatrix;
+
         public void ChangeHeigh(params Checkers[] poses) 
         {
             foreach(var pos in poses)
@@ -126,6 +121,7 @@ public abstract class Generation : MonoBehaviour
         {
             XScale = (int)Scale.x; ZScale = (int)Scale.y; key = Key; 
             PlatformMatrix = new MapCell[XScale, ZScale];
+            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
             foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
@@ -147,6 +143,7 @@ public abstract class Generation : MonoBehaviour
             key = Key;
             XScale = PlayerNum * 9 + (((int)key / 23)%7); ZScale = PlayerNum * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
+            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
             foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
@@ -169,6 +166,7 @@ public abstract class Generation : MonoBehaviour
             XScale = PlayerNum * 15 + (((int)key / 23)%7); 
             ZScale = PlayerNum * 15 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
+            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
             foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
@@ -190,6 +188,7 @@ public abstract class Generation : MonoBehaviour
             key = (uint)Random.Range(0, 99999999);
             XScale = (int)Scale.x; ZScale = (int)Scale.y; 
             PlatformMatrix = new MapCell[XScale, ZScale];
+            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
             foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
@@ -211,6 +210,7 @@ public abstract class Generation : MonoBehaviour
             key = Key;
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
+            EffectMatrix = new MapEffect[XScale, ZScale];
 
             MaterialsList = new List<Material>();
             foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
@@ -232,6 +232,7 @@ public abstract class Generation : MonoBehaviour
             key = key = (uint)Random.Range(0, 99999999);
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
+            EffectMatrix = new MapEffect[XScale, ZScale];
 
             MaterialsList = new List<Material>();
             foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
@@ -264,21 +265,15 @@ public abstract class Generation : MonoBehaviour
             public CombineInstance Mesh;
             public CombineInstance Collider;
             public Material Material;
+            public float DeformProtection;
             
-            public MapCell(Checkers Position, PlatformPresets Mod, float heigh, Let let = null)
+            public MapCell(Checkers Position, PlatformPresets Mod, float DeformProtection = 0, Let let = null)
             { Let = let; 
             position = Position;
+            this.DeformProtection = DeformProtection;
 
-            Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, heigh, position.z), Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), Vector3.one)); 
-            Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, heigh, position.z), Quaternion.Euler(0, 0, 0), Vector3.one));
-            Material = Mod.GetMaterial(); }
-            public MapCell(int X, int Z, PlatformPresets Mod, float heigh, Let let = null)
-            { Let = let; 
-            position = new Checkers(X, Z);
-
-            //.Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(x, PlatformMatrix[x, z].Up, z), Quaternion.Euler(0, 0, 0), Vector3.one))
-            Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, heigh, position.z), Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), Vector3.one)); 
-            Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, heigh, position.z), Quaternion.Euler(0, 0, 0), Vector3.one)); 
+            Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), Vector3.one)); 
+            Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, 0, 0), Vector3.one));
             Material = Mod.GetMaterial(); }
             
             public void AddVerticalPosition(float y)
@@ -292,7 +287,7 @@ public abstract class Generation : MonoBehaviour
 
             for(int x = 0; x < XScale; x++) 
             for(int z = 0; z < ZScale; z++)
-            result[x, z] = new MapCell(x, z, visual[formulaMod(x, z, key)], formulaUp(x, z, key));
+                result[x, z] = new MapCell(new Checkers(x, z, formulaUp(x, z, key)), visual[formulaMod(x, z, key)], visual[formulaMod(x, z, key)].DeformProtection);
             
             return result;
         }
@@ -357,14 +352,11 @@ public abstract class Generation : MonoBehaviour
     #endregion
 }
 
-[System.Serializable]public class PlatformPresets
+[System.Serializable]public struct PlatformPresets
 {
     [SerializeField]public Mesh[] MeshVariants;
     [SerializeField]public Material[] MaterialVariants;
-
-    public PlatformPresets(Material material, Mesh Mesh) { MaterialVariants = new Material[] { material }; MeshVariants = new Mesh[] { Mesh }; }
-    public PlatformPresets(Material material, params Mesh[] Meshes) { MaterialVariants = new Material[] { material }; MeshVariants = Meshes; }
-    public PlatformPresets(Material[] material, params Mesh[] Meshes) { MaterialVariants = material; MeshVariants = Meshes; }
+    [SerializeField]public float DeformProtection;
 
     public GameObject GetObject()
     {

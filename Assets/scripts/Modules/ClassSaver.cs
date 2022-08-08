@@ -35,8 +35,11 @@ namespace SagardCL //Class library
     public enum TargetPointGuidanceType
     {
         ToCursor,
+        ToCursorMaximum,
         ToCursorWithWalls,
+        ToCursorWithWallsMaximum,
         ToFromPoint,
+
     }
     public enum DamageScaling
     {
@@ -59,7 +62,7 @@ namespace SagardCL //Class library
     }
 
 
-    public struct Attack
+    [Serializable] public struct Attack
     {
         #region // Constructor parameters
 
@@ -111,14 +114,24 @@ namespace SagardCL //Class library
             public Dictionary<DamageType, List<Attack>> Sorter;
             public HashSet<IObjectOnMap> Senders;
             
-            bool _Checked;
-            public bool Checked{ get{ return _Checked; } }
+            public bool Checked { get; private set; }
+
+            public static AttackCombiner Empty() {             
+                Dictionary<DamageType, List<Attack>> Sorter = new Dictionary<DamageType, List<Attack>>();
+                foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
+                
+                return new AttackCombiner(){
+                    Sorter = Sorter,
+                    Senders = new HashSet<IObjectOnMap>(),
+                    Checked = false
+                };
+            }
 
             public AttackCombiner(params Attack[] attacks) 
             {   
                 Sorter = new Dictionary<DamageType, List<Attack>>(); 
                 Senders = new HashSet<IObjectOnMap>();
-                _Checked = attacks.Sum(a=>a.Damage) > 0;
+                Checked = attacks.Sum(a=>a.Damage) > 0;
 
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
                 foreach(Attack attack in attacks) { Add(attack); } 
@@ -126,19 +139,22 @@ namespace SagardCL //Class library
 
             public AttackCombiner Add(Attack attack)
             {
-                if(attack.Sender != null) Senders.Add(attack.Sender);
+                if(attack.Sender is not null) Senders.Add(attack.Sender);
                 Sorter[attack.DamageType].Add(attack);
+
+                if(attack.Damage > 0) Checked = true;
 
                 return this;
             }
             public void Clear()
             {
-                Sorter = new Dictionary<DamageType, List<Attack>>();
-                foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
+                Sorter.Clear(); 
+                Senders.Clear();
 
-                _Checked = false;
+                foreach(DamageType type in Enum.GetValues(typeof(DamageType))) 
+                    { Sorter.Add(type, new List<Attack>()); }
 
-                Senders = new HashSet<IObjectOnMap>();
+                Checked = false;
             }
 
             public List<Attack> Combine()
@@ -148,6 +164,7 @@ namespace SagardCL //Class library
                 {
                     List<Effect> effects = new List<Effect>();
                     if(attacks.Value.Count > 0) foreach (Attack attack in attacks.Value) { effects.AddRange(attack.Effects); }
+                    
                     result.Add(new Attack(attacks.Value.Sum(a=>a.Damage), attacks.Key, effects.ToArray()));
                 }
                 return result;
@@ -182,7 +199,7 @@ namespace SagardCL //Class library
         [SerializeField] int X, Z;
         [SerializeField] float UP;
 
-        public int x =>  X;
+        public int x => X;
         public int z => Z;
         public float up => this.UP + YUpPos();
         public float clearUp => UP;
@@ -214,10 +231,12 @@ namespace SagardCL //Class library
             public override int GetHashCode() { return 0; }  
             public override bool Equals(object o) { return true; } 
 
-            public Checkers WithUp(float a){ return new Checkers(this, a); }
+            public Checkers Up(float a){ return new Checkers(this, a); }
 
         #endregion // =============================== Realizations
         #region // =============================== Math
+
+            public override string ToString() { return $"{x}:{z}"; }
 
             public enum CheckersDistanceMode{ NoHeight, Height, OnlyHeight, }
             public static float Distance(Checkers a, Checkers b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
@@ -278,12 +297,12 @@ namespace SagardCL //Class library
                 
                 int error = deltaX - deltaZ;
 
-                result.Add(pos2);
-
+                
+                
+                result.Add(pos1);
                 while(pos1 != pos2) 
                 {
                     
-                    result.Add(pos1);
                     int error2 = error * 2;
                     if(error2 > -deltaZ) 
                     {
@@ -295,7 +314,11 @@ namespace SagardCL //Class library
                         error += deltaX;
                         pos1.Z += signZ;
                     }
+                    result.Add(pos1);
                 }
+                
+
+                
 
                 return result;
 
@@ -376,31 +399,31 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
-    [Serializable] public class Balancer
+    [Serializable] public struct Balancer
     {
         [Space]
         public int WalkDistance;
 
         public float Visible;
-        [SerializeField] bool AlwaysVisible = false;
+        [SerializeField] bool AlwaysVisible;
 
-        [SerializeReference, SubclassSelector]public IHealthBar Health = new Health();
+        [SerializeReference, SubclassSelector]public IHealthBar Health;
         public bool ReplaceHealth;
-        [SerializeReference, SubclassSelector]public IStaminaBar Stamina = new Stamina();
+        [SerializeReference, SubclassSelector]public IStaminaBar Stamina;
         public bool ReplaceStamina;
-        [SerializeReference, SubclassSelector]public ISanityBar Sanity = new Sanity();
+        [SerializeReference, SubclassSelector]public ISanityBar Sanity;
         public bool ReplaceSanity;
 
         public List<IOtherBar> AdditionState;
-        public List<Type> Resists = new List<Type>();
+        public List<Type> Resists;
         [Space]
         public List<Skill> Skills;
 
         public static Balancer Combine(params Balancer[] items) 
         {
-            List<Balancer> InList = items.ToList() ?? new List<Balancer>();
+            List<Balancer> InList = items.ToList();
 
-            var result = new Balancer();
+            Balancer result = Balancer.Empty();
             var resists = new List<Type>();
             var additionStates = new List<IOtherBar>();
             var additionSkills = new List<Skill>();
@@ -408,21 +431,22 @@ namespace SagardCL //Class library
             if(InList.Exists(a=>a.ReplaceHealth))
             {
                 result.ReplaceHealth = true;
-                result.Health = items.ToList().Find(a=>a.ReplaceHealth).Health.Clone() as IHealthBar;
+                result.Health = Activator.CreateInstance(InList.Find(a=>a.ReplaceHealth).Health.GetType()) as IHealthBar;
             }
             if(InList.Exists(a=>a.ReplaceSanity))
             {
                 result.ReplaceHealth = true;
-                result.Sanity = items.ToList().Find(a=>a.ReplaceSanity).Health.Clone() as ISanityBar;
+                result.Sanity = Activator.CreateInstance(InList.Find(a=>a.ReplaceSanity).Health.GetType()) as ISanityBar;
             }
             if(InList.Exists(a=>a.ReplaceStamina))
             {
                 result.ReplaceHealth = true;
-                result.Stamina = items.ToList().Find(a=>a.ReplaceStamina).Health.Clone() as IStaminaBar;
+                result.Stamina = Activator.CreateInstance(InList.Find(a=>a.ReplaceStamina).Health.GetType()) as IStaminaBar;
             }
             
             foreach(Balancer item in items)
             {
+                result.Visible += item.Visible;
                 result.WalkDistance += item.WalkDistance;
 
                 result.Health.Max += item.Health.Max;
@@ -437,31 +461,46 @@ namespace SagardCL //Class library
                 result.Sanity.Max += item.Sanity.Max;
                 result.Sanity.SanityShield += item.Sanity.SanityShield;
 
-                resists.AddRange(item.Resists);
-                //additionStates.AddRange(item.AdditionState);
-                additionSkills.AddRange(item.Skills);
+                if(item.Resists is not null)resists.AddRange(item.Resists);
+                if(item.AdditionState is not null)additionStates.AddRange(item.AdditionState);
+                if(item.Skills is not null) additionSkills.AddRange(item.Skills);
             }
             result.Resists = resists;
             result.Skills = additionSkills;
             result.AdditionState = additionStates;
 
-            result.AlwaysVisible = items.ToList().Exists(a=>a.AlwaysVisible);
+            result.AlwaysVisible = InList.Exists(a=>a.AlwaysVisible);
             return result; 
+        }
+    
+        public static Balancer Empty() {
+            return new Balancer()
+            {
+                WalkDistance = 0,
+                Visible = 0,
+
+                Health = new Health() { Max = 0 },
+                ReplaceHealth = false,
+
+                Stamina = new Stamina() { Max = 0 },
+                ReplaceStamina = false,
+
+                Sanity = new Sanity() { Max = 0 },
+                ReplaceSanity = false,
+
+                AdditionState = new List<IOtherBar>(),
+                Resists = new List<Type>(),
+                Skills = new List<Skill>() { },
+            };
         }
     }
     
     namespace ParameterManipulate
-    {
-        public interface IStepEndUpdate
-        {
-            void StepEnd();
-        }
-        
+    {        
         #region // State management
             
             public interface IStateBar
             {
-                object Clone();
                 
                 Color BarColor{ get; }
 
@@ -478,7 +517,7 @@ namespace SagardCL //Class library
             {
                 public static IHealthBar operator + (IHealthBar a, IHealthBar b) 
                 {
-                    IHealthBar result = a.Clone() as IHealthBar;
+                    IHealthBar result = a;
 
                     result.Max += b.Max;
                     result.ArmorMelee += b.ArmorMelee;
@@ -509,6 +548,26 @@ namespace SagardCL //Class library
                         case DamageType.Repair: Value += Repair(attack); break;
 
                         case DamageType.Effect: Value -= Effect(attack); break;
+                    }
+                }
+                public void Damage(Attack.AttackCombiner attackCombiner)
+                {
+                    List<Attack> attackList = attackCombiner.Combine();
+                    foreach(Attack attack in attackList)
+                    {
+                        if(attack.Damage > 0)
+                        switch(attack.DamageType)
+                        {
+                            case DamageType.Pure: Value -= Pure(attack); break;
+                            case DamageType.Melee: Value -= Melee(attack); break;
+                            case DamageType.Range: Value -= Range(attack); break;
+                            case DamageType.Rezo: Value -= Rezo(attack); break;
+                
+                            case DamageType.Heal: Value += Heal(attack); break;
+                            case DamageType.Repair: Value += Repair(attack); break;
+
+                            case DamageType.Effect: Value -= Effect(attack); break;
+                        }
                     }
                 }
 
@@ -553,11 +612,11 @@ namespace SagardCL //Class library
             }
 
         #endregion
+        
         #region // Map Object information's
             
             public interface IObjectOnMap
             {
-                IObjectOnMap thisObject { get; set; }
                 public const int standardVisibleDistance = 10;
                 bool nowVisible { get{ return true; } }
 
@@ -574,7 +633,7 @@ namespace SagardCL //Class library
                 
                 bool Corpse { get; set; }
 
-                public void AddDamage(Attack attack) { }
+                public void AddDamage(params Attack[] attack) { }
 
                 public void AddSanity(int damage) { }
 
@@ -588,16 +647,12 @@ namespace SagardCL //Class library
                 public void InvokeEffects(string Method) { }
             }
 
-            public interface IKillable : IObjectOnMap
+            public interface IDeadable : IObjectOnMap
             {
                 IHealthBar Health { get; set; }
                 IHealthBar BaseHealth { get; }
                 
-                void IObjectOnMap.AddDamage(Attack attack) {
-                    if(attack.DamageType == DamageType.Heal & Corpse) return;
-
-                    TakeDamageList.Add(attack);
-                }
+                new void AddDamage(params Attack[] attacks);
 
                 void LostHealth();
             }
@@ -647,25 +702,11 @@ namespace SagardCL //Class library
 
                 protected delegate Type IEffect<T>() where T : IEffect;
 
-                void IObjectOnMap.AddEffect(params Effect[] Effect) {
-                    foreach(Effect effect in Effect) { effect.Target = (IEffector)this; if(!effect.Workable() ) continue; effect.InvokeMethod("WhenAdded"); Effects.Add(effect); }
-                }
-                void IObjectOnMap.AutoRemoveEffect() {
-                    List<Effect> Effect = Effects.FindAll(a=>!a.Workable());
-                    foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
-                }
-                void IObjectOnMap.RemoveEffect(params Effect[] Effect) {
-                    foreach(Effect effect in Effect) { effect.InvokeMethod("WhenRemoved"); Effects.Remove(effect); }
-                }
+                new void AddEffect(params Effect[] Effect);
+                new void AutoRemoveEffect();
+                new void RemoveEffect(params Effect[] Effect);
 
-                void IObjectOnMap.InvokeEffects(string Method)
-                {
-                    foreach(Effect effect in Effects)
-                    {
-                        effect.InvokeMethod(Method);
-                    }
-                    ((IObjectOnMap)this).AutoRemoveEffect();
-                }
+                new void InvokeEffects(string Method);
             }
 
             public interface IAttacker : IObjectOnMap
@@ -674,19 +715,6 @@ namespace SagardCL //Class library
                 List<Skill> AvailbleBaseSkills { get; }
                 public Skill CurrentSkill { get{ try { return AvailbleBaseSkills[Mathf.Clamp(SkillIndex, 0, AvailbleBaseSkills.Count-1)]; } 
                                               catch { return new Skill(); } } }
-
-                public async Task<List<Attack>> Realize(Checkers from, Checkers to, IAttacker target)
-                {
-                    List<Attack> attackList = new List<Attack>();
-                    HashSet<Checkers> Overrides = new HashSet<Checkers>();
-
-                    foreach(ZonePlacer NowHit in CurrentSkill.Realizations) 
-                        if(NowHit != null) await foreach(Attack attack in NowHit.GetAttackList(from, to, target)){ 
-                            if(!Overrides.Contains(attack.Position)) attackList.Add(attack); 
-                            if(NowHit.Override) Overrides.Add(attack.Position); }
-
-                    return attackList;
-                }
 
                 int Strength{ get; set; }
                 int DamageRange{ get; set; }
@@ -718,8 +746,8 @@ namespace SagardCL //Class library
             }
         
         #endregion
+        
         #region // Effects
-
             public interface IEffect
             {
                 string Name { get; } 
@@ -731,22 +759,32 @@ namespace SagardCL //Class library
                 public void InvokeMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
                                                      if(info != null) info.Invoke(this, parameters: null); } 
 
-                Balancer Stats { get; set; }
+                Balancer Stats { get; }
             }
             
             public interface Effect : IEffect { bool Workable(); }
-            public interface ICombineWithDuplicates : Effect { Effect CombineDuplicates(Effect a, Effect b); }
+            public interface ICombineWithDuplicates : Effect { void NewEffectAdded(Effect NewEffect); }
             public interface HiddenEffect : Effect { }
-            public interface OneUse : IEffect { }
-            public interface OnMap : IEffect 
+            public interface OneUse : Effect { new public Balancer? Stats { get{ return null; } set { } } new bool Workable() { return false; } }
+            
+            interface MapEffectTransporter : OneUse 
             { 
-                new public IObjectOnMap Target { get { return null; } }
-                new public Balancer Stats { get{ return null; } }
-                
+                new public IObjectOnMap Target { get { return null; } set { } }
+
+                MapEffect Effect { get; }
             }
             
-            public interface RacePassiveEffect : IEffect { Race RaceName { get; set; } string RaceDescription { get; set; } }
+            public interface RacePassiveEffect : IEffect { string RaceDescription { get; } }
         
+        #endregion
+        #region // Map Effects
+            public interface MapEffect
+            {
+                Checkers Where { get; set; }
+                int Level{ set; }
+            }
+            
+            interface LandscapeDeform : MapEffect { bool DestroyWhenZero { get; } }
         #endregion
     }
 }

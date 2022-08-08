@@ -8,10 +8,7 @@ using SagardCL.ParameterManipulate;
 [CreateAssetMenu(fileName = "Item", menuName = "SagardCL objects/Standard Item", order = 51)]
 public class Item : Descript
 {
-    public bool Artifacer = false;
-    public Balancer Stats;
-    public static implicit operator Balancer(Item item) { return item.Stats; }
-
+    [field: SerializeField] public Balancer Stats { get; [SerializeField]private set; }
 }
 
 

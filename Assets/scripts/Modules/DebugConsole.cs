@@ -5,6 +5,8 @@ using TMPro;
 using UnityEngine.UIElements;
 using System;
 using System.Linq;
+using SagardCL;
+using SagardCL.ParameterManipulate;
 
 public class DebugConsole : MonoBehaviour
 {
@@ -47,16 +49,16 @@ public class DebugConsole : MonoBehaviour
         splitt.coordBoll = false;
         splitt.coordEndBoll = false;
 
-        if (splitt.name != "Имени не существует")
+        if (splitt.name != "No name")
             CallFunction();
 
         _textField.text += commandAndName + skillNumber + coord  + coordEnd;
         _textField.verticalScrollbar.value = 1;
     }
-    private void CallFunction()
+    private async void CallFunction()
     {
 
-       CharacterController core = _FiguresList.Where(p => p.name == splitt.name).FirstOrDefault().Find($"Controller({splitt.name})").GetComponent<CharacterController>();
+       CharacterCore core = _FiguresList.Where(p => p.name == splitt.name).FirstOrDefault().Find($"Controller({splitt.name})").GetComponent<CharacterCore>();
         switch (splitt.command)
         {
             case ("-destroy"):
@@ -66,16 +68,16 @@ public class DebugConsole : MonoBehaviour
                 core.Corpse = !core.Corpse;
                 break;
             case ("-setMovePlan"):
-                _ = core.MovePlannerSet(new SagardCL.Checkers(splitt.coord));
-                _ = core.AttackPlannerSet(new SagardCL.Checkers(splitt.coord));
+                await core.MovePlannerSet(new SagardCL.Checkers(splitt.coord));
+                await core.AttackPlannerRender(new SagardCL.Checkers(splitt.coord));
                 break;
             case ("-setAttackPlan"):
-                core.SkillRealizer.SkillIndex = splitt.skillNumber;
-                _ = core.AttackPlannerSet(new SagardCL.Checkers(splitt.coord));
+                core.SkillIndex = splitt.skillNumber;
+                await core.AttackPlannerRender(new SagardCL.Checkers(splitt.coord));
                 break;
             case ("-teleportTo"):
                 core.transform.position = new SagardCL.Checkers(splitt.coord);
-                _ = core.AttackPlannerSet(new SagardCL.Checkers(splitt.coord));
+                await core.AttackPlannerRender(new SagardCL.Checkers(splitt.coord));
                 break;
             case ("-showAllParameters"):
                 break;
@@ -141,8 +143,8 @@ public class DebugConsole : MonoBehaviour
     [Serializable]
     private class Splitt
     {
-        public string command = "Kоманды не существует";
-        public string name = "Имени не существует";
+        public string command = "No command";
+        public string name = "No name";
         public bool commandAndNameBoll = false;
         [Space]
         public int skillNumber = 1;

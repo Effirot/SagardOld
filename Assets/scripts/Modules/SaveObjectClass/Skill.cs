@@ -7,43 +7,67 @@ using System.Threading.Tasks;
 using UnityEditor;
 using System.ComponentModel;
 using System;
+using System.Linq;
 
 [Serializable]public struct Skill
 {
+    public static Skill Empty(){
+        return new Skill()
+        {
+            Name = "Empty",
+            Description = "Empty Skill Description",
+            NoWalking = false,
+            Realizations = new List<AttacksPlacer>(),
+        };}
+    
+
     [Space, Header("Description")]
     public string Name;
     public string Description;
     public string BigDescription;
     public Sprite image;
-
     [Space(2)]
     [Header("Parameters")]
     public bool NoWalking;
-    public int MaxCursorDistance;
-    [SerializeReference, SubclassSelector] public List<ZonePlacer> Realizations;
+    [SerializeReference, SubclassSelector] public List<AttacksPlacer> Realizations;
 
     [Space(3)]
     [Header("Skill Price")]
-    public int UsingStamina;
+    [SerializeReference, SubclassSelector] public List<SkillAction> Actions;
 
-    [Serializable]public struct HitBoxParameters
+    public bool isEmpty => Realizations != null ? Realizations.Count == 0 : true |
+                           Actions != null ? Actions.Count == 0 : true;
+
+    
+    public async Task Complete(Checkers from, Checkers to, IObjectOnMap target)
     {
-        [Header("Hit box")]
-        public HitType HitBox;
-        public TargetPointGuidanceType PointType;
-        [Range(0, 40)]public int MaxDistance;
-        [Range(0, 10)]public int MinDistance;
-        [Header("Damage")]
-        [Range(0.1f, 5f)]public float DamagePercent;
-        public DamageScaling DamageScalingType;
-        public DamageType DamageType;
-        [Space]
-        [SerializeReference, SubclassSelector] public Effect[] Debuff;
+        InGameEvents.AttackTransporter.Invoke(await GetAttacks(from, to, (IAttacker)target));
+
+        foreach(SkillAction action in Actions) action.Action(target);
     }
-    public bool isEmpty => Realizations != null ? Realizations.Count == 0 : true;
+
+    public async Task<List<Attack>> GetAttacks(Checkers from, Checkers to, IAttacker target)
+    {
+        List<Attack> attackList = new List<Attack>();
+        List<Checkers> Overrides = new List<Checkers>();
+
+        foreach(AttacksPlacer HitZone in this.Realizations) 
+            await foreach(Attack attack in HitZone.GetAttackList(from, to, target)){ 
+                if(!Overrides.Exists(a=>a==attack.Position)) {
+                    attackList.Add(attack); 
+                    
+                    if(HitZone.Override) 
+                        Overrides.Add(attack.Position); } }
+
+        return attackList;
+    }
+}
+public interface SkillAction
+{
+    public void Action(IObjectOnMap target);
 }
 
-public interface ZonePlacer
+public interface AttacksPlacer
 {
     IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target);
     
@@ -52,20 +76,50 @@ public interface ZonePlacer
 
     bool Override { get; }
 
-    
+    protected static Checkers PointTargeting(Checkers from, Checkers to, TargetPointGuidanceType PointType, int MaxDistance, int MinDistance = 0) { switch (PointType)
+        {
+            default: return from;
 
-    protected static Checkers PointTargeting(Checkers from, Checkers to, TargetPointGuidanceType PointType) {switch (PointType)
-    {
-        default: return from;
-        case TargetPointGuidanceType.ToCursor: return to;
-        case TargetPointGuidanceType.ToCursorWithWalls: return ToPoint(from, to);
-        case TargetPointGuidanceType.ToFromPoint: return from;
-    }}
-    protected static Checkers ToPoint(Vector3 from, Vector3 to, float Up = 0.4f)
+            case TargetPointGuidanceType.ToCursor: return MovementTo(from, to, false, false);
+            case TargetPointGuidanceType.ToCursorMaximum: return MovementTo(from, to, true, false);
+
+            case TargetPointGuidanceType.ToCursorWithWalls: return MovementTo(from, to, false, true);
+            case TargetPointGuidanceType.ToCursorWithWallsMaximum: return MovementTo(from, to, true, true);
+
+            case TargetPointGuidanceType.ToFromPoint: return from;
+        }
+
+        Checkers MovementTo(Checkers from, Checkers to, bool farthest, bool WithWalls){
+            Checkers vector = to - from;
+            List<Checkers> points = Checkers.Line(from, from + vector * 10);
+
+            if(WithWalls) points.RemoveAll(a=>Checkers.Distance(from, a) >= MaxDistance | Checkers.Distance(from, a) <= MinDistance | Checkers.Distance(from, a) > Checkers.Distance(from, ToPoint(from.Up(0.6f), from + vector * 10)));
+            else points.RemoveAll(a=>Checkers.Distance(from, a) >= MaxDistance | Checkers.Distance(from, a) <= MinDistance);
+
+            try{
+                if(farthest) return points[points.Count - 1];
+                else {
+                    Checkers nearestPoint = new Checkers(20000, 20000);
+
+                    foreach(Checkers checker in points) {
+                        if(Checkers.Distance(to, checker) < Checkers.Distance(to, nearestPoint))
+                            nearestPoint = checker;
+                    }
+                    return nearestPoint;
+                }
+            }
+            catch
+            {
+                if(WithWalls) return ToPoint(from, to);
+                else return to;
+            }
+        }
+    }
+    protected static Checkers ToPoint(Vector3 from, Vector3 to, float Up = 0.6f)
     {
         if(Physics.Raycast(from, to - from, out RaycastHit hit, Vector3.Distance(from, to), LayerMask.GetMask("Object", "Map")))
             return new Checkers(hit.point, Up); 
-        return to; 
+        return new Checkers(to, Up); 
     }
 
     protected static int Damage(DamageType damageType, float DamagePercent, IAttacker Target)
@@ -94,23 +148,29 @@ public interface ZonePlacer
     }
 }
 
-[Serializable] public struct Sphere : ZonePlacer
+[Serializable] public struct Sphere : AttacksPlacer
 {
+    [SerializeField, Range(0, 8)] public int StartDistance;
+    [SerializeField, Range(1, 20)] public int AdditionDistance;
+    [SerializeField] TargetPointGuidanceType TargetingType;
+    [field: Space]
     [field: SerializeField] public float DamagePercent { get; set; }
     [field: SerializeField] public DamageScaling Scaling { get; set; }
     [SerializeField, Range(0, 5)] float ScalingPower;
     [field: SerializeField] public DamageType DamageType { get; set; }
     [Space]
-    [SerializeField] TargetPointGuidanceType TargetingType;
     [SerializeField, Range(0, 5)] int StartRadius;
     [SerializeField, Range(1, 6)] int PlusRadius;
+    [SerializeField] bool WallPiercing;
+    [field: Space]
+    [field: SerializeReference, SubclassSelector] List<Effect> Effects { get; set; } 
     
     [field: Space, SerializeField] public bool Override{ get; set; }
 
     public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target)
     {
         await Task.Delay(0);
-        Checkers FinalPoint = ZonePlacer.PointTargeting(from, to, TargetingType); 
+        Checkers FinalPoint = AttacksPlacer.PointTargeting(from, to, TargetingType, StartDistance + AdditionDistance, StartDistance); 
 
         int Radius = StartRadius + PlusRadius;
         for(int x = -Radius - 2; x <= Radius + 2; x++)
@@ -118,124 +178,47 @@ public interface ZonePlacer
         {
             Checkers NowChecking = FinalPoint + new Checkers(x, z);
             int Damage = (int)Mathf.Round((Radius / Checkers.Distance(NowChecking, FinalPoint)) * 
-            (ZonePlacer.Damage(DamageType, DamagePercent, Target) + DamageScaling(Checkers.Distance()))); 
+                                          (AttacksPlacer.Damage(DamageType, DamagePercent, Target) + 
+                                           AttacksPlacer.DamageDistanceScaling(Checkers.Distance(from, NowChecking), Scaling, ScalingPower))); 
             
+            if(!WallPiercing | Physics.Raycast(from.Up(0.3f), NowChecking - from, LayerMask.GetMask("Object", "Map")))
             if(Checkers.Distance(NowChecking, FinalPoint) + 1f > StartRadius)
             if(Checkers.Distance(NowChecking, FinalPoint) + 0.5f < Radius)
                 yield return new Attack(Target, NowChecking, Damage, DamageType);
         }
     }
 }
-[Serializable] public struct Line : ZonePlacer 
+[Serializable] public struct Line : AttacksPlacer 
 {
-    [field: SerializeField]public float DamagePercent { get; set; }
+    [SerializeField, Range(0, 10)] int StartDistance;
+    [SerializeField, Range(5, 20)] int Distance;
+    [SerializeField] TargetPointGuidanceType TargetingType;
+    [field: Space]
+    [field: SerializeField] public float DamagePercent { get; set; }
     [field: SerializeField] public DamageScaling Scaling { get; set; }
     [SerializeField, Range(0, 5)] float ScalingPower;
-    [field: SerializeField]public DamageType DamageType { get; }
-    [Space]
-    [SerializeField] TargetPointGuidanceType TargetingType;
-    [Space]
-    [SerializeField, Range(0, 10)] int MinDistance;
-    [SerializeField, Range(5, 20)] int MaxDistance;
-
+    [field: SerializeField] public DamageType DamageType { get; set; }
+    [field: Space]
+    [field: SerializeReference, SubclassSelector] List<Effect> Effects { get; set; } 
+    [field: Space]
     [field: SerializeField]public bool Override { get; set; }
-
 
     public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target)
     {
-        Checkers FinalPoint = ZonePlacer.PointTargeting(from, to, TargetingType); 
+        Checkers FinalPoint = AttacksPlacer.PointTargeting(from, to, TargetingType, StartDistance + Distance, StartDistance); 
+        
+        List<Checkers> line = Checkers.Line(from, FinalPoint);
 
-        foreach(Checkers NowChecking in Checkers.Line(from, FinalPoint))
+        foreach(Checkers NowChecking in line)
         {
-            if(Checkers.Distance(NowChecking, from) > MinDistance) 
-            if(Checkers.Distance(NowChecking, from) < MinDistance + MaxDistance)
+            if(Checkers.Distance(NowChecking, from) > StartDistance) 
+            if(Checkers.Distance(NowChecking, from) < StartDistance + Distance)
             if(NowChecking != from)
-                yield return(new Attack(Target, NowChecking, Damage() - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.DamageType, NowHit.Debuff));
+                yield return new Attack(Target, NowChecking, 
+                                        AttacksPlacer.Damage(DamageType, DamagePercent, Target) + AttacksPlacer.DamageDistanceScaling(Checkers.Distance(NowChecking, from), Scaling, ScalingPower),
+                                        DamageType, 
+                                        Effects.ToArray());
         }
         await Task.Delay(0);
     }
-
-
-    
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // switch(NowHit.HitBox)
-    // {
-    //     default: continue;
-    //     case HitType.Arc:{
-    //         for(int x = -NowHit.MaxDistance - 2; x <= NowHit.MaxDistance + 2; x++)
-    //         for(int z = -NowHit.MaxDistance - 2; z <= NowHit.MaxDistance + 2; z++)
-    //         {
-    //             Checkers NowChecking = FinalPoint + new Checkers(x, z);
-    //             float dist = Checkers.Distance(startPos,  NowChecking);
-
-    //             if(dist > Checkers.Distance(endPos, startPos))
-    //                 continue;
-    //             // if(Checkers.Distance(endPos, NowChecking) > Checkers.Distance(endPos, startPos))
-    //             //     continue;
-    //             if(dist < NowHit.MinDistance * ((Checkers.Distance(endPos, startPos) / 8f))) 
-    //                 continue;
-    //             if(Physics.Raycast(new Checkers(startPos, 0.2f), NowChecking - startPos, dist, LayerMask.GetMask("Map")))
-    //                 continue;
-
-    //             yield return(new Attack(Target, 
-    //             NowChecking, 
-    //             Damage() - DamageScalingDmg(dist), 
-    //             NowHit.DamageType,
-    //             NowHit.Debuff));
-                
-    //         }
-    //         break;
-    //     }
-    //     case HitType.Line:{
-    //         foreach(Checkers NowChecking in Checkers.Line(startPos, FinalPoint))
-    //         {
-    //             if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance) 
-    //                 continue;
-    //             if(Checkers.Distance(NowChecking, startPos) > NowHit.MaxDistance)
-    //                 continue;
-    //             if(NowChecking != startPos)
-    //                 yield return(new Attack(Target, NowChecking, Damage() - DamageScalingDmg(Checkers.Distance(startPos, NowChecking)), NowHit.DamageType, NowHit.Debuff));
-    //         }
-    //         yield return(new Attack(Target, FinalPoint, Damage(), NowHit.DamageType, NowHit.Debuff));
-
-    //         break;
-    //     }
-    //     case HitType.Sphere:{
-    //         for(int x = -NowHit.MaxDistance - 1; x < NowHit.MaxDistance + 1; x++)
-    //         for(int z = -NowHit.MaxDistance - 1; z <= NowHit.MaxDistance + 1; z++)
-    //         {
-    //             Checkers NowChecking = FinalPoint + new Checkers(x, z);
-    //             if(Checkers.Distance(NowChecking, startPos) < NowHit.MinDistance - 0.7f) 
-    //                 continue;
-    //             float dist = Checkers.Distance(FinalPoint, NowChecking);
-    //             if(dist > Mathf.Abs(NowHit.MaxDistance + 1) - 0.9f)
-    //                 continue;
-    //             if(Physics.Raycast(new Checkers(FinalPoint, 0.2f), NowChecking - FinalPoint, dist, LayerMask.GetMask("Map")))
-    //                 continue;
-
-    //             yield return new Attack(Target, NowChecking, Damage() - DamageScalingDmg(dist), NowHit.DamageType, NowHit.Debuff);
-                
-    //         }
-    //         break;
-    //     }
-    // }
-
-    
-    
-    // public bool Check(){ 
-    //     //if(NowUsing.Type == (HitType.OnSelfPoint)) return true;
-    //     if(ThisSkill.isEmpty) return false;
-    //     return Checkers.Distance(startPos, endPos) < ThisSkill.MaxCursorDistance & !(startPos == endPos); } 

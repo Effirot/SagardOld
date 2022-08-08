@@ -21,11 +21,13 @@ using UnityEditor;
         Collider Collider => GetComponent<MeshCollider>();
         Checkers CursorPos { get { return CursorController.position; } }
     
-        public int CurrentSkillIndex { get { return SkillIndex; }  set { new Action(async () => await AttackPlannerSet(CursorPos)).Invoke(); SkillIndex = value; } }
+        public int CurrentSkillIndex { get { return SkillIndex; }  set { new Action(async () => await AttackPlannerRender(CursorPos)).Invoke(); SkillIndex = value; } }
     
     #endregion
     #region // ================================== controlling
-    
+
+        public override Checkers AttackPose { get{ return APlaner.position; } set { APlaner.position = value; } }
+
         [SerializeField] Color Theme;
 
         [SerializeField] bool CanControl = true;
@@ -53,18 +55,17 @@ using UnityEditor;
             CursorController.ChangePosOnMap.AddListener(async(a)=>
             { 
                 if(MouseTest == 2) 
-                    await AttackPlannerSet(a); 
+                    await AttackPlannerRender(a); 
 
                 if(MouseTest == 1) { 
                     await MovePlannerSet(a); 
-                    await AttackPlannerSet(APlaner.position);  
+                    await AttackPlannerRender(CursorController.position);  
             } }
             );
         }
         
         private int MouseTest = 0;
         
-        // Standing methods
         void StandingIn() {
             //Attack planner
             //if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
@@ -75,38 +76,11 @@ using UnityEditor;
 
             MPlaner.Collider.enabled = true;
         }
-        // Move planning methods
-        // void MovePlaningUpd() // Calling(void Update), when you planing your moving
-        // {
-            
-        //     // MPlaner.Renderer.enabled = true;
-            
-        //     // if(SkillRealizer.ThisSkill.NoWalking) APlaner.position = new Checkers(MPlaner.position);
-
-        //     // //Move planner
-        //     // MPlaner.position = new Checkers(CursorPos);
-        //     // MPlaner.Collider.enabled = false;
-        // }
         void MovePlaningIn() {
 
             APlaner.position = new Checkers(APlaner.position);
             UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
-            //await MovePlannerUpdate();
         }
-        // Attack planning methods
-        // void AttackPlaningUpd() // Calling(void Update), when you planing your attacks
-        // {
-            
-        //     // //Move planner
-        //     // if(SkillRealizer.ThisSkill.NoWalking)
-        //     // {
-        //     //     MPlaner.position = position;
-        //     //     MPlaner.Collider.enabled = true;
-        //     // }
-
-        //     // //Attack planner
-        //     //APlanerPlane = new Checkers(CursorPos);
-        // }
         void AttackPlaningIn()
         {
             

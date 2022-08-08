@@ -67,11 +67,11 @@ using SagardCL.ParameterManipulate;
     {
         [SerializeField] string _Name; public string Name { get{ return _Name; } }
         [SerializeField] Sprite _Sprite; public Sprite Icon { get{ return _Sprite; } }
-        [SerializeField] string _Description; public string Description { get{ return _Description; } }
+        [field: SerializeField] public string Description { get; set; }
 
         public IObjectOnMap Target { get; set; }
 
-        [SerializeField] Balancer _Stats; public Balancer Stats { get{ return _Stats; } set { _Stats = value; } }
+        [field: SerializeField] public Balancer Stats { get; set; }
 
         public bool Workable() { return Timer > 0 & !Target.Corpse; }
 
@@ -113,8 +113,6 @@ using SagardCL.ParameterManipulate;
             Timer = StartTimer;
         }
     }
-
-
 
     public struct Decomposition : HiddenEffect
     {
