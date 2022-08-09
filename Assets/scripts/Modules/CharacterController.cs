@@ -43,7 +43,7 @@ using UnityEditor;
 
             InGameEvents.MouseController.AddListener((id, b) => 
             { 
-                if(id != MPlaner.Planer | !(!Corpse & CanControl)) { MouseTest = 0; return; }
+                if(id != MPlaner.Planer | !(!Alive & CanControl)) { MouseTest = 0; return; }
                 MouseTest = b;
                 switch(MouseTest)
                 {

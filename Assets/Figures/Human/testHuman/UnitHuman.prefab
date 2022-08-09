@@ -436,95 +436,111 @@ MonoBehaviour:
     Model: {fileID: 110499025132641117}
   <Race>k__BackingField: 0
   _Corpse: 0
-  <WalkDistance>k__BackingField: 5
-  visibleCoefficient: 1
-  AlwaysVisible: 0
-  WallIgnoreVisible: 0
-  <Health>k__BackingField:
-    rid: 1478814578408685799
-  <Sanity>k__BackingField:
-    rid: 1478814578408685800
-  <Stamina>k__BackingField:
-    rid: 1478814578408685801
-  _OtherStates: []
-  <Effects>k__BackingField: []
+  <NowBalance>k__BackingField:
+    WalkDistance: 5
+    Visible: 0
+    Health:
+      rid: 1478814762577166347
+    Stamina:
+      rid: 1478814762577166348
+    Sanity:
+      rid: 1478814762577166349
+    AdditionState: []
+    Skills: []
+    <Strength>k__BackingField: 5
+    <Accuracy>k__BackingField: 5
+    <RezoOverclocking>k__BackingField: 5
+    <Healing>k__BackingField: 5
+    <Repairing>k__BackingField: 5
+    <DamagePure>k__BackingField: 5
+    <DamageRange>k__BackingField: 5
+  <BaseBalance>k__BackingField:
+    WalkDistance: 3
+    Visible: 10
+    Health:
+      rid: 1478814742484616108
+    Stamina:
+      rid: 1478814742484616109
+    Sanity:
+      rid: 1478814742484616110
+    AdditionState: []
+    Skills:
+    - Name: 
+      Description: 
+      BigDescription: 
+      image: {fileID: 0}
+      NoWalking: 0
+      Realizations:
+      - rid: 1478814742484616111
+      Actions: []
+    <Strength>k__BackingField: 5
+    <Accuracy>k__BackingField: 5
+    <RezoOverclocking>k__BackingField: 5
+    <Healing>k__BackingField: 5
+    <Repairing>k__BackingField: 5
+    <DamagePure>k__BackingField: 5
+    <DamageRange>k__BackingField: 5
   _Inventory: []
   InventorySize: 1
-  _ArtifacerInventory: []
-  ArtifacerInventorySize: 0
-  PermanentsEffects: []
-  <AvailbleBaseSkills>k__BackingField:
-  - Name: 
-    Description: 
-    BigDescription: 
-    image: {fileID: 0}
-    NoWalking: 0
-    MaxCursorDistance: 0
-    Realizations:
-    - rid: 1478814607659499522
-    - rid: 1478814607659500455
-    UsingStamina: 0
-  <Strength>k__BackingField: 2
-  <Accuracy>k__BackingField: 2
-  <RezoOverclocking>k__BackingField: 2
-  <Healing>k__BackingField: 2
-  <Repairing>k__BackingField: 2
-  <DamagePure>k__BackingField: 2
-  <DamageRange>k__BackingField: 2
   Theme: {r: 0, g: 0, b: 0, a: 0}
   CanControl: 1
   references:
     version: 2
     RefIds:
-    - rid: 1478814578408685799
-      type: {class: HealthOver, ns: , asm: Assembly-CSharp}
+    - rid: 1478814742484616108
+      type: {class: Health, ns: , asm: Assembly-CSharp}
       data:
-        <Value>k__BackingField: 20
-        <Max>k__BackingField: 20
-        <OverMax>k__BackingField: 3
-        <ArmorMelee>k__BackingField: 5
-        <ArmorRange>k__BackingField: 5
-        <Immunity>k__BackingField: 1
-    - rid: 1478814578408685800
-      type: {class: Sanity, ns: , asm: Assembly-CSharp}
-      data:
-        <Value>k__BackingField: 10
-        <Max>k__BackingField: 10
-        <SanityShield>k__BackingField: 0
-    - rid: 1478814578408685801
+        <Value>k__BackingField: 16
+        <Max>k__BackingField: 16
+        <ArmorMelee>k__BackingField: 2
+        <ArmorRange>k__BackingField: 3
+        <Immunity>k__BackingField: 0
+    - rid: 1478814742484616109
       type: {class: Stamina, ns: , asm: Assembly-CSharp}
       data:
         <Value>k__BackingField: 9
         <Max>k__BackingField: 9
         <RestEffectivity>k__BackingField: 5
         <WalkUseStamina>k__BackingField: 1
-    - rid: 1478814607659499522
-      type: {class: Sphere, ns: , asm: Assembly-CSharp}
+    - rid: 1478814742484616110
+      type: {class: Sanity, ns: , asm: Assembly-CSharp}
       data:
-        <DamagePercent>k__BackingField: 1
-        <Scaling>k__BackingField: 0
-        ScalingPower: 1.41
-        <DamageType>k__BackingField: 2
-        StartDistance: 4
-        AdditionDistance: 0
-        TargetingType: 0
-        StartRadius: 0
-        PlusRadius: 2
-        WallPiercing: 0
-        <Effects>k__BackingField: []
-        <Override>k__BackingField: 1
-    - rid: 1478814607659500455
+        <Value>k__BackingField: 10
+        <Max>k__BackingField: 10
+        <SanityShield>k__BackingField: 1
+    - rid: 1478814742484616111
       type: {class: Line, ns: , asm: Assembly-CSharp}
       data:
+        StartDistance: 1
+        Distance: 16
+        TargetingType: 1
         <DamagePercent>k__BackingField: 1
-        <Scaling>k__BackingField: 0
-        ScalingPower: 0
+        <Scaling>k__BackingField: 1
+        ScalingPower: 1.39
         <DamageType>k__BackingField: 0
-        TargetingType: 0
-        StartDistance: 0
-        Distance: 12
         <Effects>k__BackingField: []
         <Override>k__BackingField: 0
+    - rid: 1478814762577166347
+      type: {class: Health, ns: , asm: Assembly-CSharp}
+      data:
+        <Value>k__BackingField: 19
+        <Max>k__BackingField: 19
+        <ArmorMelee>k__BackingField: 3
+        <ArmorRange>k__BackingField: 2
+        <Immunity>k__BackingField: 0
+    - rid: 1478814762577166348
+      type: {class: Stamina, ns: , asm: Assembly-CSharp}
+      data:
+        <Value>k__BackingField: 9
+        <Max>k__BackingField: 9
+        <RestEffectivity>k__BackingField: 5
+        <WalkUseStamina>k__BackingField: 1
+    - rid: 1478814762577166349
+      type: {class: Sanity, ns: , asm: Assembly-CSharp}
+      data:
+        <Value>k__BackingField: 10
+        <Max>k__BackingField: 10
+        <SanityShield>k__BackingField: 1
 --- !u!33 &8576715605070142110
 MeshFilter:
   m_ObjectHideFlags: 0

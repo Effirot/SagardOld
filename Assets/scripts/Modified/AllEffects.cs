@@ -40,19 +40,19 @@ using SagardCL.ParameterManipulate;
 
         public IObjectOnMap Target { get; set; }
 
-        Balancer _Stats; public Balancer Stats { get{ return _Stats; } set { _Stats = value; } }
+        [field: SerializeField] public ReBalancer Stats { get; set; }
 
-        public bool Workable() { return Timer > 0 & Damage > 0 & !Target.Corpse; }
+        public bool Workable() { return Timer > 0 & Damage > 0 & Target.Alive != true; }
 
         int StartTimer;
-        [SerializeField] Balancer Stat;
         [SerializeField][Range(1, 20)] int Timer;
         [SerializeField][Range(0, 10)] int Damage;
 
-        void WhenAdded() { StartTimer = Timer; Stats = Stat; }
+        void WhenAdded() { StartTimer = Timer; }
         void Update() 
         {
-            Target.AddDamage(new Attack(Damage, DamageType.Effect));
+            
+            ((IDeadable)Target).AddDamage(new Attack(Damage, DamageType.Effect));
             
             Timer -= 1;
             if(Timer <= 0) 
@@ -60,7 +60,7 @@ using SagardCL.ParameterManipulate;
         }
         void DamageReaction() 
         {
-            if(Target.TakeDamageList.Combine().Exists((a) => a.DamageType == DamageType.Melee && a.Damage > 3)) Damage += 1;
+            if(((IDeadable)Target).TakeDamageList.Combine().Exists((a) => a.DamageType == DamageType.Melee && a.Damage > 3)) Damage += 1;
         }
     }
     [Serializable] public struct Spikes : Effect
@@ -71,9 +71,9 @@ using SagardCL.ParameterManipulate;
 
         public IObjectOnMap Target { get; set; }
 
-        [field: SerializeField] public Balancer Stats { get; set; }
+        [field: SerializeField] public ReBalancer Stats { get; set; }
 
-        public bool Workable() { return Timer > 0 & !Target.Corpse; }
+        public bool Workable() { return Timer > 0 & !Target.Alive; }
 
         int StartTimer;
         [SerializeField][Range(1, 20)] int Timer;
@@ -96,9 +96,9 @@ using SagardCL.ParameterManipulate;
 
         public IObjectOnMap Target { get; set; }
 
-        [SerializeField] Balancer _Stats; public Balancer Stats { get{ return _Stats; } set { _Stats = value; } }
+        [field: SerializeField] public ReBalancer Stats { get; set; }
 
-        public bool Workable() { return !Target.Corpse; }
+        public bool Workable() { return !Target.Alive; }
 
         int StartTimer;
         [SerializeField][Range(1, 20)] int Timer;
@@ -124,9 +124,9 @@ using SagardCL.ParameterManipulate;
 
         public IObjectOnMap Target { get; set; }
 
-        public Balancer Stats { get{ return new Balancer(); } set{  } }
+        public ReBalancer Stats { get{ return ReBalancer.Empty(); } set{  } }
 
-        public bool Workable() { return Target.Corpse; }
+        public bool Workable() { return Target.Alive; }
 
         int Timer;
         void WhenAdded() { Timer = 5; }

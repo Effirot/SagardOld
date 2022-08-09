@@ -65,7 +65,7 @@ public class DebugConsole : MonoBehaviour
                 Destroy(_FiguresList.Where(p => p.name == splitt.name).FirstOrDefault().gameObject);
                 break;
             case ("-corpse"):
-                core.Corpse = !core.Corpse;
+                // core.Corpse = !core.Corpse;
                 break;
             case ("-setMovePlan"):
                 await core.MovePlannerSet(new SagardCL.Checkers(splitt.coord));

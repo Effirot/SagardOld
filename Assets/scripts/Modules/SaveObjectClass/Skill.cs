@@ -127,13 +127,13 @@ public interface AttacksPlacer
         switch(damageType)
         {
             default: return 0;
-            case DamageType.Melee: return (int)Mathf.Round(Target.Strength * DamagePercent);
-            case DamageType.Range: return (int)Mathf.Round(Target.DamageRange * DamagePercent);
-            case DamageType.Rezo: return (int)Mathf.Round(Target.RezoOverclocking * DamagePercent);
-            case DamageType.Pure: return (int)Mathf.Round(Target.DamagePure * DamagePercent);
+            case DamageType.Melee: return (int)Mathf.Round(Target.NowBalance.Strength * DamagePercent);
+            case DamageType.Range: return (int)Mathf.Round(Target.NowBalance.DamageRange * DamagePercent);
+            case DamageType.Rezo: return (int)Mathf.Round(Target.NowBalance.RezoOverclocking * DamagePercent);
+            case DamageType.Pure: return (int)Mathf.Round(Target.NowBalance.DamagePure * DamagePercent);
 
-            case DamageType.Heal: return (int)Mathf.Round(Target.Healing * DamagePercent);
-            case DamageType.Repair: return (int)Mathf.Round(Target.Repairing * DamagePercent);
+            case DamageType.Heal: return (int)Mathf.Round(Target.NowBalance.Healing * DamagePercent);
+            case DamageType.Repair: return (int)Mathf.Round(Target.NowBalance.Repairing * DamagePercent);
         }   
     }
     protected static int DamageDistanceScaling(float Distance, DamageScaling Scaling, float ScalingPower)

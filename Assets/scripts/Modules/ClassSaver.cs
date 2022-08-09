@@ -61,7 +61,6 @@ namespace SagardCL //Class library
         Foctotoum,
     }
 
-
     [Serializable] public struct Attack
     {
         #region // Constructor parameters
@@ -162,8 +161,9 @@ namespace SagardCL //Class library
                 List<Attack> result = new List<Attack>();
                 foreach (var attacks in Sorter)
                 {
+                    if(attacks.Value.Count == 0) continue;
                     List<Effect> effects = new List<Effect>();
-                    if(attacks.Value.Count > 0) foreach (Attack attack in attacks.Value) { effects.AddRange(attack.Effects); }
+                    foreach (Attack attack in attacks.Value) { effects.AddRange(attack.Effects); }
                     
                     result.Add(new Attack(attacks.Value.Sum(a=>a.Damage), attacks.Key, effects.ToArray()));
                 }
@@ -399,101 +399,209 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
-    [Serializable] public struct Balancer
-    {
-        [Space]
-        public int WalkDistance;
+    #region // Balancers
 
-        public float Visible;
-        [SerializeField] bool AlwaysVisible;
-
-        [SerializeReference, SubclassSelector]public IHealthBar Health;
-        public bool ReplaceHealth;
-        [SerializeReference, SubclassSelector]public IStaminaBar Stamina;
-        public bool ReplaceStamina;
-        [SerializeReference, SubclassSelector]public ISanityBar Sanity;
-        public bool ReplaceSanity;
-
-        public List<IOtherBar> AdditionState;
-        public List<Type> Resists;
-        [Space]
-        public List<Skill> Skills;
-
-        public static Balancer Combine(params Balancer[] items) 
+        [Serializable] public struct Balancer
         {
-            List<Balancer> InList = items.ToList();
+            public int WalkDistance;
 
-            Balancer result = Balancer.Empty();
-            var resists = new List<Type>();
-            var additionStates = new List<IOtherBar>();
-            var additionSkills = new List<Skill>();
+            public int Visible;
 
-            if(InList.Exists(a=>a.ReplaceHealth))
-            {
-                result.ReplaceHealth = true;
-                result.Health = Activator.CreateInstance(InList.Find(a=>a.ReplaceHealth).Health.GetType()) as IHealthBar;
-            }
-            if(InList.Exists(a=>a.ReplaceSanity))
-            {
-                result.ReplaceHealth = true;
-                result.Sanity = Activator.CreateInstance(InList.Find(a=>a.ReplaceSanity).Health.GetType()) as ISanityBar;
-            }
-            if(InList.Exists(a=>a.ReplaceStamina))
-            {
-                result.ReplaceHealth = true;
-                result.Stamina = Activator.CreateInstance(InList.Find(a=>a.ReplaceStamina).Health.GetType()) as IStaminaBar;
-            }
+            [SerializeReference, SubclassSelector] public IHealthBar Health;
+            [SerializeReference, SubclassSelector] public IStaminaBar Stamina;
+            [SerializeReference, SubclassSelector] public ISanityBar Sanity;
+
+            [SerializeReference, SubclassSelector] public List<ICustomBar> AdditionState;
+            public List<Type> Resists;
+            [Space]
+            public List<Skill> Skills;
+
+            [field: SerializeField] public int Strength { get; set; }
+            [field: SerializeField] public int Accuracy { get; set; }
+            [field: SerializeField] public int RezoOverclocking { get; set; }
+            [field: SerializeField] public int Healing { get; set; }
+            [field: SerializeField] public int Repairing { get; set; }
+
+            [field: SerializeField] public int DamagePure { get; set; }
+            [field: SerializeField] public int DamageRange { get; set; }
             
-            foreach(Balancer item in items)
+            public static Balancer operator +(Balancer Current, ReBalancer Incoming)
             {
-                result.Visible += item.Visible;
-                result.WalkDistance += item.WalkDistance;
+                Incoming.Health.Value = Current.Health.Value + (Current.Health.Max - Incoming.Health.Max);
+                if(Incoming.ReplaceHealth) Current.Health = Incoming.Health + Current.Health;
+                else Current.Health += Incoming.Health;
 
-                result.Health.Max += item.Health.Max;
-                result.Health.ArmorMelee += item.Health.ArmorMelee;
-                result.Health.ArmorRange += item.Health.ArmorRange;
-                result.Health.Immunity += item.Health.Immunity;
+                Incoming.Sanity.Value = Current.Sanity.Value;
+                if(Incoming.ReplaceSanity) Current.Sanity = Incoming.Sanity + Current.Sanity;
+                else Current.Sanity += Incoming.Sanity;
 
-                result.Stamina.Max += item.Stamina.Max;
-                result.Stamina.WalkUseStamina += item.Stamina.WalkUseStamina;
-                result.Stamina.RestEffectivity += item.Stamina.RestEffectivity;
-                
-                result.Sanity.Max += item.Sanity.Max;
-                result.Sanity.SanityShield += item.Sanity.SanityShield;
+                Incoming.Stamina.Value = Current.Stamina.Value;
+                if(Incoming.ReplaceStamina) Current.Stamina = Incoming.Stamina + Current.Stamina;
+                else Current.Stamina += Incoming.Stamina;
 
-                if(item.Resists is not null)resists.AddRange(item.Resists);
-                if(item.AdditionState is not null)additionStates.AddRange(item.AdditionState);
-                if(item.Skills is not null) additionSkills.AddRange(item.Skills);
+                Current.Visible += Incoming.Visible;
+                Current.WalkDistance += Incoming.WalkDistance;
+
+                Current.Strength += Incoming.Strength;
+                Current.Accuracy += Incoming.Accuracy;
+                Current.RezoOverclocking += Incoming.RezoOverclocking;
+                Current.Healing += Incoming.Healing;
+                Current.Repairing += Incoming.Repairing;
+                Current.DamagePure += Incoming.DamagePure;
+                Current.DamageRange += Incoming.DamageRange;
+
+                if(Incoming.Resists is not null & Incoming.Resists.Count > 0) { 
+                    Current.Resists.AddRange(Incoming.Resists); 
+                    Current.Resists = Current.Resists.Distinct().ToList(); 
+                    Current.Resists.Sort(); }
+
+                if(Incoming.AdditionState is not null) foreach(ICustomBar otherState in Incoming.AdditionState) {
+                    if(Current.AdditionState.Contains(otherState)) 
+                        Current.AdditionState.Find(a=>a==otherState).AddDuplicate(otherState);
+
+                    else
+                        Current.AdditionState.Add(otherState); }
+
+                if(Incoming.Skills is not null) 
+                    Current.Skills.AddRange(Incoming.Skills);
+
+                return Current;
             }
-            result.Resists = resists;
-            result.Skills = additionSkills;
-            result.AdditionState = additionStates;
 
-            result.AlwaysVisible = InList.Exists(a=>a.AlwaysVisible);
-            return result; 
+            public static Balancer Empty() {
+                return new Balancer()
+                {
+                    WalkDistance = 0,
+                    Visible = 0,
+
+                    Health = new Health() { Max = 0 },
+                    Stamina = new Stamina() { Max = 0 },
+                    Sanity = new Sanity() { Max = 0 },
+
+                    AdditionState = new List<ICustomBar>(),
+                    Resists = new List<Type>(),
+                    Skills = new List<Skill>() { },
+
+                    Strength = 0,
+                    Accuracy = 0,
+                    RezoOverclocking = 0,
+                    Healing = 0,
+                    Repairing = 0,
+
+                    DamagePure = 0,
+                    DamageRange = 0,
+                };
+            }
         }
-    
-        public static Balancer Empty() {
-            return new Balancer()
+        [Serializable] public struct ReBalancer
+        {
+            public int WalkDistance;
+
+            public int Visible;
+
+            [SerializeReference, SubclassSelector]public IHealthBar Health;
+            public bool ReplaceHealth;
+            [SerializeReference, SubclassSelector]public IStaminaBar Stamina;
+            public bool ReplaceStamina;
+            [SerializeReference, SubclassSelector]public ISanityBar Sanity;
+            public bool ReplaceSanity;
+
+            [SerializeReference, SubclassSelector]public List<ICustomBar> AdditionState;
+            public List<Type> Resists;
+            [Space]
+            public List<Skill> Skills;
+
+            [field: SerializeField] public int Strength { get; set; }
+            [field: SerializeField] public int Accuracy { get; set; }
+            [field: SerializeField] public int RezoOverclocking { get; set; }
+            [field: SerializeField] public int Healing { get; set; }
+            [field: SerializeField] public int Repairing { get; set; }
+
+            [field: SerializeField] public int DamagePure { get; set; }
+            [field: SerializeField] public int DamageRange { get; set; }
+
+            public static ReBalancer operator +(ReBalancer left, ReBalancer right)
             {
-                WalkDistance = 0,
-                Visible = 0,
+                if(right.ReplaceHealth) {
+                    left.ReplaceHealth = true;
+                    
+                    left.Health = right.Health + left.Health;
+                }
+                else left.Health += right.Health;
+                if(right.ReplaceSanity) {
+                    left.ReplaceSanity = true;
 
-                Health = new Health() { Max = 0 },
-                ReplaceHealth = false,
+                    left.Sanity = right.Sanity + left.Sanity;
+                }
+                else left.Sanity += right.Sanity;
+                if(right.ReplaceStamina) {
+                    left.ReplaceStamina = true;
+                    
+                    left.Stamina = right.Stamina + left.Stamina;
+                }
+                else left.Stamina += right.Stamina;
 
-                Stamina = new Stamina() { Max = 0 },
-                ReplaceStamina = false,
+                left.Visible += right.Visible;
+                left.WalkDistance += right.WalkDistance;
 
-                Sanity = new Sanity() { Max = 0 },
-                ReplaceSanity = false,
+                left.Strength += right.Strength;
+                left.Accuracy += right.Accuracy;
+                left.RezoOverclocking += right.RezoOverclocking;
+                left.Healing += right.Healing;
+                left.Repairing += right.Repairing;
+                left.DamagePure += right.DamagePure;
+                left.DamageRange += right.DamageRange;
 
-                AdditionState = new List<IOtherBar>(),
-                Resists = new List<Type>(),
-                Skills = new List<Skill>() { },
-            };
+                if(right.Resists is not null) { 
+                    left.Resists.AddRange(right.Resists); 
+                    left.Resists = left.Resists.Distinct().ToList(); 
+                    left.Resists.Sort(); }
+
+                if(right.AdditionState is not null) foreach(ICustomBar otherState in right.AdditionState) {
+                    if(left.AdditionState.Contains(otherState)) 
+                        left.AdditionState.Find(a=>a==otherState).AddDuplicate(otherState);
+
+                    else
+                        left.AdditionState.Add(otherState); }
+
+                if(right.Skills is not null) 
+                    left.Skills.AddRange(right.Skills);
+
+                return left;
+            }
+
+            public static ReBalancer Empty() {
+                return new ReBalancer()
+                {
+                    WalkDistance = 0,
+                    Visible = 0,
+
+                    Health = new Health() { Max = 0 },
+                    ReplaceHealth = false,
+
+                    Stamina = new Stamina() { Max = 0 },
+                    ReplaceStamina = false,
+
+                    Sanity = new Sanity() { Max = 0 },
+                    ReplaceSanity = false,
+
+                    AdditionState = new List<ICustomBar>(),
+                    Resists = new List<Type>(),
+                    Skills = new List<Skill>() { },
+
+                    Strength = 0,
+                    Accuracy = 0,
+                    RezoOverclocking = 0,
+                    Healing = 0,
+                    Repairing = 0,
+
+                    DamagePure = 0,
+                    DamageRange = 0,
+                };
+            }
         }
-    }
+
+    #endregion
     
     namespace ParameterManipulate
     {        
@@ -517,12 +625,13 @@ namespace SagardCL //Class library
             {
                 public static IHealthBar operator + (IHealthBar a, IHealthBar b) 
                 {
-                    IHealthBar result = a;
+                    IHealthBar result = Activator.CreateInstance(a.GetType()) as IHealthBar;
 
-                    result.Max += b.Max;
-                    result.ArmorMelee += b.ArmorMelee;
-                    result.ArmorRange += b.ArmorRange;
-                    result.Immunity += b.Immunity;
+                    result.Value = a.Value;
+                    result.Max = a.Max + b.Max;
+                    result.ArmorMelee = a.ArmorMelee + b.ArmorMelee;
+                    result.ArmorRange = a.ArmorRange + b.ArmorRange;
+                    result.Immunity = a.Immunity + b.Immunity;
 
                     return result;
                 }
@@ -536,7 +645,6 @@ namespace SagardCL //Class library
 
                 public void Damage(Attack attack)
                 {
-                    if(attack.Damage > 0)
                     switch(attack.DamageType)
                     {
                         case DamageType.Pure: Value -= Pure(attack); break;
@@ -555,7 +663,6 @@ namespace SagardCL //Class library
                     List<Attack> attackList = attackCombiner.Combine();
                     foreach(Attack attack in attackList)
                     {
-                        if(attack.Damage > 0)
                         switch(attack.DamageType)
                         {
                             case DamageType.Pure: Value -= Pure(attack); break;
@@ -569,6 +676,22 @@ namespace SagardCL //Class library
                             case DamageType.Effect: Value -= Effect(attack); break;
                         }
                     }
+                }
+                public int GetDamage(Attack attack)
+                {
+                    switch(attack.DamageType)
+                    {
+                        case DamageType.Pure: return -Pure(attack); 
+                        case DamageType.Melee: return -Melee(attack); 
+                        case DamageType.Range: return -Range(attack); 
+                        case DamageType.Rezo: return -Rezo(attack); 
+            
+                        case DamageType.Heal: return +Heal(attack); 
+                        case DamageType.Repair: return +Repair(attack); 
+
+                        case DamageType.Effect: return -Effect(attack); 
+                    }
+                    return 0;
                 }
 
                 protected virtual int Pure(Attack attack) { return Mathf.Clamp(attack.Damage, 0, 1000); }
@@ -593,6 +716,18 @@ namespace SagardCL //Class library
                 int RestEffectivity{ get; set; }
                 int WalkUseStamina{ get; set; }
 
+                public static IStaminaBar operator +(IStaminaBar left, IStaminaBar right)
+                {
+                    IStaminaBar result = Activator.CreateInstance(left.GetType()) as IStaminaBar;
+
+                    result.Value = left.Value;
+                    result.Max = left.Max + right.Max;
+                    result.RestEffectivity = left.RestEffectivity + right.RestEffectivity;
+                    result.WalkUseStamina = left.WalkUseStamina + right.WalkUseStamina;
+
+                    return result;
+                }
+
                 void Rest();
             }
             public interface ISanityBar : IStateBar
@@ -603,12 +738,26 @@ namespace SagardCL //Class library
                         Value - Mathf.Clamp(Mathf.Abs(value) - SanityShield, 0, 1000) : 
                         Mathf.Clamp(Value + value, 0, Max);
                 }
+
+                public static ISanityBar operator +(ISanityBar left, ISanityBar right)
+                {
+                    ISanityBar result = Activator.CreateInstance(left.GetType()) as ISanityBar;
+
+                    result.Value = left.Value;
+                    result.Max = left.Max + right.Max;
+                    result.SanityShield = left.SanityShield + right.SanityShield;
+
+                    return result;
+                }
+
                 int SanityShield { get; set; } 
             }
-            public interface IOtherBar : IStateBar
+            public interface ICustomBar : IStateBar
             {
                 void IStateBar.Use(int value) { UseMath(value); }
                 void UseMath(int value);
+
+                void AddDuplicate(ICustomBar duplicate);
             }
 
         #endregion
@@ -617,8 +766,8 @@ namespace SagardCL //Class library
             
             public interface IObjectOnMap
             {
-                public const int standardVisibleDistance = 10;
-                bool nowVisible { get{ return true; } }
+                Balancer BaseBalance { get; }
+                Balancer NowBalance { get; }
 
                 protected static IObjectOnMap objectClassTo<T>(IObjectOnMap classObject) where T : IObjectOnMap
                 {
@@ -631,7 +780,7 @@ namespace SagardCL //Class library
 
                 public Attack.AttackCombiner TakeDamageList { get; set; }
                 
-                bool Corpse { get; set; }
+                public bool Alive { get; }
 
                 public void AddDamage(params Attack[] attack) { }
 
@@ -639,7 +788,7 @@ namespace SagardCL //Class library
 
                 public void AddStamina(int damage) { }
 
-                public void AddState(IAnotherBars state) { }
+                public void AddState(ICustomBar state) { }
 
                 public void AddEffect(params Effect[] Effect) { }
                 public void AutoRemoveEffect() { }
@@ -648,35 +797,18 @@ namespace SagardCL //Class library
             }
 
             public interface IDeadable : IObjectOnMap
-            {
-                IHealthBar Health { get; set; }
-                IHealthBar BaseHealth { get; }
-                
+            {               
                 new void AddDamage(params Attack[] attacks);
 
                 void LostHealth();
             }
             public interface IGetableCrazy : IObjectOnMap
             {
-                ISanityBar Sanity { get; set; }
-                ISanityBar BaseSanity { get; }
 
-                void IObjectOnMap.AddSanity(int damage)
-                {
-                    if(Sanity!=null) Sanity.Value = Mathf.Clamp(damage >= 0? damage : -(int)(Mathf.Clamp(MathF.Abs(damage) - Sanity.SanityShield, 0, 1000)) + Sanity.Value, 0, Sanity.Max);
-                }
             }
             public interface ITiredable : IObjectOnMap
             {
-                IStaminaBar Stamina { get; set; }
-                IStaminaBar BaseStamina { get; }
-
                 bool WillRest{ get; set; }
-
-                void IObjectOnMap.AddStamina(int damage)
-                {
-                    Stamina.Value = Mathf.Clamp(damage + Stamina.Value, 0, Stamina.Max);
-                }
             }
             public interface IAnotherBars : IObjectOnMap
             {
@@ -685,10 +817,7 @@ namespace SagardCL //Class library
             
             public interface IInvisible : IObjectOnMap
             {
-                bool AlwaysVisible { get; set; }
-                bool WallIgnoreVisible { get; set; }
 
-                new bool nowVisible();
             }
 
             public interface IStorage : IObjectOnMap
@@ -698,7 +827,6 @@ namespace SagardCL //Class library
             public interface IEffector : IObjectOnMap
             {
                 List<Effect> Effects { get; set; }
-                List<Type> Resists { get; set; }
 
                 protected delegate Type IEffect<T>() where T : IEffect;
 
@@ -712,37 +840,17 @@ namespace SagardCL //Class library
             public interface IAttacker : IObjectOnMap
             {
                 int SkillIndex { get; set; }
-                List<Skill> AvailbleBaseSkills { get; }
-                public Skill CurrentSkill { get{ try { return AvailbleBaseSkills[Mathf.Clamp(SkillIndex, 0, AvailbleBaseSkills.Count-1)]; } 
-                                              catch { return new Skill(); } } }
-
-                int Strength{ get; set; }
-                int DamageRange{ get; set; }
-                int RezoOverclocking{ get; set; }
-                int DamagePure{ get; set; }
-
-                int Healing{ get; set; }
-                int Repairing{ get; set; }
+                public Skill CurrentSkill { get; }
             }
             public interface IWalk : IObjectOnMap, ITiredable
             {
-                int WalkDistance { get; set; }
                 List<Checkers> WalkWay { get; set; } 
             }
             
-            public interface HaveName : IObjectOnMap
+            public interface HaveID : IObjectOnMap
             {
-                protected enum Names
-                {
-                    Jessy,
-                    Yohan,
-                    Ulfrik,
-                    Sakarok,
-                    Ung,
-                    Shung
-                }
-
-                protected static string GetName(){ return ((Names)UnityEngine.Random.Range(0, Enum.GetNames(typeof(Names)).Length)).ToString(); }
+                private static int LastID = 1;
+                protected static string GetName(){ LastID++; return $"{LastID.ToString()}:unit"; }
             }
         
         #endregion
@@ -759,7 +867,7 @@ namespace SagardCL //Class library
                 public void InvokeMethod(string name) { MethodInfo info = this.GetType().GetMethod(name, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public); 
                                                      if(info != null) info.Invoke(this, parameters: null); } 
 
-                Balancer Stats { get; }
+                ReBalancer Stats { get; }
             }
             
             public interface Effect : IEffect { bool Workable(); }
