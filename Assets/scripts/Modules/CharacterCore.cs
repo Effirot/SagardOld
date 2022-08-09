@@ -19,8 +19,6 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
 
         [field: SerializeField] private protected AllInOne MPlaner { get; set; }
         [field: SerializeField] private protected AllInOne APlaner { get; set; }
-
-        IAttacker Attacker => (IAttacker)IObjectOnMap.objectClassTo<IAttacker>(this);
                 
         public void ChangeFigureColor(Color color, float speed, Material material) { StartCoroutine(ChangeMaterialColor(material, color, speed)); }
         public void ChangeFigureColor(Color color, float speed, Material[] material = null)
@@ -84,12 +82,12 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
             MPlaner.position = new Checkers(position);
         }
 
-        #region // ================================== parameters
+        #region // =============================== Parameters
 
             public RacePassiveEffect RaceEffect { get; private set; } 
 
             [field: SerializeField] public Race Race { get; private set; }
-            [field: SerializeField] public bool Alive { get; set; }
+            [field: SerializeField] public bool Alive { get; set; } = true;
 
             [field : SerializeField] public Balancer NowBalance { get; private set; }
             [field : SerializeField] public Balancer BaseBalance { get; private set; }
@@ -110,7 +108,7 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
             public void AddDamage(params Attack[] attacks) {
                 foreach(Attack attack in attacks)
                 {
-                    if(attack.DamageType == DamageType.Heal & Alive) return;
+                    if(attack.DamageType == DamageType.Heal & !Alive) return;
                     TakeDamageList.Add(attack);
                 }
             }
@@ -146,14 +144,14 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
                 AutoRemoveEffect();
             }
 
-        #endregion
-        #region // ================================== inventory
-        
-            [SerializeField] List<Item> _Inventory;
-            public int InventorySize = 1;
+            #region // ================================== inventory
+            
+                [SerializeField] List<Item> _Inventory;
+                public int InventorySize = 1;
 
-            public List<Item> Inventory { get { return _Inventory; } set { _Inventory = value; } }
+                public List<Item> Inventory { get { return _Inventory; } set { _Inventory = value; } }
 
+            #endregion
         #endregion
 
         #region // =============================== Update methods
@@ -185,7 +183,7 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
                 MPlaner.LineRenderer.enabled = CheckPosition(position) & Draw;
                 MPlaner.Renderer.enabled = CheckPosition(position) & Draw;
 
-                if(Attacker.CurrentSkill.NoWalking & position == new Checkers(this.position)) 
+                if(CurrentSkill.NoWalking & position == new Checkers(this.position)) 
                     await AttackPlannerRender(position);
 
                 if(!CustomWay) 
@@ -210,7 +208,7 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
             {
                 AttackPose = new Checkers(position);
 
-                if(Attacker.CurrentSkill.NoWalking) 
+                if(CurrentSkill.NoWalking) 
                     await MovePlannerSet(this.position, false);               
 
                 Generation.DrawAttack(await CurrentSkill.GetAttacks(MPlaner.position, AttackPose, this), this);
@@ -219,9 +217,9 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
 
             public void LostHealth()
             {
-                if(Alive) Destroy(transform.parent.gameObject);
+                if(!Alive) Destroy(transform.parent.gameObject);
                 else { 
-                    Alive = true;
+                    Alive = false;
                     
                     Effects.RemoveAll(a=>a is OneUse | !a.Workable());
                     Effects.Add(Decomposition.Base(this));
@@ -250,9 +248,9 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
                 if(info != null) info.Invoke(parameter, parameters: null);
             }
         
-        #endregion      
+        #endregion 
         #region // =============================== Step System
-            
+
             public bool WillRest { get; set; } = true;
 
             Task FindStepStage(string id){ 
@@ -261,7 +259,7 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
                 if(Method == null) return new Task(() => { });
                 return (Task)Method?.Invoke((this), parameters: null);
             }   
-  
+
             async Task Walking()
             {
                 if(WalkWay.Count == 0) return;
@@ -339,7 +337,7 @@ public class CharacterCore : MonoBehaviour, IObjectOnMap, IDeadable, IGetableCra
 
                 TakeDamageList.Clear();
             }
-        
+
         #endregion
     
     #endregion
