@@ -39,7 +39,7 @@ public abstract class Generation : MonoBehaviour
         }
     }
 
-    public static void DrawAttack(List<Attack> AttackZone, IAttacker sender)
+    public static void DrawAttack(List<Attack> AttackZone, CharacterCore sender)
     {
         foreach(List<Attack> attacks in AllAttackZoneArchive) { if(attacks != null) attacks.RemoveAll((a) => a.Sender == sender); }
         foreach(Attack attack in AttackZone) {  try{ AllAttackZoneArchive[attack.Position.x, attack.Position.z].Add(attack); } catch { }  }

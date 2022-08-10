@@ -16,8 +16,8 @@ public class InGameEvents : MonoBehaviour
     public TextMeshProUGUI StepEndPanelLink;
     public static TextMeshProUGUI StepEndPanel;
 
-    internal static List<TaskStepStage> StepSystem = new List<TaskStepStage>();
-    public delegate Task TaskStepStage(string StepStage);
+    internal static List<StepAction> StepSystem = new List<StepAction>();
+    public delegate Task StepAction(string StepStage);
     
     public static UnityEvent StepEnd = new UnityEvent();
 
@@ -68,6 +68,7 @@ public class InGameEvents : MonoBehaviour
 
     enum Step : int
     {
+        BotLogic,
         Walking,
         Attacking,
         EffectUpdate,
@@ -89,7 +90,7 @@ public class InGameEvents : MonoBehaviour
 
             Step step = (Step)i;
 
-            foreach(TaskStepStage summon in StepSystem) { task.Add(summon(step.ToString())); }
+            foreach(StepAction summon in StepSystem) { task.Add(summon(step.ToString())); }
             try{ await Task.WhenAll(task.ToArray()); } catch(Exception e) { Debug.LogError(e); }
         }
         StepEnd.Invoke();

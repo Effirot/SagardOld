@@ -20,7 +20,7 @@ public class UnitUIController : MonoBehaviour
     [Space] 
     public MoveOnUi MoveOnCanvas;
 
-    public static UnityEvent<string, GameObject, CharacterController> UiEvent = new UnityEvent<string, GameObject, CharacterController>();
+    public static UnityEvent<string, GameObject, CharacterCoreController> UiEvent = new UnityEvent<string, GameObject, CharacterCoreController>();
 
     // void Start() { UiEvent.AddListener((a, b, c) => {
     //     switch (a)

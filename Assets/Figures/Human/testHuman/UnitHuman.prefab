@@ -428,14 +428,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c80335e3a8ec26459f05797da32df4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MPlaner>k__BackingField:
-    Planer: {fileID: 8182480761862019246}
-    Model: {fileID: 447574044884308314}
-  <APlaner>k__BackingField:
-    Planer: {fileID: 302834733322452018}
-    Model: {fileID: 110499025132641117}
   <Race>k__BackingField: 0
-  _Corpse: 0
+  <IsAlive>k__BackingField: 1
   <NowBalance>k__BackingField:
     WalkDistance: 5
     Visible: 0
@@ -480,10 +474,20 @@ MonoBehaviour:
     <Repairing>k__BackingField: 5
     <DamagePure>k__BackingField: 5
     <DamageRange>k__BackingField: 5
+  <Effects>k__BackingField: []
   _Inventory: []
   InventorySize: 1
+  <MPlaner>k__BackingField:
+    Planer: {fileID: 8182480761862019246}
+    Model: {fileID: 447574044884308314}
+  <APlaner>k__BackingField:
+    Planer: {fileID: 302834733322452018}
+    Model: {fileID: 110499025132641117}
   Theme: {r: 0, g: 0, b: 0, a: 0}
   CanControl: 1
+  <MustChangeColor>k__BackingField:
+  - {fileID: 2100000, guid: 1cb69b947445a2a4f977b14ed7b3f94e, type: 2}
+  - {fileID: 2100000, guid: 6928bc70651be6e4196bc11c8cb1fa7a, type: 2}
   references:
     version: 2
     RefIds:
@@ -782,7 +786,7 @@ GameObject:
   - component: {fileID: 3838525804336366737}
   m_Layer: 0
   m_Name: UnitHuman
-  m_TagString: Untagged
+  m_TagString: Figure
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

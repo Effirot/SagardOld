@@ -11,7 +11,7 @@ using SagardCL.ParameterManipulate;
         public Sprite Icon { get; set; }
         public string Description { get; set; }
 
-        public IObjectOnMap Target { get; set; }
+        public CharacterCore Target { get; set; }
 
         public BalanceChanger Stats { get; set; }
         
@@ -38,11 +38,11 @@ using SagardCL.ParameterManipulate;
         [SerializeField] Sprite _Sprite; public Sprite Icon { get{ return _Sprite; } }
         [SerializeField] string _Description; public string Description { get{ return _Description; } }
 
-        public IObjectOnMap Target { get; set; }
+        public CharacterCore Target { get; set; }
 
         [field: SerializeField] public ReBalancer Stats { get; set; }
 
-        public bool Workable() { return Timer > 0 & Damage > 0 & Target.Alive != true; }
+        public bool Workable() { return Timer > 0 & Damage > 0 & Target.IsAlive; }
 
         int StartTimer;
         [SerializeField][Range(1, 20)] int Timer;
@@ -52,7 +52,7 @@ using SagardCL.ParameterManipulate;
         void Update() 
         {
             
-            ((IDeadable)Target).AddDamage(new Attack(Damage, DamageType.Effect));
+            Target.AddDamage(new Attack(Damage, DamageType.Effect));
             
             Timer -= 1;
             if(Timer <= 0) 
@@ -60,7 +60,7 @@ using SagardCL.ParameterManipulate;
         }
         void DamageReaction() 
         {
-            if(((IDeadable)Target).TakeDamageList.Combine().Exists((a) => a.DamageType == DamageType.Melee && a.Damage > 3)) Damage += 1;
+            if(Target.TakeDamageList.Combine().Exists((a) => a.DamageType == DamageType.Melee && a.Damage > 3)) Damage += 1;
         }
     }
     [Serializable] public struct Spikes : Effect
@@ -69,11 +69,11 @@ using SagardCL.ParameterManipulate;
         [SerializeField] Sprite _Sprite; public Sprite Icon { get{ return _Sprite; } }
         [field: SerializeField] public string Description { get; set; }
 
-        public IObjectOnMap Target { get; set; }
+        public CharacterCore Target { get; set; }
 
         [field: SerializeField] public ReBalancer Stats { get; set; }
 
-        public bool Workable() { return Timer > 0 & !Target.Alive; }
+        public bool Workable() { return Timer > 0 & Target.IsAlive; }
 
         int StartTimer;
         [SerializeField][Range(1, 20)] int Timer;
@@ -82,7 +82,7 @@ using SagardCL.ParameterManipulate;
         void WhenAdded() { StartTimer = Timer; }
         void DamageReaction() 
         {
-            foreach(IEffector targets in Target.TakeDamageList.Senders)
+            foreach(CharacterCore targets in Target.TakeDamageList.Senders)
             {
                 targets.AddDamage(CounterEffect);
             }
@@ -94,39 +94,39 @@ using SagardCL.ParameterManipulate;
         [SerializeField] Sprite _Sprite; public Sprite Icon { get{ return _Sprite; } }
         [SerializeField] string _Description; public string Description { get{ return _Description; } }
 
-        public IObjectOnMap Target { get; set; }
+        public CharacterCore Target { get; set; }
 
         [field: SerializeField] public ReBalancer Stats { get; set; }
 
-        public bool Workable() { return !Target.Alive; }
+        public bool Workable() { return !Target.IsAlive; }
 
         int StartTimer;
         [SerializeField][Range(1, 20)] int Timer;
 
-        void WhenAdded() { ((IGetableCrazy)Target).AddSanity(-3); StartTimer = Timer; }
+        void WhenAdded() { Target.AddSanity(-3); StartTimer = Timer; }
         void DamageReaction() 
         {
             Timer--;
             if(Timer > 0) return;
             
-            ((IGetableCrazy)Target).AddSanity(-2);
+            Target.AddSanity(-2);
             Timer = StartTimer;
         }
     }
 
     public struct Decomposition : HiddenEffect
     {
-        public static Decomposition Base(IEffector target) => new Decomposition() { Target = target };
+        public static Decomposition Base(CharacterCore target) => new Decomposition() { Target = target };
 
         [SerializeField] string _Name; public string Name { get{ return _Name; } }
         [SerializeField] Sprite _Sprite; public Sprite Icon { get{ return _Sprite; } }
         [SerializeField] string _Description; public string Description { get{ return _Description; } }
 
-        public IObjectOnMap Target { get; set; }
+        public CharacterCore Target { get; set; }
 
         public ReBalancer Stats { get{ return ReBalancer.Empty(); } set{  } }
 
-        public bool Workable() { return Target.Alive; }
+        public bool Workable() { return !Target.IsAlive; }
 
         int Timer;
         void WhenAdded() { Timer = 5; }

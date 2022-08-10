@@ -55,7 +55,7 @@ public class DebugConsole : MonoBehaviour
         _textField.text += commandAndName + skillNumber + coord  + coordEnd;
         _textField.verticalScrollbar.value = 1;
     }
-    private async void CallFunction()
+    private void CallFunction()
     {
 
        CharacterCore core = _FiguresList.Where(p => p.name == splitt.name).FirstOrDefault().Find($"Controller({splitt.name})").GetComponent<CharacterCore>();
@@ -68,16 +68,16 @@ public class DebugConsole : MonoBehaviour
                 // core.Corpse = !core.Corpse;
                 break;
             case ("-setMovePlan"):
-                await core.MovePlannerSet(new SagardCL.Checkers(splitt.coord));
-                await core.AttackPlannerRender(new SagardCL.Checkers(splitt.coord));
+                core.SetAttackTarget(new Checkers(splitt.coord));
+                core.GenerateWayToTarget(new Checkers(splitt.coord));
                 break;
             case ("-setAttackPlan"):
                 core.SkillIndex = splitt.skillNumber;
-                await core.AttackPlannerRender(new SagardCL.Checkers(splitt.coord));
+                core.SetAttackTarget(new Checkers(splitt.coord));
                 break;
             case ("-teleportTo"):
-                core.transform.position = new SagardCL.Checkers(splitt.coord);
-                await core.AttackPlannerRender(new SagardCL.Checkers(splitt.coord));
+                core.transform.position = new Checkers(splitt.coord);
+                core.SetAttackTarget(new Checkers(splitt.coord));
                 break;
             case ("-showAllParameters"):
                 break;

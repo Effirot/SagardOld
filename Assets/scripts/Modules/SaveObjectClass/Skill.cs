@@ -39,14 +39,14 @@ using System.Linq;
                            Actions != null ? Actions.Count == 0 : true;
 
     
-    public async Task Complete(Checkers from, Checkers to, IObjectOnMap target)
+    public async Task Complete(Checkers from, Checkers to, CharacterCore target)
     {
-        InGameEvents.AttackTransporter.Invoke(await GetAttacks(from, to, (IAttacker)target));
+        InGameEvents.AttackTransporter.Invoke(await GetAttacks(from, to, target));
 
         foreach(SkillAction action in Actions) action.Action(target);
     }
 
-    public async Task<List<Attack>> GetAttacks(Checkers from, Checkers to, IAttacker target)
+    public async Task<List<Attack>> GetAttacks(Checkers from, Checkers to, CharacterCore target)
     {
         List<Attack> attackList = new List<Attack>();
         List<Checkers> Overrides = new List<Checkers>();
@@ -69,7 +69,7 @@ public interface SkillAction
 
 public interface AttacksPlacer
 {
-    IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target);
+    IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, CharacterCore Target);
     
     float DamagePercent { get; set; }
     DamageType DamageType { get; }
@@ -122,7 +122,7 @@ public interface AttacksPlacer
         return new Checkers(to, Up); 
     }
 
-    protected static int Damage(DamageType damageType, float DamagePercent, IAttacker Target)
+    protected static int Damage(DamageType damageType, float DamagePercent, CharacterCore Target)
     {
         switch(damageType)
         {
@@ -167,7 +167,7 @@ public interface AttacksPlacer
     
     [field: Space, SerializeField] public bool Override{ get; set; }
 
-    public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target)
+    public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, CharacterCore Target)
     {
         await Task.Delay(0);
         Checkers FinalPoint = AttacksPlacer.PointTargeting(from, to, TargetingType, StartDistance + AdditionDistance, StartDistance); 
@@ -203,7 +203,7 @@ public interface AttacksPlacer
     [field: Space]
     [field: SerializeField]public bool Override { get; set; }
 
-    public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, IAttacker Target)
+    public async IAsyncEnumerable<Attack> GetAttackList(Checkers from, Checkers to, CharacterCore Target)
     {
         Checkers FinalPoint = AttacksPlacer.PointTargeting(from, to, TargetingType, StartDistance + Distance, StartDistance); 
         

@@ -20,6 +20,7 @@ using UnityEngine.Events;
     [field: SerializeField] public float Immunity{ get; set; }
 
     public Color BarColor{ get{ return new Color(1, 0, 0); } }
+    public object Clone() { return this.MemberwiseClone(); }
 }
 [Serializable]public struct HealthOver : IHealthBar
 {
@@ -39,6 +40,7 @@ using UnityEngine.Events;
     }
 
     public Color BarColor{ get{ return new Color(1, 0.1f, 0); } }
+    public object Clone() { return this.MemberwiseClone(); }
 }
 [Serializable]public struct HealthCorpse : IHealthBar
 {
@@ -59,6 +61,7 @@ using UnityEngine.Events;
     }
 
     public Color BarColor{ get{ return new Color(0, 0, 0); } }
+    public object Clone() { return this.MemberwiseClone(); }
 }
 [Serializable]public struct Metal : IHealthBar
 {
@@ -75,6 +78,24 @@ using UnityEngine.Events;
     int IHealthBar.Heal(Attack attack) { return -2; }
 
     public Color BarColor{ get{ return new Color(1, 0.7f, 0); } }
+    public object Clone() { return this.MemberwiseClone(); }
+}
+[Serializable]public struct Cyborg : IHealthBar
+{
+    [field: Header("Metal")]
+    [field: SerializeField, Range(-10, 35)] public int Value { get; set; }
+    [field: SerializeField, Range(-10, 35)] public int Max { get; set; }
+    [field: Space]
+    [field: SerializeField] public int ArmorMelee{ get; set; }
+    [field: SerializeField] public int ArmorRange{ get; set; }
+
+    [field: SerializeField] public float Immunity{ get; set; }
+
+    int IHealthBar.Repair(Attack attack) { return (int)Mathf.Clamp(Value + attack.Damage / 2, 0, Max - Value); }
+    int IHealthBar.Heal(Attack attack) { return Mathf.Clamp(Value + attack.Damage, 0, Max - Value); }
+
+    public Color BarColor{ get{ return new Color(1, 0.7f, 0); } }
+    public object Clone() { return this.MemberwiseClone(); }
 }
 // ================================================================= Stamina Bar ===========================================================================================================
 [Serializable]public struct Stamina : IStaminaBar
@@ -91,6 +112,7 @@ using UnityEngine.Events;
     public void GetTired(int value){ Value = Mathf.Clamp(Value - value, 0, Max); }
 
     public Color BarColor{ get{ return new Color(0.8f, 1f, 0); } }
+    public object Clone() { return this.MemberwiseClone(); }
 }
 // ================================================================= Sanity Bar ============================================================================================================
 [Serializable]public struct Sanity : ISanityBar
@@ -102,5 +124,21 @@ using UnityEngine.Events;
     [field: SerializeField] public int SanityShield { get; set; }
 
     public Color BarColor{ get{ return new Color(0.3f, 0, 0.3f); } }
+    public object Clone() { return this.MemberwiseClone(); }
 }
 // ================================================================= Other Bars ============================================================================================================
+[Serializable]public struct Ammo : ICustomBar
+{
+    [field: Header("Ammo")]
+    [field: SerializeField, Range(-10, 35)] public int Value { get; set; }
+    [field: SerializeField, Range(-10, 35)] public int Max { get; set; }
+    
+    public void AddDuplicate(ICustomBar Clone) { 
+        this.Max += Clone.Max;
+        this.Value = this.Max;
+    }
+    public bool UseChecking(int value) { return (Value + value) >= 0 & (Value + value) <= Max; }
+    
+    public Color BarColor{ get{ return new Color(1, 1, 0); } }
+    public object Clone() { return this.MemberwiseClone(); }
+}
