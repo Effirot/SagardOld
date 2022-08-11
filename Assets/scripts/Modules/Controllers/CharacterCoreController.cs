@@ -88,7 +88,11 @@ using UnityEditor;
         } });
         CursorController.MouseWheelTurn.AddListener((a)=>
         {
-            if(this.MouseTest == 2) this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 10), 0, NowBalance.Skills.Count);
+            if(this.MouseTest == 2) {
+                this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 10), 0, NowBalance.Skills.Count);
+                SetAttackTarget(CursorController.position);
+            
+            }
         });
     }
     
