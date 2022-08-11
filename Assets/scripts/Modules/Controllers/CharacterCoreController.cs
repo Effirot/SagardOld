@@ -40,9 +40,9 @@ using UnityEditor;
                 return false;
             
             //OnStamina
-            if(NowBalance.Stamina.WalkUseStamina > NowBalance.Stamina.Value) return false;
+            return NowBalance.Stamina.WalkUseStamina > NowBalance.Stamina.Value;
             //OnDistance
-            return NowBalance.WalkDistance + 0.5f >= Checkers.Distance(new Checkers(this.position), position); 
+            //return NowBalance.WalkDistance + 0.5f >= Checkers.Distance(new Checkers(this.position), position); 
         }    
     
     #endregion
@@ -51,7 +51,7 @@ using UnityEditor;
     [Header(" ==== Controller settings ==== ")]
     [SerializeField] Color Theme;
 
-    [SerializeField] bool CanControl = true;
+    
 
     [field : SerializeField] override public Material[] MustChangeColor { get; set; }
 
@@ -59,7 +59,8 @@ using UnityEditor;
     {
         base.Start();
 
-        InGameEvents.MouseController.AddListener((id, b) => 
+
+        MouseControlEvents.MouseController.AddListener((id, b) => 
         { 
             if(id != MPlaner.Planer | !(IsAlive & CanControl)) { MouseTest = 0; return; }
             MouseTest = b;
@@ -76,14 +77,19 @@ using UnityEditor;
                 SetAttackTarget(a); }
 
             if(MouseTest == 1) { 
-                GenerateWayToTarget(CheckPosition(a)? a : this.position); 
+                await Task.Delay(2);
+                GenerateWayToTarget(a, MPlaner.Planer); 
                 Generation.DrawAttack(await CurrentSkill.GetAttacks(MoveTarget, AttackTarget, this), this);
 
                 MPlaner.LineRenderer.positionCount = WalkWay.Count;
                 MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
 
-                MPlaner.Renderer.enabled = CheckPosition(a);
+                MPlaner.Renderer.enabled = a != new Checkers(this.position);
         } });
+        CursorController.MouseWheelTurn.AddListener((a)=>
+        {
+            if(this.MouseTest == 2) this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 10), 0, NowBalance.Skills.Count);
+        });
     }
     
     private int MouseTest = 0;
@@ -94,7 +100,8 @@ using UnityEditor;
 
         UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
         
-        InGameEvents.MapUpdate.Invoke();
+        Map.MapUpdate.Invoke();
+        UpdatePos();
 
         MPlaner.Collider.enabled = true;
     }

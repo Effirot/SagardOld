@@ -449,7 +449,7 @@ MonoBehaviour:
     <DamagePure>k__BackingField: 5
     <DamageRange>k__BackingField: 5
   <BaseBalance>k__BackingField:
-    WalkDistance: 3
+    WalkDistance: 6
     Visible: 10
     Health:
       rid: 1478814742484616108
@@ -477,6 +477,7 @@ MonoBehaviour:
   <Effects>k__BackingField: []
   _Inventory: []
   InventorySize: 1
+  CanControl: 1
   <MPlaner>k__BackingField:
     Planer: {fileID: 8182480761862019246}
     Model: {fileID: 447574044884308314}
@@ -484,7 +485,6 @@ MonoBehaviour:
     Planer: {fileID: 302834733322452018}
     Model: {fileID: 110499025132641117}
   Theme: {r: 0, g: 0, b: 0, a: 0}
-  CanControl: 1
   <MustChangeColor>k__BackingField:
   - {fileID: 2100000, guid: 1cb69b947445a2a4f977b14ed7b3f94e, type: 2}
   - {fileID: 2100000, guid: 6928bc70651be6e4196bc11c8cb1fa7a, type: 2}
@@ -3164,8 +3164,8 @@ LineRenderer:
       m_Mode: 0
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
-    numCornerVertices: 3
-    numCapVertices: 0
+    numCornerVertices: 4
+    numCapVertices: 5
     alignment: 0
     textureMode: 3
     shadowBias: 0.5

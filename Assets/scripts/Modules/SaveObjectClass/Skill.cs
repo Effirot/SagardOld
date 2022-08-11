@@ -41,7 +41,7 @@ using System.Linq;
     
     public async Task Complete(Checkers from, Checkers to, CharacterCore target)
     {
-        InGameEvents.AttackTransporter.Invoke(await GetAttacks(from, to, target));
+        Map.AttackTransporter.Invoke(await GetAttacks(from, to, target));
 
         foreach(SkillAction action in Actions) action.Action(target);
     }

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6548988181438006752}
   - component: {fileID: 6548988181438006753}
   - component: {fileID: 745929349}
-  - component: {fileID: 745929345}
+  - component: {fileID: 3165807204880750792}
   m_Layer: 2
   m_Name: 3DCursor
   m_TagString: Cursore
@@ -98,7 +98,7 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1.1176004, y: 1.7882967, z: 1.1176004}
   m_Center: {x: 0, y: 0.85060334, z: 0}
---- !u!114 &745929345
+--- !u!114 &3165807204880750792
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -107,6 +107,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 6548988181438006755}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da788deaf8a57f14ba93e3936e8cd3d2, type: 3}
+  m_Script: {fileID: 11500000, guid: 2a35f48a8ea9a7744bcf4b3d0553419f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

@@ -47,7 +47,21 @@ namespace SagardCL //Class library
         Descending,
         Addition,
     }
-                
+
+    public enum Resist
+    {
+        Man, Woman, BattleHelicopter,
+
+        Persistent,
+        Miasm,
+        StrongImmunity,
+        Bloodless,
+        NonCombustible,
+        HardenedSkin,
+
+        NoRezo, NoHeal, NoRepair, NoPure
+    }
+
     public enum Race
     {
         Human,
@@ -238,16 +252,16 @@ namespace SagardCL //Class library
 
             public override string ToString() { return $"{x}:{z}"; }
 
-            public enum CheckersDistanceMode{ NoHeight, Height, OnlyHeight, }
-            public static float Distance(Checkers a, Checkers b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
+            public enum CheckersDistMode{ NoHeight, Height, OnlyHeight, }
+            public static float Distance(Checkers a, Checkers b, CheckersDistMode Mode = CheckersDistMode.NoHeight)
             {
-                if(Mode == CheckersDistanceMode.OnlyHeight) return Mathf.Abs(a.up - b.up);
-                if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
+                if(Mode == CheckersDistMode.OnlyHeight) return Mathf.Abs(a.up - b.up);
+                if(Mode == CheckersDistMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.ToVector3().y - b.ToVector3().y, 2) + Mathf.Pow(a.z - b.z, 2));
                 return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
             }
-            public static float Distance(Vector3 a, Vector3 b, CheckersDistanceMode Mode = CheckersDistanceMode.NoHeight)
+            public static float Distance(Vector3 a, Vector3 b, CheckersDistMode Mode = CheckersDistMode.NoHeight)
             {
-                if(Mode == CheckersDistanceMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
+                if(Mode == CheckersDistMode.Height) return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.y - b.y, 2) + Mathf.Pow(a.z - b.z, 2));
                 return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
             }
 
@@ -265,15 +279,21 @@ namespace SagardCL //Class library
                 return list;        
             }
 
-            public static bool CheckCoords(Checkers Coordinates) 
+            public static bool CheckCoords(Checkers Coordinates, params GameObject[] BlackList) 
             {
-                return Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
+                bool result = Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Object"));
+                if(BlackList != null && result)BlackList.ToList().ForEach(a=> { if(a == hit.collider.gameObject) result = false;});
+                return !result;
             }
-            public static bool CheckCoords(int x, int z) 
+            public static bool CheckCoords(int x, int z)
             {
                 return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
             }
-            
+            public static bool CheckFloor(Checkers Coordinates) 
+            {
+                return Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, Mathf.Infinity, LayerMask.GetMask("Map"));
+            }
+
             public static Checkers Lerp(Checkers pos1, Checkers pos2, float StepSize)
             {
                 float x = pos1.x + (pos2.x - pos1.x) * (StepSize);
@@ -324,61 +344,82 @@ namespace SagardCL //Class library
 
             }
             
-        #endregion // =============================== Math
 
-        public static class PatchWay
-        {
-            public static List<Checkers> WayTo(Checkers a, Checkers b, int MaxSteps, float CheckersUp = 0.1f) 
-            {            
-                return new List<Checkers>() { a, b };
-            }
-
-        }
-
-        public enum EMoveAction { walk, jump, fall, swim };
-        
-        public class PathPoint
-        {
-            // текущая точка
-            public Checkers point { get; set; }
-            // расстояние от старта
-            public float pathLenghtFromStart { get; set; }
-            // примерное расстояние до цели
-            public float heuristicEstimatePathLenght { get; set; }
-            // еврестическое расстояние до цели
-            public float estimateFullPathLenght
+            public static class PatchWay
             {
-                get
+                class PatchNode
                 {
-                return this.heuristicEstimatePathLenght + this.pathLenghtFromStart;
+                    public Checkers position;
+                    public PatchNode from;
+
+                    public float DistanceToFrom => Checkers.Distance(position, from.position, CheckersDistMode.Height);
+
+                    public PatchNode(Checkers position, PatchNode from = null) { this.position = position; this.from = from;  }
                 }
-            }
-            // способ движения
-            public EMoveAction moveAction = EMoveAction.walk;
-            // точка из которой пришли сюда
-            public PathPoint cameFrom;
-                private PathPoint NewPathPoint(Checkers point, float pathLenghtFromStart, float heuristicEstimatePathLenght, EMoveAction moveAction)
-            {
-                PathPoint a = new PathPoint();
-                a.point = point;
-                a.pathLenghtFromStart = pathLenghtFromStart;
-                a.heuristicEstimatePathLenght = heuristicEstimatePathLenght;
-                a.moveAction = moveAction;
-                return a;
-            }
+                public static async Task<List<Checkers>> WayTo(Checkers a, Checkers b, int MaxSteps, float CheckersUp, params GameObject[] BlackListObjects) 
+                {   
+                    List<PatchNode> Nodes = new List<PatchNode>();
+                    await foreach(PatchNode node in AllWays(a, b, MaxSteps, BlackListObjects)) Nodes.Add(node);
 
-            private PathPoint NewPathPoint(Checkers point, float pathLenghtFromStart, float heuristicEstimatePathLenght, EMoveAction moveAction, PathPoint pPoint)
-            {
-                PathPoint a = new PathPoint();
-                a.point = point;
-                a.pathLenghtFromStart = pathLenghtFromStart;
-                a.heuristicEstimatePathLenght = heuristicEstimatePathLenght;
-                a.moveAction = moveAction;
-                a.cameFrom = pPoint;
-                return a;
-            }
-        }
+                    PatchNode CheckingPoint = Nodes[0];
+                    foreach(PatchNode checker in Nodes)
+                        if(Checkers.Distance(b, checker.position) < Checkers.Distance(b, CheckingPoint.position))
+                            CheckingPoint = checker;
+                    
+                    List<Checkers> result = new List<Checkers>();
+                    
+                    while(CheckingPoint != null){
+                        result.Add(CheckingPoint.position.Up(CheckersUp));
+                        CheckingPoint = CheckingPoint.from;
+                    }
+                    result.Add(a.Up(CheckersUp));
+                    result.Reverse();
+                    //result.Add(b.Up(CheckersUp));
 
+                    return result;
+                }
+
+                static async IAsyncEnumerable<PatchNode> AllWays(Checkers from, Checkers to, int MaxSteps, params GameObject[] BlackListObjects)
+                {
+                    List<PatchNode> UnChecked = new List<PatchNode>() ;
+                    List<PatchNode> Checked = new List<PatchNode>() { new PatchNode(from) }; 
+
+                    Fill(Checked[0]);
+                    float DistanceWalking = MaxSteps;
+
+                    while(UnChecked.Count > 0 & DistanceWalking > 0){
+                        PatchNode node = UnChecked[0];
+                        UnChecked.ForEach(x => { if(Checkers.Distance(x.position, to) < Checkers.Distance(node.position, to)) node = x; } );
+
+                        UnChecked.Remove(node);
+                        Checked.Add(node);
+
+                        Fill(node);
+
+                        yield return node;
+                        DistanceWalking -= node.DistanceToFrom;
+                    }
+                    await Task.Delay(0);
+
+                    void Fill(PatchNode target)
+                    {
+                        for (int x = -1; x <= 1; x++)
+                        for (int z = -1; z <= 1; z++) {
+                            if(Checkers.CheckCoords(target.position + new Checkers(x, z), BlackListObjects))
+                            if(Checkers.CheckFloor(target.position + new Checkers(x, z)))
+                            if(Checkers.Distance(target.position + new Checkers(x, z), target.position, CheckersDistMode.OnlyHeight) < 1.3f)
+                            
+                            if(!UnChecked.Exists(a=>a.position == target.position + new Checkers(x, z)))
+                            if(!Checked.Exists(a=>a.position == target.position + new Checkers(x, z)))
+                                UnChecked.Add(new PatchNode(target.position + new Checkers(x, z), target));
+                        }
+                    }
+                }
+
+
+
+            }
+        #endregion // =============================== Math 
     }
     [Serializable] public class AllInOne
     {
@@ -787,18 +828,15 @@ namespace SagardCL //Class library
                 
                 public bool IsAlive { get; }
 
-                public void AddDamage(params Attack[] attack) { }
+                public void AddDamage(params Attack[] attack);
+                public void AddSanity(int damage);
+                public void AddStamina(int damage);
 
-                public void AddSanity(int damage) { }
+                public void AddState(params ICustomBar[] state);
 
-                public void AddStamina(int damage) { }
-
-                public void AddState(ICustomBar state) { }
-
-                public void AddEffect(params Effect[] Effect) { }
-                public void AutoRemoveEffect() { }
-                public void RemoveEffect(params Effect[] Effect) { }
-                public void InvokeEffects(string Method) { }
+                public void AddEffect(params Effect[] Effect);
+                public void RemoveEffect(params Effect[] Effect);
+                public void RemoveEffect(Predicate<Effect> predicate);
             }
             
             public interface HaveID : IObjectOnMap

@@ -6,7 +6,7 @@ using System.Reflection;
 
 public class ATestGeneration : Generation
 {   
-    [SerializeField] PlatformPresets[] PlatformPreset;
+    [SerializeField] PlatformPreset[] PlatformPreset;
 
     public Checkers posForWay;
 
@@ -16,25 +16,24 @@ public class ATestGeneration : Generation
     }
     public void Regenerate()
     {
-        Map map = new Map(
+        new Map(
         (x, z, key) => 
         { return Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 1.1f; },
 
         (x, z, key) => 
-        { return (int)Mathf.Round(Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 3f) % 3; },
+        { return PlatformPreset[(int)Mathf.Round(Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 3f) % 3]; },
 
         (x, z, key) => 
         { return (x % 5 == 0 | z % 5 == 0)? 1 : 0; },
         
-        3,
-        PlatformPreset);
+        3);
 
-        GetComponent<MeshRenderer>().sharedMaterials = map.MaterialsList.ToArray();
+        GetComponent<MeshRenderer>().sharedMaterials = Map.Current.MaterialsList.ToArray();
 
-        GetComponent<MeshCollider>().sharedMesh = map.MapCollider;
-        GetComponent<MeshFilter>().sharedMesh = map.MapMesh;
+        GetComponent<MeshCollider>().sharedMesh = Map.Current.MapCollider;
+        GetComponent<MeshFilter>().sharedMesh = Map.Current.MapMesh;
         
-        LetsGenerate(map);
+        LetsGenerate(Map.Current);
     }
 
 

@@ -1,9 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using SagardCL;
 using SagardCL.ParameterManipulate;
-using UnityEngine.Rendering;
+using System.Threading.Tasks;
+using System;
+using Random = UnityEngine.Random;
+using UnityAsync;
 
 public abstract class Generation : MonoBehaviour
 {
@@ -75,11 +79,20 @@ public abstract class Generation : MonoBehaviour
             return result;
         }
     }
+
+    public void StartStep()
+    {
+        Map.CompleteModeSwitch();
+    }
+    
 }
 
 
 [System.Serializable] public struct Map
 {
+    public static Map Current;
+    public static int StepNumber = 0;
+
     #region // Saving
         public Mesh MapMesh;
         public Mesh MapCollider;
@@ -108,7 +121,7 @@ public abstract class Generation : MonoBehaviour
             colliderMesh();  
             visibleMesh();
         }
-        public void ChangeModifier(PlatformPresets Modifier)
+        public void ChangeModifier(PlatformPreset Modifier)
         {
             
         }
@@ -117,28 +130,25 @@ public abstract class Generation : MonoBehaviour
     #endregion
     #region // Overloads
 
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, Vector2 Scale, params PlatformPresets[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, Vector2 Scale)
         {
             XScale = (int)Scale.x; ZScale = (int)Scale.y; key = Key; 
             PlatformMatrix = new MapCell[XScale, ZScale];
             EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
-            {
-                if(!MaterialsList.Contains(material))
-                    MaterialsList.Add(material);
-            }
 
             MapMesh = new Mesh(); 
             MapCollider = new Mesh(); 
 
-            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
 
             visibleMesh();
             colliderMesh();
+
+            Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, int PlayerNum, params PlatformPresets[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, int PlayerNum)
         {
             key = Key;
             XScale = PlayerNum * 9 + (((int)key / 23)%7); ZScale = PlayerNum * 9 + (((int)key / 14)%7); 
@@ -146,21 +156,18 @@ public abstract class Generation : MonoBehaviour
             EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
-            {
-                if(!MaterialsList.Contains(material))
-                    MaterialsList.Add(material);
-            }
 
             MapMesh = new Mesh(); 
             MapCollider = new Mesh(); 
 
-            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
             
             visibleMesh();
             colliderMesh();
+
+            Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int PlayerNum, params PlatformPresets[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int PlayerNum)
         {
             key = (uint)Random.Range(0, 99999999);
             XScale = PlayerNum * 15 + (((int)key / 23)%7); 
@@ -169,21 +176,18 @@ public abstract class Generation : MonoBehaviour
             EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
-            {
-                if(!MaterialsList.Contains(material))
-                    MaterialsList.Add(material);
-            }
             
             MapMesh = new Mesh(); 
             MapCollider = new Mesh(); 
             
-            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
             
             visibleMesh();
             colliderMesh();
+
+            Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, Vector2 Scale, params PlatformPresets[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, Vector2 Scale)
         {
             key = (uint)Random.Range(0, 99999999);
             XScale = (int)Scale.x; ZScale = (int)Scale.y; 
@@ -191,21 +195,18 @@ public abstract class Generation : MonoBehaviour
             EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
-            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
-            {
-                if(!MaterialsList.Contains(material))
-                    MaterialsList.Add(material);
-            }
             
             MapMesh = new Mesh(); 
             MapCollider = new Mesh(); 
 
-            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
             
             visibleMesh();
             colliderMesh();
+        
+            Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, params PlatformPresets[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key)
         {
             key = Key;
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
@@ -213,21 +214,18 @@ public abstract class Generation : MonoBehaviour
             EffectMatrix = new MapEffect[XScale, ZScale];
 
             MaterialsList = new List<Material>();
-            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
-            {
-                if(!MaterialsList.Contains(material))
-                    MaterialsList.Add(material);
-            }
             
             MapMesh = new Mesh(); 
             MapCollider = new Mesh(); 
 
-            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
             
             visibleMesh();
             colliderMesh();
+
+            Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformPresets[] visual)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet)
         {
             key = key = (uint)Random.Range(0, 99999999);
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
@@ -235,25 +233,22 @@ public abstract class Generation : MonoBehaviour
             EffectMatrix = new MapEffect[XScale, ZScale];
 
             MaterialsList = new List<Material>();
-            foreach(PlatformPresets v in visual) foreach(Material material in v.MaterialVariants)
-            {
-                if(!MaterialsList.Contains(material))
-                    MaterialsList.Add(material);
-            }
             
             MapMesh = new Mesh(); 
             MapCollider = new Mesh(); 
 
-            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet, visual);
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
             
             visibleMesh();
             colliderMesh();
+
+            Current = this;
         }
         
     #endregion
     #region // Map Cell information
         public delegate float FormulaUp(int x, int y, uint key);
-        public delegate int FormulaMod(int x, int y, uint key);
+        public delegate PlatformPreset FormulaMod(int x, int y, uint key);
         public delegate int FormulaLet(int x, int y, uint key);
 
         [System.Serializable] struct MapCell
@@ -267,7 +262,7 @@ public abstract class Generation : MonoBehaviour
             public Material Material;
             public float DeformProtection;
             
-            public MapCell(Checkers Position, PlatformPresets Mod, float DeformProtection = 0, Let let = null)
+            public MapCell(Checkers Position, PlatformPreset Mod, float DeformProtection = 0, Let let = null)
             { Let = let; 
             position = Position;
             this.DeformProtection = DeformProtection;
@@ -281,13 +276,18 @@ public abstract class Generation : MonoBehaviour
 
             }
         }
-        private MapCell[,] GenerateRelief(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, params PlatformPresets[] visual)
+        private MapCell[,] GenerateRelief(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet)
         {
             MapCell[,] result = new MapCell[XScale, ZScale];
 
             for(int x = 0; x < XScale; x++) 
-            for(int z = 0; z < ZScale; z++)
-                result[x, z] = new MapCell(new Checkers(x, z, formulaUp(x, z, key)), visual[formulaMod(x, z, key)], visual[formulaMod(x, z, key)].DeformProtection);
+            for(int z = 0; z < ZScale; z++){
+                result[x, z] = new MapCell(new Checkers(x, z, formulaUp(x, z, key)), formulaMod(x, z, key), formulaMod(x, z, key).DeformProtection);
+
+                foreach(Material material in formulaMod(x, z, key).MaterialVariants)
+                    if(!MaterialsList.Contains(material))
+                        MaterialsList.Add(material);   
+            }
             
             return result;
         }
@@ -350,9 +350,60 @@ public abstract class Generation : MonoBehaviour
         }
 
     #endregion
+
+    #region // Static Map Methods
+        internal static List<StepAction> StepSystem = new List<StepAction>();
+        public delegate Task StepAction(string StepStage);
+
+        enum Step : int
+        {
+            BotLogic,
+            Walking,
+            Attacking,
+            EffectUpdate,
+            LandscapeDeform,
+            DamageMath,
+            Dead,
+            LateWalking,
+            Rest
+        }
+
+        public static async void CompleteModeSwitch()
+        {
+            if(!MouseControlEvents.Controllable) return;
+            MouseControlEvents.Controllable = false;   
+
+            Debug.ClearDeveloperConsole();
+            
+            for(int i = 0; i < Enum.GetNames(typeof(Step)).Length; i++){
+                Debug.Log($"Now step: {(Step)i}");
+                MapUpdate.Invoke();
+                List<Task> task = new List<Task>();
+
+                Step step = (Step)i;
+
+                foreach(StepAction summon in StepSystem) { task.Add(summon(step.ToString())); }
+                try{ await Task.WhenAll(task.ToArray()); } catch(Exception e) { Debug.LogError(e); }
+            }
+            StepEnd.Invoke();
+            
+            WhoAttackToWho.Clear();
+            StepNumber++;
+            
+            MouseControlEvents.Controllable = true;
+        }
+
+        public static UnityEvent StepEnd = new UnityEvent();
+
+        public static UnityEvent MapUpdate = new UnityEvent();        
+        public static UnityEvent<List<SagardCL.Attack>> AttackTransporter = new UnityEvent<List<SagardCL.Attack>>();
+        
+        public static Dictionary<IObjectOnMap, List<IObjectOnMap>> WhoAttackToWho = new Dictionary<IObjectOnMap, List<IObjectOnMap>>();
+    
+    #endregion
 }
 
-[System.Serializable]public struct PlatformPresets
+[System.Serializable]public struct PlatformPreset
 {
     [SerializeField]public Mesh[] MeshVariants;
     [SerializeField]public Material[] MaterialVariants;

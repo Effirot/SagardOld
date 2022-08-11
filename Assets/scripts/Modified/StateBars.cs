@@ -126,6 +126,16 @@ using UnityEngine.Events;
     public Color BarColor{ get{ return new Color(0.3f, 0, 0.3f); } }
     public object Clone() { return this.MemberwiseClone(); }
 }
+[Serializable]public struct Insanity : ISanityBar
+{
+    public int Value { get { return Max;} set{ } }
+    public int Max { get { return 1; } set {} }
+    
+    public int SanityShield { get; set; }
+
+    public Color BarColor{ get{ return new Color(0.3f, 0, 0.3f); } }
+    public object Clone() { return this.MemberwiseClone(); }
+}
 // ================================================================= Other Bars ============================================================================================================
 [Serializable]public struct Ammo : ICustomBar
 {

@@ -18,27 +18,25 @@ public abstract class CharacterCoreVisualized : CharacterCore
     [field: SerializeField] public AllInOne MPlaner { get; set; }
     [field: SerializeField] public AllInOne APlaner { get; set; }
 
-    public override Checkers AttackTarget { get{ return APlaner.position; } set { APlaner.position = value; } }
-    public override Checkers MoveTarget { get { return MPlaner.position; } set { MPlaner.position = value; } }
+    public override Checkers AttackTarget { get{ return APlaner.position; } protected set { APlaner.position = value; } }
+    public override Checkers MoveTarget { get { return MPlaner.position; } protected set { MPlaner.position = value; } }
 
     protected override void Start()
     {
         base.Start();
 
-        InGameEvents.MapUpdate.AddListener(() =>
-        {
-            GenerateWayToTarget(MoveTarget);
-            SetAttackTarget(AttackTarget);
-
-            MPlaner.LineRenderer.positionCount = WalkWay.Count;
-            MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
-        });
-
-        MPlaner.position = new Checkers(position);
+        Map.MapUpdate.AddListener(UpdatePos);
     }
-        
+    public void UpdatePos()
+    {
+        GenerateWayToTarget(MoveTarget, gameObject, MPlaner.Planer, APlaner.Planer);
+        SetAttackTarget(AttackTarget);
 
-    
+        MPlaner.LineRenderer.positionCount = WalkWay.Count;
+        MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
+
+        MPlaner.Renderer.enabled = new Checkers(MPlaner.position) != new Checkers(this.position);
+    }
 
     public override async void SetAttackTarget(Checkers position)
     {

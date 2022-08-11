@@ -77,18 +77,20 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             SetName();
 
-            InGameEvents.StepSystem.Add(FindStepStage);
-            InGameEvents.AttackTransporter.AddListener((a) => 
+            Map.StepSystem.Add(FindStepStage);
+            Map.AttackTransporter.AddListener((a) => 
             { 
                 foreach(Attack attack in a.FindAll((a) => a.Position == new Checkers(position))) { 
                     TakeDamageList.Add(attack); }
             });
-            InGameEvents.StepEnd.AddListener(EveryStepEnd);
+            Map.StepEnd.AddListener(EveryStepEnd);
             
             AfterInventoryUpdate();
 
-            await Task.Delay(10);
+            await Task.Delay(5);
             position = new Checkers(position);
+            MoveTarget = new Checkers(position);
+            AttackTarget = new Checkers(position);
         }
 
         #region // =============================== Parameters
@@ -107,27 +109,6 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             public Attack.AttackCombiner TakeDamageList { get; set; } = Attack.AttackCombiner.Empty();
 
         
-            void AutoRemoveEffect() {
-                List<Effect> Effect = Effects.FindAll(a=>!a.Workable());
-
-                RemoveEffect(Effect.ToArray());
-            }
-            public void RemoveEffect(params Effect[] Effect) {
-                foreach(Effect effect in Effect) { 
-                    effect.InvokeMethod("WhenRemoved"); 
-                    Effects.Remove(effect); 
-                }
-            }
-            
-            void InvokeEffects(string Method)
-            {
-                foreach(Effect effect in Effects)
-                {
-                    effect.Target = this;
-                    effect.InvokeMethod(Method);
-                }
-                AutoRemoveEffect();
-            }
 
             #region // ================================== inventory
             
@@ -138,13 +119,15 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             #endregion
             #region // ================================== controlling
+                
+                [SerializeField] public bool CanControl = true;
 
-                public virtual Checkers AttackTarget { get; set; }
-                public virtual Checkers MoveTarget { get; set; }
+                public virtual Checkers AttackTarget { get; protected set; }
+                public virtual Checkers MoveTarget { get; protected set; }
                 public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
 
                 public int SkillIndex { get; set; } = 0;
-                public Skill CurrentSkill { get { return NowBalance.Skills[SkillIndex]; } } 
+                public Skill CurrentSkill { get { return SkillIndex == 0? Skill.Empty() : NowBalance.Skills[SkillIndex - 1]; } } 
 
                 public virtual void SetAttackTarget(Checkers position)
                 {
@@ -154,18 +137,18 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                     AttackTarget = position;
                 }
 
-                public async void GenerateWayToTarget(Checkers position)
+                public async void GenerateWayToTarget(Checkers position, params GameObject[] BlackList)
                 {
-                    await Task.Delay(2);
+                    if(CurrentSkill.NoWalking & position == new Checkers(this.position)) {AttackTarget = this.position; SkillIndex = 0; }
                     
-                    // MPlaner.LineRenderer.enabled = CheckPosition(position) & Draw;
-                    // MPlaner.Renderer.enabled = CheckPosition(position) & Draw;
-
-                    if(CurrentSkill.NoWalking & position == new Checkers(this.position)) AttackTarget = this.position;
-
-                    MoveTarget = position;
-                    
-                    WalkWay = Checkers.PatchWay.WayTo(new Checkers(this.position), new Checkers(position), 20);                
+                    if(position != new Checkers(this.position)) { 
+                        WalkWay = await Checkers.PatchWay.WayTo(new Checkers(this.position), position, NowBalance.WalkDistance, 0.2f, BlackList); 
+                        
+                        WalkWay[0] = WalkWay[0].Up(0); 
+                        WalkWay[WalkWay.Count - 1] = WalkWay[WalkWay.Count - 1].Up(0); 
+                        MoveTarget = WalkWay.Last().Up(0); }
+                    else {WalkWay.Clear(); MoveTarget = position; }
+                       
                 }
 
                 public void AddDamage(params Attack[] attacks) {
@@ -175,8 +158,8 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                         TakeDamageList.Add(attack);
                     }
                 }
-                
                 public void AddSanity(int Value) { BaseBalance.Sanity.Value += Value >= 0? Value : -Mathf.Clamp(Value - NowBalance.Sanity.SanityShield, 0, 1000); }
+                public void AddStamina(int Value) { BaseBalance.Stamina.Value += Value; }
 
                 public void AddEffect(params Effect[] Effect) {
                     foreach(Effect effect in Effect) { 
@@ -187,6 +170,32 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                         Effects.Add(effect); 
                     }
                 }
+                public void RemoveEffect(params Effect[] Effect) {
+                    foreach(Effect effect in Effect) { 
+                        effect.InvokeMethod("WhenRemoved"); 
+                        Effects.Remove(effect); 
+                    }
+                }
+                public void RemoveEffect(Predicate<Effect> predicate) {
+                    RemoveEffect(Effects.FindAll(predicate).ToArray());
+                }
+                void AutoRemoveEffect() {
+                    List<Effect> Effect = Effects.FindAll(a=>!a.Workable());
+
+                    RemoveEffect(Effect.ToArray());
+                }
+                void InvokeEffects(string Method)
+                {
+                    foreach(Effect effect in Effects)
+                    {
+                        effect.Target = this;
+                        effect.InvokeMethod(Method);
+                    }
+                    AutoRemoveEffect();
+                }
+
+                public void AddState(params ICustomBar[] state) { }
+
             #endregion
         #endregion
 
@@ -251,7 +260,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
                 async Task transport() {
                     int PointNum = 1;
-                    for(float i = 0.0003f; position != WalkWay.Last().ToVector3(); i *= 1.3f)
+                    for(float i = 0.0003f; position != WalkWay.Last().ToVector3(); i *= 1.25f)
                     {
                         await new WaitForFixedUpdate();
 
@@ -263,7 +272,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             }  
             async Task Attacking()
             {
-                if(CurrentSkill.Equals(Skill.Empty())) return;
+                if(SkillIndex == 0) return;
                 WillRest = false;
                 //await Task.Delay(Random.Range(900, 2700));
 
@@ -287,7 +296,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 foreach(Attack attack in TakeDamageList.Combine()) 
                     AddEffect(attack.Effects);
                 
-                if(TakeDamageList.Combine().Sum(a=>a.Damage) > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 0.1f, MustChangeColor);
+                // if(TakeDamageList.Combine().Sum(a=>a.Damage) > 0) ChangeFigureColorWave(TakeDamageList.CombinedColor(), 0.1f, MustChangeColor);
             }       
             async Task Dead()
             { 
