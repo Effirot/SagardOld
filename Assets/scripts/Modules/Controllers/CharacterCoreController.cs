@@ -21,10 +21,7 @@ using UnityEditor;
     
         new public int SkillIndex { get { return base.SkillIndex; }  set { SetAttackTarget(CursorController.position); base.SkillIndex = value; } }
 
-        protected override void SetName() {
-            transform.parent.name = HaveID.GetName() + " - ControllableUnit";
-            name += $"({transform.parent.name})";
-        }
+        protected override string IdAddition { get => base.IdAddition + "Controllable"; } 
 
         bool CheckPosition(Checkers position, bool Other = true)
         {        
@@ -50,25 +47,21 @@ using UnityEditor;
     [Space(5)]
     [Header(" ==== Controller settings ==== ")]
     [SerializeField] Color Theme;
-
-    
-
     [field : SerializeField] override public Material[] MustChangeColor { get; set; }
 
     protected override void Start()
     {
         base.Start();
 
-
         MouseControlEvents.MouseController.AddListener((id, b) => 
         { 
-            if(id != MPlaner.Planer | !(IsAlive & CanControl)) { MouseTest = 0; return; }
+            if(id != MPlaner.Planer | !(IsAlive & CanWalk & CanAttack)) { MouseTest = 0; return; }
             MouseTest = b;
             switch(MouseTest)
             {
                 default: StandingIn(); return;
-                case 1: MovePlaningIn(); return;
-                case 2: AttackPlaningIn(); return;
+                case 1: if(CanWalk) MovePlaningIn(); return;
+                case 2: if(CanAttack) AttackPlaningIn(); return;
             }
         });
         CursorController.ChangePosOnMap.AddListener(async(a)=>
@@ -89,9 +82,8 @@ using UnityEditor;
         CursorController.MouseWheelTurn.AddListener((a)=>
         {
             if(this.MouseTest == 2) {
-                this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 10), 0, NowBalance.Skills.Count);
+                this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 12), 0, NowBalance.Skills.Count);
                 SetAttackTarget(CursorController.position);
-            
             }
         });
     }
@@ -121,5 +113,4 @@ using UnityEditor;
         //APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;
         //await AttackPlannerUpdate();
     }
-
 }

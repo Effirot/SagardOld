@@ -48,18 +48,20 @@ namespace SagardCL //Class library
         Addition,
     }
 
-    public enum Resist
+    public enum Resist 
     {
-        Man, Woman, BattleHelicopter,
+        Man, Woman, BattleHelicopter, // Gender
 
-        Persistent,
+        Persistent, // EffectBlocking
         Miasm,
         StrongImmunity,
         Bloodless,
         NonCombustible,
         HardenedSkin,
 
-        NoRezo, NoHeal, NoRepair, NoPure
+        YoursAmongStrangers, YoursAmongMph, // UI blocking
+
+        NoRezo, NoHeal, NoRepair, NoPure // Damage blocking
     }
 
     public enum Race

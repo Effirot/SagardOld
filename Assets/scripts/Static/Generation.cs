@@ -88,8 +88,9 @@ public abstract class Generation : MonoBehaviour
 }
 
 
-[System.Serializable] public struct Map
+[System.Serializable] public class Map
 {
+    public List<IObjectOnMap> ObjectRegister = new List<IObjectOnMap>();
     public static Map Current;
     public static int StepNumber = 0;
 
@@ -105,6 +106,11 @@ public abstract class Generation : MonoBehaviour
         MapCell[,] PlatformMatrix;
         MapEffect[,] EffectMatrix;
 
+        public List<Material> MaterialsList;
+    #endregion
+
+    #region // Controlling
+    
         public void ChangeHeigh(params Checkers[] poses) 
         {
             foreach(var pos in poses)
@@ -121,12 +127,24 @@ public abstract class Generation : MonoBehaviour
             colliderMesh();  
             visibleMesh();
         }
-        public void ChangeModifier(PlatformPreset Modifier)
+        public void ChangeModifier(PlatformPreset Modifier, params Checkers[] Where)
         {
-            
+            foreach (Checkers position in Where)
+            {
+                PlatformMatrix[position.x, position.z] = new MapCell(
+                    position.Up(PlatformMatrix[position.x, position.z].position.clearUp), 
+                    Modifier, 
+                    PlatformMatrix[position.x, position.z].DeformProtection, 
+                    PlatformMatrix[position.x, position.z].Let);
+            }
+            foreach(Material material in Modifier.MaterialVariants)
+            if(!MaterialsList.Contains(material))
+                MaterialsList.Add(material);  
+
+            colliderMesh();  
+            visibleMesh();
         }
 
-        public List<Material> MaterialsList;
     #endregion
     #region // Overloads
 
@@ -255,21 +273,22 @@ public abstract class Generation : MonoBehaviour
         {
             public Let Let;
 
-            Checkers position;
+            public Checkers position { get; private set; }
 
             public CombineInstance Mesh;
             public CombineInstance Collider;
             public Material Material;
             public float DeformProtection;
             
-            public MapCell(Checkers Position, PlatformPreset Mod, float DeformProtection = 0, Let let = null)
-            { Let = let; 
-            position = Position;
-            this.DeformProtection = DeformProtection;
+            public MapCell(Checkers Position, PlatformPreset Mod, float DeformProtection = 0, Let let = null){ 
+                Let = let; 
+                position = Position;
+                this.DeformProtection = DeformProtection;
 
-            Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, Random.Range(0, 3) * 90, 0), Vector3.one)); 
-            Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, 0, 0), Vector3.one));
-            Material = Mod.GetMaterial(); }
+                Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, Random.Range(0, 360), 0), Vector3.one)); 
+                Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, 0, 0), Vector3.one));
+                Material = Mod.GetMaterial(); 
+            }
             
             public void AddVerticalPosition(float y)
             {
@@ -285,8 +304,8 @@ public abstract class Generation : MonoBehaviour
                 result[x, z] = new MapCell(new Checkers(x, z, formulaUp(x, z, key)), formulaMod(x, z, key), formulaMod(x, z, key).DeformProtection);
 
                 foreach(Material material in formulaMod(x, z, key).MaterialVariants)
-                    if(!MaterialsList.Contains(material))
-                        MaterialsList.Add(material);   
+                if(!MaterialsList.Contains(material))
+                    MaterialsList.Add(material);  
             }
             
             return result;
@@ -352,19 +371,21 @@ public abstract class Generation : MonoBehaviour
     #endregion
 
     #region // Static Map Methods
+
         internal static List<StepAction> StepSystem = new List<StepAction>();
         public delegate Task StepAction(string StepStage);
 
         enum Step : int
         {
             BotLogic,
+
             Walking,
             Attacking,
             EffectUpdate,
+            LateWalking,
             LandscapeDeform,
             DamageMath,
             Dead,
-            LateWalking,
             Rest
         }
 

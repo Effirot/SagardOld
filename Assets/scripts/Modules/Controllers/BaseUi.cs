@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using Random = UnityEngine.Random;
 using UnityAsync;
+using UnityEngine.UI;
 
 public class BaseUi : MonoBehaviour
 {

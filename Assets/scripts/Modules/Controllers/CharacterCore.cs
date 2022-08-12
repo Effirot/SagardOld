@@ -66,9 +66,10 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
     
     public static readonly Checkers BufferLocation = new Checkers(3324, 5981);
     #region // =========================================================== All parameters =================================================================================================
-        protected virtual void SetName()
+        protected virtual string IdAddition{ get => ""; }
+        void SetName()
         {
-            transform.parent.name = HaveID.GetName();
+            transform.parent.name = HaveID.GetName() + " " + IdAddition;
             name += $"({transform.parent.name})";
         }
         protected virtual async void Start()
@@ -108,8 +109,6 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             public Attack.AttackCombiner TakeDamageList { get; set; } = Attack.AttackCombiner.Empty();
 
-        
-
             #region // ================================== inventory
             
                 [SerializeField] List<Item> _Inventory;
@@ -120,10 +119,12 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             #endregion
             #region // ================================== controlling
                 
-                [SerializeField] public bool CanControl = true;
+                [SerializeField] public bool CanWalk = true;
+                [SerializeField] public bool CanAttack = true;
 
                 public virtual Checkers AttackTarget { get; protected set; }
                 public virtual Checkers MoveTarget { get; protected set; }
+                public virtual Checkers LateMoveTarget { get; protected set; }
                 public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
 
                 public int SkillIndex { get; set; } = 0;
@@ -136,7 +137,6 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
                     AttackTarget = position;
                 }
-
                 public async void GenerateWayToTarget(Checkers position, params GameObject[] BlackList)
                 {
                     if(CurrentSkill.NoWalking & position == new Checkers(this.position)) {AttackTarget = this.position; SkillIndex = 0; }
@@ -148,7 +148,10 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                         WalkWay[WalkWay.Count - 1] = WalkWay[WalkWay.Count - 1].Up(0); 
                         MoveTarget = WalkWay.Last().Up(0); }
                     else {WalkWay.Clear(); MoveTarget = position; }
-                       
+                }
+                public void SetLateWalking(params Checkers[] positions)
+                {
+                    LateMoveTarget = new Checkers(positions.Sum(a=>a.x) / positions.Length, positions.Sum(a=>a.z) / positions.Length);
                 }
 
                 public void AddDamage(params Attack[] attacks) {
@@ -201,8 +204,6 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
         #region // =============================== Update methods
 
-
-
             public void LostHealth()
             {
                 if(!IsAlive) Destroy(transform.parent.gameObject);
@@ -240,7 +241,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             public bool WillRest { get; set; } = true;
 
-            Task FindStepStage(string id){ 
+            Task FindStepStage(string id){
                 MethodInfo Method = typeof(CharacterCore).GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
                 if(Method == null) return Empty();
@@ -249,16 +250,18 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 async Task Empty() { await Task.Delay(0); }
             }   
 
+            protected virtual async Task BotLogic() { await Task.Run(()=>{}); }
             async Task Walking()
             {
-                if(WalkWay.Count == 0) return;
+                LateMoveTarget = position;
+                if(WalkWay.Count == 0 | !CanWalk) return;
 
                 WillRest = false;
 
                 NowBalance.Stamina.GetTired(NowBalance.Stamina.WalkUseStamina);
-                await transport();
+                await Transport();
 
-                async Task transport() {
+                async Task Transport() {
                     int PointNum = 1;
                     for(float i = 0.0003f; position != WalkWay.Last().ToVector3(); i *= 1.25f)
                     {
@@ -272,7 +275,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             }  
             async Task Attacking()
             {
-                if(SkillIndex == 0) return;
+                if(SkillIndex == 0 | !CanAttack) return;
                 WillRest = false;
                 //await Task.Delay(Random.Range(900, 2700));
 
@@ -286,6 +289,22 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 
                 InvokeEffects("Update");
                 if(TakeDamageList.Checked) InvokeEffects("DamageReaction");
+            }
+            async Task LateWalking()
+            {
+                if(LateMoveTarget == new Checkers(position)) return;
+                
+                await LateTransport();
+
+                async Task LateTransport()
+                {
+                    while(position != LateMoveTarget.ToVector3())
+                    {
+                        position = Vector3.MoveTowards(position, LateMoveTarget.ToVector3(), 0.3f);
+                        await new WaitForFixedUpdate();
+                    }
+                    LateMoveTarget = position;
+                }
             }
             async Task DamageMath()
             {

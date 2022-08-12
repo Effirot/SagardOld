@@ -18,6 +18,8 @@ public abstract class CharacterCoreVisualized : CharacterCore
     [field: SerializeField] public AllInOne MPlaner { get; set; }
     [field: SerializeField] public AllInOne APlaner { get; set; }
 
+    protected override string IdAddition { get => base.IdAddition + " PlanVisible-"; } 
+
     public override Checkers AttackTarget { get{ return APlaner.position; } protected set { APlaner.position = value; } }
     public override Checkers MoveTarget { get { return MPlaner.position; } protected set { MPlaner.position = value; } }
 
