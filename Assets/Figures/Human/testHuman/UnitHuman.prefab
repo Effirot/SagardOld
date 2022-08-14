@@ -477,7 +477,8 @@ MonoBehaviour:
   <Effects>k__BackingField: []
   _Inventory: []
   InventorySize: 1
-  CanControl: 1
+  CanWalk: 1
+  CanAttack: 1
   <MPlaner>k__BackingField:
     Planer: {fileID: 8182480761862019246}
     Model: {fileID: 447574044884308314}
@@ -3185,7 +3186,7 @@ MeshCollider:
   serializedVersion: 4
   m_Convex: 1
   m_CookingOptions: 30
-  m_Mesh: {fileID: -3298800115395149385, guid: 9a2987d1167ec8d46a626199ac05bb1b, type: 3}
+  m_Mesh: {fileID: -3298800115395149385, guid: 93f405d34528ee941a0a392b38e33dd5, type: 3}
 --- !u!1 &8237278666967782527
 GameObject:
   m_ObjectHideFlags: 0

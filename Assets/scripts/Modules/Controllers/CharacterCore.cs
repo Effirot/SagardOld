@@ -253,7 +253,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             protected virtual async Task BotLogic() { await Task.Run(()=>{}); }
             async Task Walking()
             {
-                LateMoveTarget = position;
+                LateMoveTarget = MoveTarget;
                 if(WalkWay.Count == 0 | !CanWalk) return;
 
                 WillRest = false;
@@ -272,6 +272,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                     }
                     WalkWay.Clear();
                 }
+                LateMoveTarget = MoveTarget;
             }  
             async Task Attacking()
             {

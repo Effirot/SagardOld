@@ -1,11 +1,17 @@
 fileFormatVersion: 2
 guid: 73ba7d836694d1049a70766d5738dc27
 ModelImporter:
-  serializedVersion: 21202
+  serializedVersion: 21300
   internalIDToNameTable:
   - first:
       74: -41506448546864809
     second: HumanFigure|Action
+  - first:
+      74: -1018348484885194753
+    second: HumanFigure|Action.001
+  - first:
+      74: 5473473090849399341
+    second: HumanFigure|Action.002
   externalObjects:
   - first:
       type: UnityEngine:Material
@@ -107,6 +113,7 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 
