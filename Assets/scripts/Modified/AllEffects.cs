@@ -2,7 +2,7 @@ using UnityEngine;
 using SagardCL;
 using System.Collections.Generic;
 using System;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 
 /* 
     [Serializable]public class Bleed : IEffect

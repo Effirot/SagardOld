@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 using System.Threading.Tasks;
 using System;
 using Random = UnityEngine.Random;

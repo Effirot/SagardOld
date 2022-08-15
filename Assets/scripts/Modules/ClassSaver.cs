@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using System;
 using UnityEngine.Events;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 using System.Reflection;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,6 +58,7 @@ namespace SagardCL //Class library
         Bloodless,
         NonCombustible,
         HardenedSkin,
+        Armless, Legless,  
 
         YoursAmongStrangers, YoursAmongMph, // UI blocking
 
@@ -454,7 +455,7 @@ namespace SagardCL //Class library
             [SerializeReference, SubclassSelector] public IStaminaBar Stamina;
             [SerializeReference, SubclassSelector] public ISanityBar Sanity;
 
-            [SerializeReference, SubclassSelector] public List<ICustomBar> AdditionState;
+            [SerializeReference, SubclassSelector] public Dictionary<string, ICustomBar> AdditionState;
             public List<Type> Resists;
             [Space]
             public List<Skill> Skills;
@@ -499,12 +500,11 @@ namespace SagardCL //Class library
                     Result.Resists = Current.Resists.Distinct().ToList(); 
                     Result.Resists.Sort(); }
 
-                if(Incoming.AdditionState is not null) foreach(ICustomBar otherState in Incoming.AdditionState) {
-                    if(Result.AdditionState.Contains(otherState)) 
-                        Result.AdditionState.Find(a=>a==otherState).AddDuplicate(otherState);
-
+                if(Incoming.AdditionState is not null) foreach(var IncomingState in Incoming.AdditionState) {
+                    if(Result.AdditionState.TryGetValue(IncomingState.Key, out ICustomBar Checking)) 
+                        Checking.AddDuplicate(IncomingState.Value);
                     else
-                        Result.AdditionState.Add(otherState); }
+                        Result.AdditionState.Add(IncomingState.Key, IncomingState.Value); }
 
                 if(Incoming.Skills is not null) 
                     Result.Skills.AddRange(Incoming.Skills);
@@ -522,7 +522,7 @@ namespace SagardCL //Class library
                     Stamina = new Stamina() { Max = 0 },
                     Sanity = new Sanity() { Max = 0 },
 
-                    AdditionState = new List<ICustomBar>(),
+                    AdditionState = new Dictionary<string, ICustomBar>(),
                     Resists = new List<Type>(),
                     Skills = new List<Skill>() { },
 
@@ -550,7 +550,7 @@ namespace SagardCL //Class library
             [SerializeReference, SubclassSelector]public ISanityBar Sanity;
             public bool ReplaceSanity;
 
-            [SerializeReference, SubclassSelector]public List<ICustomBar> AdditionState;
+            [SerializeReference, SubclassSelector]public Dictionary<string, ICustomBar> AdditionState;
             public List<Type> Resists;
             [Space]
             public List<Skill> Skills;
@@ -564,52 +564,51 @@ namespace SagardCL //Class library
             [field: SerializeField] public int DamagePure { get; set; }
             [field: SerializeField] public int DamageRange { get; set; }
 
-            public static ReBalancer operator +(ReBalancer left, ReBalancer right)
+            public static ReBalancer operator +(ReBalancer left, ReBalancer Incoming)
             {
-                if(right.ReplaceHealth) {
+                if(Incoming.ReplaceHealth) {
                     left.ReplaceHealth = true;
                     
-                    left.Health = right.Health + left.Health;
+                    left.Health = Incoming.Health + left.Health;
                 }
-                else left.Health += right.Health;
-                if(right.ReplaceSanity) {
+                else left.Health += Incoming.Health;
+                if(Incoming.ReplaceSanity) {
                     left.ReplaceSanity = true;
 
-                    left.Sanity = right.Sanity + left.Sanity;
+                    left.Sanity = Incoming.Sanity + left.Sanity;
                 }
-                else left.Sanity += right.Sanity;
-                if(right.ReplaceStamina) {
+                else left.Sanity += Incoming.Sanity;
+                if(Incoming.ReplaceStamina) {
                     left.ReplaceStamina = true;
                     
-                    left.Stamina = right.Stamina + left.Stamina;
+                    left.Stamina = Incoming.Stamina + left.Stamina;
                 }
-                else left.Stamina += right.Stamina;
+                else left.Stamina += Incoming.Stamina;
 
-                left.Visible += right.Visible;
-                left.WalkDistance += right.WalkDistance;
+                left.Visible += Incoming.Visible;
+                left.WalkDistance += Incoming.WalkDistance;
 
-                left.Strength += right.Strength;
-                left.Accuracy += right.Accuracy;
-                left.RezoOverclocking += right.RezoOverclocking;
-                left.Healing += right.Healing;
-                left.Repairing += right.Repairing;
-                left.DamagePure += right.DamagePure;
-                left.DamageRange += right.DamageRange;
+                left.Strength += Incoming.Strength;
+                left.Accuracy += Incoming.Accuracy;
+                left.RezoOverclocking += Incoming.RezoOverclocking;
+                left.Healing += Incoming.Healing;
+                left.Repairing += Incoming.Repairing;
+                left.DamagePure += Incoming.DamagePure;
+                left.DamageRange += Incoming.DamageRange;
 
-                if(right.Resists is not null) { 
-                    left.Resists.AddRange(right.Resists); 
+                if(Incoming.Resists is not null) { 
+                    left.Resists.AddRange(Incoming.Resists); 
                     left.Resists = left.Resists.Distinct().ToList(); 
                     left.Resists.Sort(); }
 
-                if(right.AdditionState is not null) foreach(ICustomBar otherState in right.AdditionState) {
-                    if(left.AdditionState.Contains(otherState)) 
-                        left.AdditionState.Find(a=>a==otherState).AddDuplicate(otherState);
-
+                if(Incoming.AdditionState is not null) foreach(var otherState in Incoming.AdditionState) {
+                    if(left.AdditionState.TryGetValue(otherState.Key, out ICustomBar Checking)) 
+                        Checking.AddDuplicate(otherState.Value);
                     else
-                        left.AdditionState.Add(otherState); }
+                        left.AdditionState.Add(otherState.Key, otherState.Value); }
 
-                if(right.Skills is not null) 
-                    left.Skills.AddRange(right.Skills);
+                if(Incoming.Skills is not null) 
+                    left.Skills.AddRange(Incoming.Skills);
 
                 return left;
             }
@@ -629,7 +628,7 @@ namespace SagardCL //Class library
                     Sanity = new Sanity() { Max = 0 },
                     ReplaceSanity = false,
 
-                    AdditionState = new List<ICustomBar>(),
+                    AdditionState = new Dictionary<string, ICustomBar>(),
                     Resists = new List<Type>(),
                     Skills = new List<Skill>() { },
 
@@ -647,7 +646,7 @@ namespace SagardCL //Class library
 
     #endregion
     
-    namespace ParameterManipulate
+    namespace MapObjectInfo
     {        
         #region // State management
             
@@ -757,14 +756,14 @@ namespace SagardCL //Class library
                 int RestEffectivity{ get; set; }
                 int WalkUseStamina{ get; set; }
 
-                public static IStaminaBar operator +(IStaminaBar left, IStaminaBar right)
+                public static IStaminaBar operator +(IStaminaBar left, IStaminaBar Incoming)
                 {
                     IStaminaBar result = left.Clone() as IStaminaBar;
 
                     result.Value = left.Value;
-                    result.Max = left.Max + right.Max;
-                    result.RestEffectivity = left.RestEffectivity + right.RestEffectivity;
-                    result.WalkUseStamina = left.WalkUseStamina + right.WalkUseStamina;
+                    result.Max = left.Max + Incoming.Max;
+                    result.RestEffectivity = left.RestEffectivity + Incoming.RestEffectivity;
+                    result.WalkUseStamina = left.WalkUseStamina + Incoming.WalkUseStamina;
 
                     return result;
                 }
@@ -780,13 +779,13 @@ namespace SagardCL //Class library
                         Mathf.Clamp(Value + value, 0, Max);
                 }
 
-                public static ISanityBar operator +(ISanityBar left, ISanityBar right)
+                public static ISanityBar operator +(ISanityBar left, ISanityBar Incoming)
                 {
                     ISanityBar result = left.Clone() as ISanityBar;
 
                     result.Value = left.Value;
-                    result.Max = left.Max + right.Max;
-                    result.SanityShield = left.SanityShield + right.SanityShield;
+                    result.Max = left.Max + Incoming.Max;
+                    result.SanityShield = left.SanityShield + Incoming.SanityShield;
 
                     return result;
                 }
@@ -814,6 +813,8 @@ namespace SagardCL //Class library
             
             public interface IObjectOnMap
             {
+                Checkers nowPosition { get; }
+
                 Balancer BaseBalance { get; }
                 Balancer NowBalance { get; }
 
@@ -833,8 +834,6 @@ namespace SagardCL //Class library
                 public void AddDamage(params Attack[] attack);
                 public void AddSanity(int damage);
                 public void AddStamina(int damage);
-
-                public void AddState(params ICustomBar[] state);
 
                 public void AddEffect(params Effect[] Effect);
                 public void RemoveEffect(params Effect[] Effect);
@@ -879,5 +878,50 @@ namespace SagardCL //Class library
             
             interface LandscapeDeform : MapEffect { bool DestroyWhenZero { get; } }
         #endregion
+    }
+
+    public static class UsefulExtern
+    {
+        public static Checkers ToCheckers(this Vector3 position, float Up = 0)
+        {
+            return new Checkers(position.x, position.y, Up);
+        }
+
+        public static T MinBy<T>(this IEnumerable<T> obj, Func<T, float> searchBy)
+        {
+            T result = default(T);
+            foreach(T Object in obj){
+                if(searchBy(Object) < searchBy(result))
+                    result = Object;
+            }
+            return result;
+        }
+        public static T MinBy<T>(this IEnumerable<T> obj, Func<T, double> searchBy)
+        {
+            T result = default(T);
+            foreach(T Object in obj){
+                if(searchBy(Object) < searchBy(result))
+                    result = Object;
+            }
+            return result;
+        }
+        public static T MaxBy<T>(this IEnumerable<T> obj, Func<T, float> searchBy)
+        {
+            T result = default(T);
+            foreach(T Object in obj){
+                if(searchBy(Object) > searchBy(result))
+                    result = Object;
+            }
+            return result;
+        }
+        public static T MaxBy<T>(this IEnumerable<T> obj, Func<T, double> searchBy)
+        {
+            T result = default(T);
+            foreach(T Object in obj){
+                if(searchBy(Object) > searchBy(result))
+                    result = Object;
+            }
+            return result;
+        }
     }
 }

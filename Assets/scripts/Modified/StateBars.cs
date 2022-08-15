@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using UnityEngine;
 using SagardCL;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 using System;
 using UnityEngine.Events;
 

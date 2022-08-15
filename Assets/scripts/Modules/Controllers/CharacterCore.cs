@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
@@ -20,9 +20,11 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
         public void ChangeFigureColor(Color color, float speed, params Material[] material)
         { 
             if(material == null){
-                List<Material> materials = new List<Material>();
-                transform.parent.GetComponentsInChildren<MeshRenderer>().ToList().ForEach(a=>materials.AddRange(a.materials));
-                material = materials.ToArray();}
+                List<Material> check = new List<Material>();
+                foreach(MeshRenderer renderer in MustChangeColor)
+                    check.AddRange(renderer.materials);
+                
+                material = check.ToArray();}
 
             LastChangeColor.ForEach(a=>StopCoroutine(a));
             LastChangeColor.Clear();
@@ -32,9 +34,11 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
         public void ChangeFigureColorWave(Color color, float speed, Material[] material = null)
         { 
             if(material == null){
-                List<Material> materials = new List<Material>();
-                transform.parent.GetComponentsInChildren<MeshRenderer>().ToList().ForEach(a=>materials.AddRange(a.materials));
-                material = materials.ToArray();}
+                List<Material> check = new List<Material>();
+                foreach(MeshRenderer renderer in MustChangeColor)
+                    check.AddRange(renderer.materials);
+                
+                material = check.ToArray();}
             
             LastChangeColor.ForEach(a=>StopCoroutine(a));
             LastChangeColor.Clear();
@@ -60,7 +64,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
     
         List<IEnumerator> LastChangeColor; 
 
-        public abstract Material[] MustChangeColor { get; set; }
+        public abstract MeshRenderer[] MustChangeColor { get; }
 
     #endregion
     
@@ -118,6 +122,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             #endregion
             #region // ================================== controlling
+                public Checkers nowPosition { get => this.position.ToCheckers(); }
                 
                 [SerializeField] public bool CanWalk = true;
                 [SerializeField] public bool CanAttack = true;
@@ -127,26 +132,30 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 public virtual Checkers LateMoveTarget { get; protected set; }
                 public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
 
-                public int SkillIndex { get; set; } = 0;
+                private int SkillIndex { get; set; } = 0;
                 public Skill CurrentSkill { get { return SkillIndex == 0? Skill.Empty() : NowBalance.Skills[SkillIndex - 1]; } } 
 
-                public virtual void SetAttackTarget(Checkers position)
+                protected virtual GameObject[] WalkBlackList { get => new GameObject[] { gameObject }; }
+
+                public void SetAttackTarget(Checkers position, int SkillIndex)
                 {
                     if(CurrentSkill.NoWalking) {
-                        GenerateWayToTarget(this.position); }
+                        SetWayToTarget(this.position); }
 
-                    AttackTarget = position;
+                    if(CanAttack) { this.SkillIndex = SkillIndex; AttackTarget = position; }
+                    else { this.SkillIndex = 0; AttackTarget = this.position;  }
                 }
-                public async void GenerateWayToTarget(Checkers position, params GameObject[] BlackList)
+                public async void SetWayToTarget(Checkers position)
                 {
                     if(CurrentSkill.NoWalking & position == new Checkers(this.position)) {AttackTarget = this.position; SkillIndex = 0; }
                     
                     if(position != new Checkers(this.position)) { 
-                        WalkWay = await Checkers.PatchWay.WayTo(new Checkers(this.position), position, NowBalance.WalkDistance, 0.2f, BlackList); 
+                        WalkWay = await Checkers.PatchWay.WayTo(new Checkers(this.position), position, NowBalance.WalkDistance, 0.2f, WalkBlackList); 
                         
                         WalkWay[0] = WalkWay[0].Up(0); 
                         WalkWay[WalkWay.Count - 1] = WalkWay[WalkWay.Count - 1].Up(0); 
                         MoveTarget = WalkWay.Last().Up(0); }
+
                     else {WalkWay.Clear(); MoveTarget = position; }
                 }
                 public void SetLateWalking(params Checkers[] positions)
@@ -196,8 +205,6 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                     }
                     AutoRemoveEffect();
                 }
-
-                public void AddState(params ICustomBar[] state) { }
 
             #endregion
         #endregion
@@ -340,7 +347,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 UpdateStateBar(NowBalance.Stamina);
                 UpdateStateBar(NowBalance.Sanity);
                 if(NowBalance.AdditionState is not null && NowBalance.AdditionState.Count > 0) 
-                    foreach(ICustomBar otherState in NowBalance.AdditionState) UpdateStateBar(otherState);
+                    foreach(var otherState in NowBalance.AdditionState) UpdateStateBar(otherState.Value);
 
                 Effects.RemoveAll(a=>a is OneUse);
 

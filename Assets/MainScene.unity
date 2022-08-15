@@ -5786,27 +5786,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 622522898}
   m_CullTransparentMesh: 1
---- !u!1 &726519167 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7407837266454244160, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
-  m_PrefabInstance: {fileID: 1713041573}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &726519168 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7407837266454244161, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
   m_PrefabInstance: {fileID: 1713041573}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &726519169 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -5721805414729699740, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
-  m_PrefabInstance: {fileID: 1713041573}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 726519167}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6493422c4ad15f34496ad11f2aa73462, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &732739995
 GameObject:
   m_ObjectHideFlags: 0
@@ -5819,7 +5803,6 @@ GameObject:
   - component: {fileID: 732739998}
   - component: {fileID: 732739997}
   - component: {fileID: 732739996}
-  - component: {fileID: 732740000}
   m_Layer: 5
   m_Name: GameUI
   m_TagString: Untagged
@@ -5912,25 +5895,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &732740000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 732739995}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd21884724c36a140988303f8b0dde9a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  UI: {fileID: 726519167}
-  StateBarPreset: {fileID: 6867865859717448150, guid: a7ebe7b71ef3da048b681f5f99214df5, type: 3}
-  SkillPreset: {fileID: 6546885335653142607, guid: 1f67af6d47161fe44b2f16156e36e6e6, type: 3}
-  InventorySlot: {fileID: 6546885335653142607, guid: 6472ac7c4f32a1c439882fd0f7cd868a, type: 3}
-  ArtifacerInventorySlot: {fileID: 6546885335653142607, guid: 4d394216b2bc84245b5936edd316bcd2, type: 3}
-  ItemPreset: {fileID: 0}
-  MoveOnCanvas: {fileID: 726519169}
 --- !u!4 &776887839 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3838525804336366737, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}

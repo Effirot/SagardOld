@@ -5,6 +5,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using SagardCL;
 using System;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 
 

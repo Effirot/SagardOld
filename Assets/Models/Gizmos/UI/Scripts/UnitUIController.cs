@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SagardCL;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using UnityEngine.Events;

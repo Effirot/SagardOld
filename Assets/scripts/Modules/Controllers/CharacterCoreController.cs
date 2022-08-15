@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using SagardCL;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 using System.Threading.Tasks;
 using System;
 using Random = UnityEngine.Random;
@@ -18,8 +18,7 @@ using UnityEditor;
 {
 
     #region // ============================================================ Useful Stuff ==================================================================================================
-    
-        new public int SkillIndex { get { return base.SkillIndex; }  set { SetAttackTarget(CursorController.position); base.SkillIndex = value; } }
+
 
         protected override string IdAddition { get => base.IdAddition + "Controllable"; } 
 
@@ -47,7 +46,7 @@ using UnityEditor;
     [Space(5)]
     [Header(" ==== Controller settings ==== ")]
     [SerializeField] Color Theme;
-    [field : SerializeField] override public Material[] MustChangeColor { get; set; }
+    override public MeshRenderer[] MustChangeColor { get => transform.parent.GetComponentsInChildren<MeshRenderer>(); }
 
     protected override void Start()
     {
@@ -67,11 +66,11 @@ using UnityEditor;
         CursorController.ChangePosOnMap.AddListener(async(a)=>
         { 
             if(MouseTest == 2) {
-                SetAttackTarget(a); }
+                SetAttackTargetVisualized(a, SkillIndex); }
 
             if(MouseTest == 1) { 
                 await Task.Delay(2);
-                GenerateWayToTarget(a, MPlaner.Planer); 
+                SetWayToTarget(a, MPlaner.Planer); 
                 Generation.DrawAttack(await CurrentSkill.GetAttacks(MoveTarget, AttackTarget, this), this);
 
                 MPlaner.LineRenderer.positionCount = WalkWay.Count;
@@ -82,8 +81,9 @@ using UnityEditor;
         CursorController.MouseWheelTurn.AddListener((a)=>
         {
             if(this.MouseTest == 2) {
+                
                 this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 12), 0, NowBalance.Skills.Count);
-                SetAttackTarget(CursorController.position);
+                SetAttackTargetVisualized(CursorController.position, SkillIndex);
             }
         });
     }
@@ -97,7 +97,7 @@ using UnityEditor;
         UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
         
         Map.MapUpdate.Invoke();
-        UpdatePos();
+        MapUpdate();
 
         MPlaner.Collider.enabled = true;
     }
@@ -106,8 +106,8 @@ using UnityEditor;
     }
     void AttackPlaningIn()
     {
-        
         SkillIndex = 0;
+        SetAttackTargetVisualized(CursorController.position, SkillIndex);
         UnitUIController.UiEvent.Invoke("OpenForPlayer", MPlaner.Planer, this);
 
         //APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;

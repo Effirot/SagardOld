@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 using System;
 using System.Linq;
 using SagardCL;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 
 public class DebugConsole : MonoBehaviour
 {
@@ -68,16 +68,14 @@ public class DebugConsole : MonoBehaviour
                 // core.Corpse = !core.Corpse;
                 break;
             case ("-setMovePlan"):
-                core.SetAttackTarget(new Checkers(splitt.coord));
-                core.GenerateWayToTarget(new Checkers(splitt.coord));
+                core.SetWayToTarget(new Checkers(splitt.coord));
                 break;
             case ("-setAttackPlan"):
-                core.SkillIndex = splitt.skillNumber;
-                core.SetAttackTarget(new Checkers(splitt.coord));
+                ;
+                core.SetAttackTarget(new Checkers(splitt.coord), splitt.skillNumber);
                 break;
             case ("-teleportTo"):
                 core.transform.position = new Checkers(splitt.coord);
-                core.SetAttackTarget(new Checkers(splitt.coord));
                 break;
             case ("-showAllParameters"):
                 break;

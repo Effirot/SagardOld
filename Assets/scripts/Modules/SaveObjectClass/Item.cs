@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using SagardCL;
 using System;
-using SagardCL.ParameterManipulate;
+using SagardCL.MapObjectInfo;
 
 [CreateAssetMenu(fileName = "Item", menuName = "SagardCL objects/Standard Item", order = 51)]
 public class Item : Descript
