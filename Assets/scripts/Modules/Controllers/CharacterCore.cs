@@ -71,16 +71,17 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
     public static readonly Checkers BufferLocation = new Checkers(3324, 5981);
     #region // =========================================================== All parameters =================================================================================================
         protected virtual string IdAddition{ get => ""; }
-        void SetName()
+        void SetRegister()
         {
             transform.parent.name = HaveID.GetName() + " " + IdAddition;
             name += $"({transform.parent.name})";
+
+            Map.Current.ObjectRegister.Add(this);
+            Debug.Log($"{gameObject.name} : {nowPosition.ToString()}");
         }
         protected virtual async void Start()
         {
             TakeDamageList.Clear();
-
-            SetName();
 
             Map.StepSystem.Add(FindStepStage);
             Map.AttackTransporter.AddListener((a) => 
@@ -96,6 +97,8 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             position = new Checkers(position);
             MoveTarget = new Checkers(position);
             AttackTarget = new Checkers(position);
+
+            SetRegister();
         }
 
         #region // =============================== Parameters
@@ -147,16 +150,16 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 }
                 public async void SetWayToTarget(Checkers position)
                 {
-                    if(CurrentSkill.NoWalking & position == new Checkers(this.position)) {AttackTarget = this.position; SkillIndex = 0; }
+                    if(CurrentSkill.NoWalking) {AttackTarget = this.position; SkillIndex = 0; }
                     
-                    if(position != new Checkers(this.position)) { 
+                    if(position != this.position.ToCheckers() & CanWalk) { 
                         WalkWay = await Checkers.PatchWay.WayTo(new Checkers(this.position), position, NowBalance.WalkDistance, 0.2f, WalkBlackList); 
                         
                         WalkWay[0] = WalkWay[0].Up(0); 
                         WalkWay[WalkWay.Count - 1] = WalkWay[WalkWay.Count - 1].Up(0); 
                         MoveTarget = WalkWay.Last().Up(0); }
 
-                    else {WalkWay.Clear(); MoveTarget = position; }
+                    else {WalkWay.Clear(); MoveTarget = this.position.ToCheckers(); }
                 }
                 public void SetLateWalking(params Checkers[] positions)
                 {
@@ -213,17 +216,16 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             public void LostHealth()
             {
-                if(!IsAlive) Destroy(transform.parent.gameObject);
-                else { 
-                    IsAlive = false;
-                    
-                    Effects.RemoveAll(a=>a is OneUse | !a.Workable());
-                    Effects.Add(Decomposition.Base(this));
+                IsAlive = false;
+                
+                Effects.RemoveAll(a=>a is OneUse | !a.Workable());
+                Effects.Add(Decomposition.Base(this));
 
-                    ChangeFigureColor(new Color(0.5f, 0.5f, 0.5f), 0.2f);
+                // ChangeFigureColor(new Color(0.5f, 0.5f, 0.5f), 0.2f);
 
-                    this.BaseBalance.Health.Value = this.BaseBalance.Health.Max + this.BaseBalance.Health.Value;
-                }
+                this.BaseBalance.Health.Value = this.BaseBalance.Health.Max + this.BaseBalance.Health.Value;
+                
+                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Map.Current.ObjectRegister.Remove(this); Destroy(transform.parent.gameObject); }
             }
             void AfterInventoryUpdate()
             {

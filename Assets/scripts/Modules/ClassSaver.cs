@@ -884,7 +884,7 @@ namespace SagardCL //Class library
     {
         public static Checkers ToCheckers(this Vector3 position, float Up = 0)
         {
-            return new Checkers(position.x, position.y, Up);
+            return new Checkers(position.x, position.z, Up);
         }
 
         public static T MinBy<T>(this IEnumerable<T> obj, Func<T, float> searchBy)

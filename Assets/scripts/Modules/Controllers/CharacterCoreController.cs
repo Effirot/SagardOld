@@ -70,7 +70,7 @@ using UnityEditor;
 
             if(MouseTest == 1) { 
                 await Task.Delay(2);
-                SetWayToTarget(a, MPlaner.Planer); 
+                SetWayToTarget(a); 
                 Generation.DrawAttack(await CurrentSkill.GetAttacks(MoveTarget, AttackTarget, this), this);
 
                 MPlaner.LineRenderer.positionCount = WalkWay.Count;

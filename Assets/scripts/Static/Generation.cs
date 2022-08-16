@@ -397,7 +397,7 @@ public abstract class Generation : MonoBehaviour
             Debug.ClearDeveloperConsole();
             
             for(int i = 0; i < Enum.GetNames(typeof(Step)).Length; i++){
-                Debug.Log($"Now step: {(Step)i}");
+                //Debug.Log($"Now step: {(Step)i}");
                 MapUpdate.Invoke();
                 List<Task> task = new List<Task>();
 
