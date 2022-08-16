@@ -77,7 +77,6 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             name += $"({transform.parent.name})";
 
             Map.Current.ObjectRegister.Add(this);
-            Debug.Log($"{gameObject.name} : {nowPosition.ToString()}");
         }
         protected virtual async void Start()
         {
@@ -125,6 +124,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             #endregion
             #region // ================================== controlling
+
                 public Checkers nowPosition { get => this.position.ToCheckers(); }
                 
                 [SerializeField] public bool CanWalk = true;
@@ -283,7 +283,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 }
                 LateMoveTarget = MoveTarget;
             }  
-            async Task Attacking()
+            async Task Action()
             {
                 if(SkillIndex == 0 | !CanAttack) return;
                 WillRest = false;

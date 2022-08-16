@@ -20,9 +20,9 @@ public abstract class CharacterCoreVisualized : CharacterCore
     [field: SerializeField] public AllInOne MPlaner { get; set; }
     [field: SerializeField] public AllInOne APlaner { get; set; }
     protected override GameObject[] WalkBlackList { get { 
-        List<GameObject> list = new List<GameObject>() { MPlaner.Planer, APlaner.Planer };
-        list.AddRange(base.WalkBlackList); 
-        return list.ToArray();
+            List<GameObject> list = new List<GameObject>() { MPlaner.Planer, APlaner.Planer };
+            list.AddRange(base.WalkBlackList); 
+            return list.ToArray();
         }
     } 
 

@@ -13,6 +13,7 @@ using UnityAsync;
 
 namespace SagardCL //Class library
 {
+    public delegate T Argument<out T>(object value);
     public enum DamageType
     {
         Melee,
@@ -392,7 +393,7 @@ namespace SagardCL //Class library
 
                     while(UnChecked.Count > 0 & DistanceWalking > 0){
                         PatchNode node = UnChecked[0];
-                        UnChecked.ForEach(x => { if(Checkers.Distance(x.position, to) < Checkers.Distance(node.position, to)) node = x; } );
+                        UnChecked.ForEach(x => { if(Checkers.Distance(x.position, to, CheckersDistMode.Height) < Checkers.Distance(node.position, to, CheckersDistMode.Height)) node = x; } );
 
                         UnChecked.Remove(node);
                         Checked.Add(node);
@@ -472,17 +473,18 @@ namespace SagardCL //Class library
             public static Balancer operator +(Balancer Current, ReBalancer Incoming)
             {
                 Balancer Result = Current.MemberwiseClone() as Balancer;
-                Incoming.Health.Value = Current.Health.Value + (Current.Health.Max - Incoming.Health.Max);
+                
                 if(Incoming.ReplaceHealth) Result.Health = Incoming.Health + Current.Health;
                 else Result.Health = Current.Health + Incoming.Health;
+                Result.Health.Value = Current.Health.Value + Incoming.Health.Max;
 
-                Incoming.Sanity.Value = Current.Sanity.Value;
                 if(Incoming.ReplaceSanity) Result.Sanity = Incoming.Sanity + Current.Sanity;
                 else Result.Sanity = Current.Sanity + Incoming.Sanity;
+                Result.Sanity.Value = Current.Sanity.Value + Incoming.Sanity.Max;
 
-                Incoming.Stamina.Value = Current.Stamina.Value;
                 if(Incoming.ReplaceStamina) Result.Stamina = Incoming.Stamina + Current.Stamina;
                 else Result.Stamina = Current.Stamina + Incoming.Stamina;
+                Result.Stamina.Value = Current.Stamina.Value + Incoming.Stamina.Max;
 
                 Result.Visible = Current.Visible + Incoming.Visible;
                 Result.WalkDistance = Current.WalkDistance + Incoming.WalkDistance;
@@ -839,7 +841,13 @@ namespace SagardCL //Class library
                 public void RemoveEffect(params Effect[] Effect);
                 public void RemoveEffect(Predicate<Effect> predicate);
             }
-            
+            public interface ICharacterOnMap : HaveID, IObjectOnMap
+            {
+                Race Race { get; }
+
+                List<string> Tag { get; }
+            }
+
             public interface HaveID : IObjectOnMap
             {
                 private static int LastID = 1;

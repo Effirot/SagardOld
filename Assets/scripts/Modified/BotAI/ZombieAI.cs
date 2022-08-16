@@ -5,6 +5,7 @@ using System.Linq;
 using SagardCL;
 using SagardCL.MapObjectInfo;
 using System.Threading.Tasks;
+using Random = UnityEngine.Random;
 
 public class ZombieAI : CharacterCore
 {
@@ -17,15 +18,15 @@ public class ZombieAI : CharacterCore
     protected override async Task BotLogic()
     {
         await Task.Delay(0);
-        Checkers Target = position.ToCheckers();
+        Checkers Target = Map.Current.ObjectRegister[0].nowPosition;
 
         foreach(IObjectOnMap obj in Map.Current.ObjectRegister)
         {
             //if(Checkers.Distance(obj.nowPosition, nowPosition) > Checkers.Distance(obj.nowPosition, Target)  & Checkers.Distance(obj.nowPosition, nowPosition) < ViewDistance)
-            if(obj == null) Map.Current.ObjectRegister.Remove(obj);
-            Target = obj.nowPosition;
+            if(obj.nowPosition == nowPosition) continue;
+            if(Checkers.Distance(obj.nowPosition, base.nowPosition) < Checkers.Distance(Target, base.nowPosition))
+                Target = obj.nowPosition;
         }
-        Debug.Log($"Walk target {Target.ToString()}");
 
         
         SetWayToTarget(Target);

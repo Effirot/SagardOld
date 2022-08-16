@@ -15,33 +15,6 @@ public abstract class Generation : MonoBehaviour
 
     private static GameObject[,] AttackVisualsRealizers;
     private static List<Attack>[,] AllAttackZoneArchive;
-    protected void LetsGenerate(Map map){
-        ClearMap();
-
-        AttackVisualsRealizers = new GameObject[map.XScale, map.ZScale];
-        AllAttackZoneArchive = new List<Attack>[map.XScale, map.ZScale];
-        
-        for(int x = 0; x < map.XScale - 1; x++)
-        for(int z = 0; z < map.ZScale - 1; z++)
-        {
-            AllAttackZoneArchive[x, z] = new List<Attack>();
-
-            GameObject AttackGizmo = Instantiate<GameObject>(AttackVisual, new Checkers(x, z, 0.04f), AttackVisual.transform.rotation, transform);
-            AttackVisualsRealizers[x, z] = AttackGizmo;
-            AttackGizmo.name = $"{x}:{z}";
-            
-            AttackGizmo.SetActive(false);
-
-            AttackGizmo.transform.position = new Checkers(x, z, 0.04f);
-    
-        }
-    }
-    private void ClearMap(){
-        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Map"))
-        {   
-            Destroy(obj);
-        }
-    }
 
     public static void DrawAttack(List<Attack> AttackZone, CharacterCore sender)
     {
@@ -80,9 +53,9 @@ public abstract class Generation : MonoBehaviour
         }
     }
 
-    public void StartStep()
+    public void StartStep(int repeats = 0)
     {
-        Map.CompleteModeSwitch();
+        Map.StartStepTasks(repeats);
     }
     
 }
@@ -94,19 +67,21 @@ public abstract class Generation : MonoBehaviour
     public static Map Current;
     public static int StepNumber = 0;
 
+    public static GameObject AttackVisualizer;
+
     #region // Saving
+
+        uint key;
+
         public Mesh MapMesh;
         public Mesh MapCollider;
+        public List<Material> MaterialsList;
 
         public int XScale { get; private set; }
         public int ZScale { get; private set; }
 
-        uint key;
-
         MapCell[,] PlatformMatrix;
-        MapEffect[,] EffectMatrix;
 
-        public List<Material> MaterialsList;
     #endregion
 
     #region // Controlling
@@ -134,8 +109,7 @@ public abstract class Generation : MonoBehaviour
                 PlatformMatrix[position.x, position.z] = new MapCell(
                     position.Up(PlatformMatrix[position.x, position.z].position.clearUp), 
                     Modifier, 
-                    PlatformMatrix[position.x, position.z].DeformProtection, 
-                    PlatformMatrix[position.x, position.z].Let);
+                    PlatformMatrix[position.x, position.z].DeformProtection);
             }
             foreach(Material material in Modifier.MaterialVariants)
             if(!MaterialsList.Contains(material))
@@ -148,11 +122,10 @@ public abstract class Generation : MonoBehaviour
     #endregion
     #region // Overloads
 
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, Vector2 Scale)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, uint Key, Vector2 Scale)
         {
             XScale = (int)Scale.x; ZScale = (int)Scale.y; key = Key; 
             PlatformMatrix = new MapCell[XScale, ZScale];
-            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
 
@@ -166,12 +139,11 @@ public abstract class Generation : MonoBehaviour
 
             Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key, int PlayerNum)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, uint Key, int PlayerNum)
         {
             key = Key;
             XScale = PlayerNum * 9 + (((int)key / 23)%7); ZScale = PlayerNum * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
-            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
 
@@ -185,13 +157,12 @@ public abstract class Generation : MonoBehaviour
 
             Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int PlayerNum)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, int PlayerNum)
         {
             key = (uint)Random.Range(0, 99999999);
             XScale = PlayerNum * 15 + (((int)key / 23)%7); 
             ZScale = PlayerNum * 15 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
-            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
             
@@ -205,12 +176,11 @@ public abstract class Generation : MonoBehaviour
 
             Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, Vector2 Scale)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, Vector2 Scale)
         {
             key = (uint)Random.Range(0, 99999999);
             XScale = (int)Scale.x; ZScale = (int)Scale.y; 
             PlatformMatrix = new MapCell[XScale, ZScale];
-            EffectMatrix = new MapEffect[XScale, ZScale];
             
             MaterialsList = new List<Material>();
             
@@ -224,12 +194,11 @@ public abstract class Generation : MonoBehaviour
         
             Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, uint Key)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, uint Key)
         {
             key = Key;
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
-            EffectMatrix = new MapEffect[XScale, ZScale];
 
             MaterialsList = new List<Material>();
             
@@ -243,12 +212,11 @@ public abstract class Generation : MonoBehaviour
 
             Current = this;
         }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet)
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor)
         {
             key = key = (uint)Random.Range(0, 99999999);
             XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
             PlatformMatrix = new MapCell[XScale, ZScale];
-            EffectMatrix = new MapEffect[XScale, ZScale];
 
             MaterialsList = new List<Material>();
             
@@ -265,34 +233,43 @@ public abstract class Generation : MonoBehaviour
         
     #endregion
     #region // Map Cell information
+        
         public delegate float FormulaUp(int x, int y, uint key);
         public delegate PlatformPreset FormulaMod(int x, int y, uint key);
         public delegate int FormulaLet(int x, int y, uint key);
 
         [System.Serializable] struct MapCell
         {
-            public Let Let;
-
             public Checkers position { get; private set; }
+
+            GameObject AttackVisualize;
+
+            List<MapEffect> effect;
 
             public CombineInstance Mesh;
             public CombineInstance Collider;
             public Material Material;
-            public float DeformProtection;
             
-            public MapCell(Checkers Position, PlatformPreset Mod, float DeformProtection = 0, Let let = null){ 
-                Let = let; 
+            public bool DeformProtection;
+            
+            public MapCell(Checkers Position, PlatformPreset Mod, bool DeformProtection = false, Let let = null){ 
+                AttackVisualizer = GameObject.Instantiate(AttackVisualizer, Position.ToVector3(), Quaternion.identity);
                 position = Position;
+                
                 this.DeformProtection = DeformProtection;
 
-                Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, Random.Range(0, 360), 0), Vector3.one)); 
-                Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, Position.clearUp, position.z), Quaternion.Euler(0, 0, 0), Vector3.one));
-                Material = Mod.GetMaterial(); 
+                Mesh = Mod.GetCombineMesh(Matrix4x4.TRS(new Vector3(position.x, position.clearUp, position.z), Quaternion.Euler(0, Random.Range(0, 360), 0), Vector3.one)); 
+                Collider = Mod.GetCombineCollider(Matrix4x4.TRS(new Vector3(position.x, position.clearUp, position.z), Quaternion.Euler(0, 0, 0), Vector3.one));
+                Material = Mod.GetMaterial();
+
+                effect = new List<MapEffect>();
             }
             
             public void AddVerticalPosition(float y)
             {
-
+                position = new Checkers(position, position.clearUp + y);
+                Mesh.transform = Matrix4x4.TRS(new Vector3(position.x, position.clearUp, position.z), Quaternion.Euler(0, Random.Range(0, 360), 0), Vector3.one);
+                Collider.transform = Matrix4x4.TRS(new Vector3(position.x, position.clearUp, position.z), Quaternion.Euler(0, 0, 0), Vector3.one);
             }
         }
         private MapCell[,] GenerateRelief(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet)
@@ -310,6 +287,7 @@ public abstract class Generation : MonoBehaviour
             
             return result;
         }
+    
     #endregion
     #region // Let
         public class Let
@@ -380,7 +358,7 @@ public abstract class Generation : MonoBehaviour
             BotLogic,
 
             Walking,
-            Attacking,
+            Action,
             EffectUpdate,
             LateWalking,
             LandscapeDeform,
@@ -389,37 +367,40 @@ public abstract class Generation : MonoBehaviour
             Rest
         }
 
-        public static async void CompleteModeSwitch()
+        public static async void StartStepTasks(int StepCycles = 0)
         {
             if(!MouseControlEvents.Controllable) return;
             MouseControlEvents.Controllable = false;   
-
-            Debug.ClearDeveloperConsole();
             
-            for(int i = 0; i < Enum.GetNames(typeof(Step)).Length; i++){
-                //Debug.Log($"Now step: {(Step)i}");
-                MapUpdate.Invoke();
-                List<Task> task = new List<Task>();
+            do{
+                Debug.ClearDeveloperConsole();
+                
+                for(int i = 0; i < Enum.GetNames(typeof(Step)).Length; i++){
+                    //Debug.Log($"Now step: {(Step)i}");
+                    MapUpdate.Invoke();
+                    List<Task> task = new List<Task>();
 
-                Step step = (Step)i;
+                    Step step = (Step)i;
 
-                foreach(StepAction summon in StepSystem) { task.Add(summon(step.ToString())); }
-                try{ await Task.WhenAll(task.ToArray()); } catch(Exception e) { Debug.LogError(e); }
-            }
-            StepEnd.Invoke();
-            
-            WhoAttackToWho.Clear();
-            StepNumber++;
+                    foreach(StepAction summon in StepSystem) { task.Add(summon(step.ToString())); }
+                    try{ await Task.WhenAll(task.ToArray()); } catch(Exception e) { Debug.LogError(e); }
+                }
+                StepEnd.Invoke();
+                StepNumber++;
+            }while(StepCycles > 0);
             
             MouseControlEvents.Controllable = true;
         }
 
         public static UnityEvent StepEnd = new UnityEvent();
 
-        public static UnityEvent MapUpdate = new UnityEvent();        
-        public static UnityEvent<List<SagardCL.Attack>> AttackTransporter = new UnityEvent<List<SagardCL.Attack>>();
+        public static UnityEvent<List<Attack>> AttackTransporter = new UnityEvent<List<Attack>>();
+    
+    #endregion
+    #region // Controller Static methods
         
-        public static Dictionary<IObjectOnMap, List<IObjectOnMap>> WhoAttackToWho = new Dictionary<IObjectOnMap, List<IObjectOnMap>>();
+        public static UnityEvent MapUpdate = new UnityEvent();
+        public static UnityEvent<bool> UsingControllers = new UnityEvent<bool>();
     
     #endregion
 }
@@ -428,7 +409,7 @@ public abstract class Generation : MonoBehaviour
 {
     [SerializeField]public Mesh[] MeshVariants;
     [SerializeField]public Material[] MaterialVariants;
-    [SerializeField]public float DeformProtection;
+    [SerializeField]public bool DeformProtection;
 
     public GameObject GetObject()
     {
