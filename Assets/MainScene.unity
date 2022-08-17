@@ -5786,6 +5786,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 622522898}
   m_CullTransparentMesh: 1
+--- !u!1001 &681824012
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3444611428397808923, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_Name
+      value: AttackVisualizer
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_RootOrder
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1208.8029
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 526.9677
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9147261924831216305, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
 --- !u!224 &726519168 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7407837266454244161, guid: 903ac686b20352c4690f1a56893f2062, type: 3}
@@ -6847,7 +6904,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a123d428e3e4fa2439b548f095e8f9b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AttackVisual: {fileID: 3444611428397808923, guid: 844bc776decec0a4e81c247d2f571121, type: 3}
   PlatformPreset:
   - MeshVariants:
     - {fileID: -8495433742444736037, guid: 096d60614cab8af4b801e0d73619988b, type: 3}
@@ -9392,6 +9448,10 @@ PrefabInstance:
       value: Assembly-CSharp Sanity
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814947898032128]
+      value: Assembly-CSharp LowBaseParameter
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[1478814765229539328].Timer
       value: 12
       objectReference: {fileID: 0}
@@ -9408,8 +9468,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814947898032128].WasteCount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[1478814765229539328]._Description
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: managedReferences[1478814947898032128].baseParameterName
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[1478814765229539329].<Max>k__BackingField
@@ -9480,6 +9548,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: <BaseBalance>k__BackingField.Skills.Array.data[0].ActionChecks.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[1478814742484616111].<Effects>k__BackingField.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -9494,6 +9566,10 @@ PrefabInstance:
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[1478814765229539328].<Stats>k__BackingField.ReplaceSanity
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
+      propertyPath: <BaseBalance>k__BackingField.Skills.Array.data[0].ActionChecks.Array.data[0]
+      value: 1478814947898032128
       objectReference: {fileID: 0}
     - target: {fileID: 7965787113005852653, guid: cd54580a2be7e4740a011f7c4420293d, type: 3}
       propertyPath: managedReferences[1478814765229539328].<Stats>k__BackingField.ReplaceStamina
@@ -9689,14 +9765,15 @@ MonoBehaviour:
     Sanity:
       rid: 1688285064846114818
     Skills:
-    - Name: claw
-      Description: 
-      BigDescription: 
-      image: {fileID: 0}
-      NoWalking: 0
+    - <Name>k__BackingField: 
+      <Description>k__BackingField: 
+      <BigDescription>k__BackingField: 
+      <image>k__BackingField: {fileID: 0}
+      <NoWalk>k__BackingField: 0
       Realizations:
       - rid: 1688285064846114819
-      Actions: []
+      ActionChecks: []
+      <FalseArgument>k__BackingField: 
     <Strength>k__BackingField: 1454
     <Accuracy>k__BackingField: 4
     <RezoOverclocking>k__BackingField: 4
