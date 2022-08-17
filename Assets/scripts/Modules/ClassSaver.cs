@@ -88,27 +88,40 @@ namespace SagardCL //Class library
             public int Damage;
             public DamageType DamageType;
             public Effect[] Effects;
+            public MapEffect[] MapEffects;
 
         #endregion
         #region // Overloads
 
-            public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] debuff)
+            public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] effects)
             {
                 Sender = Who;
                 Position = where;
                 Damage = Mathf.Clamp(Dam, 0, 10000);
 
                 DamageType = Type;
-                Effects = debuff;
+                Effects = effects;
+                MapEffects = null;
             }
-            public Attack(int Dam, DamageType Type, params Effect[] debuff)
+            public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, MapEffect[] mapEffects, params Effect[] effects)
+            {
+                Sender = Who;
+                Position = where;
+                Damage = Mathf.Clamp(Dam, 0, 10000);
+
+                DamageType = Type;
+                Effects = effects;
+                MapEffects = mapEffects;
+            }
+            public Attack(int Dam, DamageType Type, params Effect[] effects)
             {
                 Sender = null;
                 Position = new Checkers();
                 Damage = Mathf.Clamp(Dam, 0, 10000);
 
                 DamageType = Type;
-                Effects = debuff;
+                Effects = effects;
+                MapEffects = null;
             }
 
         #endregion
@@ -126,10 +139,10 @@ namespace SagardCL //Class library
             }
         }
     
-        public struct AttackCombiner
+        public class AttackCombiner
         {
-            public Dictionary<DamageType, List<Attack>> Sorter;
-            public HashSet<CharacterCore> Senders;
+            public Dictionary<DamageType, List<Attack>> Sorter = new Dictionary<DamageType, List<Attack>>();
+            public HashSet<CharacterCore> Senders = new HashSet<CharacterCore>();
             
             public bool Checked { get; private set; }
 
@@ -145,17 +158,14 @@ namespace SagardCL //Class library
             }
 
             public AttackCombiner(params Attack[] attacks) 
-            {   
-                Sorter = new Dictionary<DamageType, List<Attack>>(); 
-                Senders = new HashSet<CharacterCore>();
+            {
                 Checked = attacks.Sum(a=>a.Damage) > 0;
 
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
                 foreach(Attack attack in attacks) { Add(attack); } 
             }
 
-            public AttackCombiner Add(Attack attack)
-            {
+            public AttackCombiner Add(Attack attack){
                 if(attack.Sender is not null) Senders.Add(attack.Sender);
                 Sorter[attack.DamageType].Add(attack);
 
@@ -163,6 +173,16 @@ namespace SagardCL //Class library
 
                 return this;
             }
+            public AttackCombiner Remove(Attack attack){
+                Sorter[attack.DamageType].Remove(attack);
+                return this;
+            }
+            public AttackCombiner RemoveAll(Predicate<Attack> math){
+                foreach(var list in Sorter)
+                    list.Value.RemoveAll(math);
+                return this;
+            }
+
             public void Clear()
             {
                 Sorter.Clear(); 
@@ -200,13 +220,10 @@ namespace SagardCL //Class library
             public Color CombinedColor()
             {
                 Color result = new Color();
-                foreach (var attacks in Sorter)
+                foreach (Attack attacks in Combine())
                 {
-                    int Damage = 0;
-                    foreach (Attack attack in attacks.Value) { Damage += attack.Damage; }
-                    
-                    if(result == new Color()) new Attack(Damage, attacks.Key).Color();
-                    else result += new Attack(Damage, attacks.Key).Color();
+                    result += attacks.Color();
+                    result *= Combine().Sum(a=>a.Damage);
                 }
                 return result;
             }
@@ -219,22 +236,21 @@ namespace SagardCL //Class library
 
         public int x => X;
         public int z => Z;
-        public float up => this.UP + YUpPos();
+        public float up => this.UP + YUpPos(LayerMask.GetMask("Map"));
         public float clearUp => UP;
 
-        float YUpPos()
+        float YUpPos(LayerMask layer)
         {
-            if (Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map")))
+            if (Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, layer))
                 return hit.point.y;
             return 0;
         }
 
         #region // =============================== Realizations
 
-            public Checkers(float Xadd, float Zadd, float UPadd = 0) { X = (int)Mathf.Round(Xadd); Z = (int)Mathf.Round(Zadd); UP = UPadd; }
-            public Checkers(Vector3 Vector3add, float UPadd = 0) { X = (int)Mathf.Round(Vector3add.x); Z = (int)Mathf.Round(Vector3add.z); UP = UPadd; }
-            public Checkers(Vector2 Vector2add, float UPadd = 0) { X = (int)Mathf.Round(Vector2add.x); Z = (int)Mathf.Round(Vector2add.y); UP = UPadd; }
-            public Checkers(Transform Transformadd, float UPadd = 0) { X = (int)Mathf.Round(Transformadd.position.x); Z = (int)Mathf.Round(Transformadd.position.z); UP = UPadd; }
+            public Checkers(float x, float z, float UPadd = 0) { X = (int)Mathf.Round(x); Z = (int)Mathf.Round(z); UP = UPadd; }
+            public Checkers(Vector3 Vector, float UPadd = 0) { X = (int)Mathf.Round(Vector.x); Z = (int)Mathf.Round(Vector.z); UP = UPadd; }
+            public Checkers(Vector2 Vector, float UPadd = 0) { X = (int)Mathf.Round(Vector.x); Z = (int)Mathf.Round(Vector.y); UP = UPadd; }
 
             public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
             public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
@@ -269,7 +285,7 @@ namespace SagardCL //Class library
                 return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
             }
 
-            public Vector3 ToVector3(){ return new Vector3(x, up, z); }
+            public Vector3 ToVector3(bool UseClearUp = false){ return new Vector3(x, UseClearUp? clearUp : up, z); }
             public static List<Vector3> ToVector3List(List<Checkers> checkers) 
             { 
                 List<Vector3> list = new List<Vector3>();
@@ -444,6 +460,8 @@ namespace SagardCL //Class library
         public LineRenderer LineRenderer => Planer.GetComponent<LineRenderer>() ?? null;
     }
 
+
+
     #region // Balancers
 
         [Serializable] public class Balancer
@@ -459,7 +477,7 @@ namespace SagardCL //Class library
             [SerializeReference, SubclassSelector] public Dictionary<string, ICustomBar> AdditionState;
             public List<Type> Resists;
             [Space]
-            public List<Skill> Skills;
+            [SerializeReference, SubclassSelector] public List<Action> Skills;
 
             [field: SerializeField] public int Strength { get; set; }
             [field: SerializeField] public int Accuracy { get; set; }
@@ -526,7 +544,7 @@ namespace SagardCL //Class library
 
                     AdditionState = new Dictionary<string, ICustomBar>(),
                     Resists = new List<Type>(),
-                    Skills = new List<Skill>() { },
+                    Skills = new List<Action>() { },
 
                     Strength = 0,
                     Accuracy = 0,
@@ -555,7 +573,7 @@ namespace SagardCL //Class library
             [SerializeReference, SubclassSelector]public Dictionary<string, ICustomBar> AdditionState;
             public List<Type> Resists;
             [Space]
-            public List<Skill> Skills;
+            [SerializeReference, SubclassSelector] public List<Action> Skills;
 
             [field: SerializeField] public int Strength { get; set; }
             [field: SerializeField] public int Accuracy { get; set; }
@@ -632,7 +650,7 @@ namespace SagardCL //Class library
 
                     AdditionState = new Dictionary<string, ICustomBar>(),
                     Resists = new List<Type>(),
-                    Skills = new List<Skill>() { },
+                    Skills = new List<Action>() { },
 
                     Strength = 0,
                     Accuracy = 0,

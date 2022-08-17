@@ -48,13 +48,11 @@ public abstract class CharacterCoreVisualized : CharacterCore
         MPlaner.Renderer.enabled = new Checkers(MPlaner.position) != new Checkers(this.position);
     }
 
-    public async void SetAttackTargetVisualized(Checkers position, int Index)
+    public void SetAttackTargetVisualized(Checkers position, int Index)
     {
-        SetAttackTarget(position, Index);
-        if(CurrentSkill.NoWalking){
+        CurrentSkill.Plan();
+        if(CurrentSkill.NoWalk){
             MPlaner.LineRenderer.positionCount = 0;
             MPlaner.LineRenderer.enabled = false;}
-
-        Generation.DrawAttack(await CurrentSkill.GetAttacks(MoveTarget, AttackTarget, this), this);
     }
 }

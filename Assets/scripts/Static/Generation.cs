@@ -11,48 +11,6 @@ using UnityAsync;
 
 public abstract class Generation : MonoBehaviour
 {
-    [SerializeField] GameObject AttackVisual;
-
-    private static GameObject[,] AttackVisualsRealizers;
-    private static List<Attack>[,] AllAttackZoneArchive;
-
-    public static void DrawAttack(List<Attack> AttackZone, CharacterCore sender)
-    {
-        foreach(List<Attack> attacks in AllAttackZoneArchive) { if(attacks != null) attacks.RemoveAll((a) => a.Sender == sender); }
-        foreach(Attack attack in AttackZone) {  try{ AllAttackZoneArchive[attack.Position.x, attack.Position.z].Add(attack); } catch { }  }
-
-        CheckAllGizmos();
-    }
-    private static void CheckAllGizmos()
-    {
-        for(int x = 0; x < AllAttackZoneArchive.GetLength(0) - 1; x++)
-        for(int z = 0; z < AllAttackZoneArchive.GetLength(1) - 1; z++)
-        {
-            List<Attack> attackList = AllAttackZoneArchive[x, z];
-            if(attackList.Count == 0) { AttackVisualsRealizers[x, z].SetActive(false); continue; }
-
-            AttackVisualsRealizers[x, z].SetActive(true);
-            AttackVisualsRealizers[x, z].transform.position = new Checkers(AttackVisualsRealizers[x, z].transform.position);
-            AttackVisualsRealizers[x, z].GetComponent<SpriteRenderer>().color = AttackPaints(attackList);
-        }
-        Color AttackPaints(List<Attack> attacks)
-        {
-            Color result = Color.black;
-            foreach (Attack attack in attacks)
-            {
-                switch (attack.DamageType)
-                {
-                    default: result += Color.HSVToRGB(0.01f, 1, attack.Damage * 0.08f); break;
-                    case DamageType.Repair: goto case DamageType.Heal; 
-                    case DamageType.Heal: result += Color.HSVToRGB(0.42f, 1, attack.Damage * 0.08f); break;
-                    case DamageType.Rezo: result += Color.HSVToRGB(67f / 360f, 1, attack.Damage * 0.08f); break;
-                    case DamageType.Pure: result += Color.HSVToRGB(274f / 360f, 1, attack.Damage * 0.08f); break;
-                }
-            }
-            return result;
-        }
-    }
-
     public void StartStep(int repeats = 0)
     {
         Map.StartStepTasks(repeats);
@@ -67,7 +25,7 @@ public abstract class Generation : MonoBehaviour
     public static Map Current;
     public static int StepNumber = 0;
 
-    public static GameObject AttackVisualizer;
+    public static GameObject AttackVisualizer => GameObject.Find("AttackVisualizer");
 
     #region // Saving
 
@@ -76,9 +34,6 @@ public abstract class Generation : MonoBehaviour
         public Mesh MapMesh;
         public Mesh MapCollider;
         public List<Material> MaterialsList;
-
-        public int XScale { get; private set; }
-        public int ZScale { get; private set; }
 
         MapCell[,] PlatformMatrix;
 
@@ -124,8 +79,7 @@ public abstract class Generation : MonoBehaviour
 
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, uint Key, Vector2 Scale)
         {
-            XScale = (int)Scale.x; ZScale = (int)Scale.y; key = Key; 
-            PlatformMatrix = new MapCell[XScale, ZScale];
+            PlatformMatrix = new MapCell[(int)Scale.x, (int)Scale.y];
             
             MaterialsList = new List<Material>();
 
@@ -142,8 +96,10 @@ public abstract class Generation : MonoBehaviour
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, uint Key, int PlayerNum)
         {
             key = Key;
-            XScale = PlayerNum * 9 + (((int)key / 23)%7); ZScale = PlayerNum * 9 + (((int)key / 14)%7); 
-            PlatformMatrix = new MapCell[XScale, ZScale];
+
+            PlatformMatrix = new MapCell[
+                PlayerNum * 9 + (((int)key / 23)%7), 
+                PlayerNum * 9 + (((int)key / 14)%7)];
             
             MaterialsList = new List<Material>();
 
@@ -160,9 +116,10 @@ public abstract class Generation : MonoBehaviour
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, int PlayerNum)
         {
             key = (uint)Random.Range(0, 99999999);
-            XScale = PlayerNum * 15 + (((int)key / 23)%7); 
-            ZScale = PlayerNum * 15 + (((int)key / 14)%7); 
-            PlatformMatrix = new MapCell[XScale, ZScale];
+
+            PlatformMatrix = new MapCell[
+                PlayerNum * 15 + (((int)key / 23)%7), 
+                PlayerNum * 15 + (((int)key / 14)%7)];
             
             MaterialsList = new List<Material>();
             
@@ -179,8 +136,8 @@ public abstract class Generation : MonoBehaviour
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, Vector2 Scale)
         {
             key = (uint)Random.Range(0, 99999999);
-            XScale = (int)Scale.x; ZScale = (int)Scale.y; 
-            PlatformMatrix = new MapCell[XScale, ZScale];
+
+            PlatformMatrix = new MapCell[(int)Scale.x, (int)Scale.y];
             
             MaterialsList = new List<Material>();
             
@@ -197,8 +154,10 @@ public abstract class Generation : MonoBehaviour
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, uint Key)
         {
             key = Key;
-            XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
-            PlatformMatrix = new MapCell[XScale, ZScale];
+
+            PlatformMatrix = new MapCell[
+                2 * 9 + (((int)key / 23)%7), 
+                2 * 9 + (((int)key / 14)%7)];
 
             MaterialsList = new List<Material>();
             
@@ -215,8 +174,10 @@ public abstract class Generation : MonoBehaviour
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor)
         {
             key = key = (uint)Random.Range(0, 99999999);
-            XScale = 2 * 9 + (((int)key / 23)%7); ZScale = 2 * 9 + (((int)key / 14)%7); 
-            PlatformMatrix = new MapCell[XScale, ZScale];
+
+            PlatformMatrix = new MapCell[
+                2 * 9 + (((int)key / 23)%7), 
+                2 * 9 + (((int)key / 14)%7)];
 
             MaterialsList = new List<Material>();
             
@@ -242,7 +203,8 @@ public abstract class Generation : MonoBehaviour
         {
             public Checkers position { get; private set; }
 
-            GameObject AttackVisualize;
+            public GameObject AttackVisualize;
+            public Attack.AttackCombiner AllAttacks;
 
             List<MapEffect> effect;
 
@@ -253,7 +215,11 @@ public abstract class Generation : MonoBehaviour
             public bool DeformProtection;
             
             public MapCell(Checkers Position, PlatformPreset Mod, bool DeformProtection = false, Let let = null){ 
-                AttackVisualizer = GameObject.Instantiate(AttackVisualizer, Position.ToVector3(), Quaternion.identity);
+
+                AttackVisualize = GameObject.Instantiate(AttackVisualizer, Position.ToVector3(true), AttackVisualizer.transform.rotation);
+                AttackVisualize.SetActive(false);
+                AllAttacks = Attack.AttackCombiner.Empty();
+                
                 position = Position;
                 
                 this.DeformProtection = DeformProtection;
@@ -274,10 +240,10 @@ public abstract class Generation : MonoBehaviour
         }
         private MapCell[,] GenerateRelief(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet)
         {
-            MapCell[,] result = new MapCell[XScale, ZScale];
+            MapCell[,] result = new MapCell[PlatformMatrix.GetLength(0), PlatformMatrix.GetLength(1)];
 
-            for(int x = 0; x < XScale; x++) 
-            for(int z = 0; z < ZScale; z++){
+            for(int x = 0; x < PlatformMatrix.GetLength(0); x++) 
+            for(int z = 0; z < PlatformMatrix.GetLength(1); z++){
                 result[x, z] = new MapCell(new Checkers(x, z, formulaUp(x, z, key)), formulaMod(x, z, key), formulaMod(x, z, key).DeformProtection);
 
                 foreach(Material material in formulaMod(x, z, key).MaterialVariants)
@@ -301,8 +267,8 @@ public abstract class Generation : MonoBehaviour
         void colliderMesh()
         {
             List<CombineInstance> instances = new List<CombineInstance>();
-            for(int x = 0; x < XScale - 1; x++)
-            for(int z = 0; z < ZScale - 1; z++)
+            for(int x = 0; x < PlatformMatrix.GetLength(0); x++)
+            for(int z = 0; z < PlatformMatrix.GetLength(1); z++)
             {
                 instances.Add(PlatformMatrix[x, z].Collider);
             }
@@ -318,8 +284,8 @@ public abstract class Generation : MonoBehaviour
             Dictionary<Material, List<CombineInstance>> SubMeshes = new Dictionary<Material, List<CombineInstance>>();
             foreach(Material material in MaterialsList) { SubMeshes.Add(material, new List<CombineInstance>()); }
 
-            for(int x = 0; x < XScale - 1; x++) 
-            for(int z = 0; z < ZScale - 1; z++)
+            for(int x = 0; x < PlatformMatrix.GetLength(0) - 1; x++) 
+            for(int z = 0; z < PlatformMatrix.GetLength(1) - 1; z++)
             {
                 CombineInstance subMesh = PlatformMatrix[x, z].Mesh;
 
@@ -401,6 +367,35 @@ public abstract class Generation : MonoBehaviour
         
         public static UnityEvent MapUpdate = new UnityEvent();
         public static UnityEvent<bool> UsingControllers = new UnityEvent<bool>();
+
+        public void DrawAttack(List<Attack> AttackZone, CharacterCore sender)
+        {
+            foreach(MapCell cell in PlatformMatrix) { cell.AllAttacks.RemoveAll(a=>a.Sender==sender); }
+            foreach(Attack attack in AttackZone) { try{ PlatformMatrix[attack.Position.x, attack.Position.z].AllAttacks.Add(attack); } catch { }  }
+
+            CheckAllGizmos();
+        }
+        private void CheckAllGizmos()
+        {
+            for(int x = 0; x < PlatformMatrix.GetLength(0) - 1; x++)
+            for(int z = 0; z < PlatformMatrix.GetLength(1) - 1; z++)
+            {
+                List<Attack> CurrentList = PlatformMatrix[x, z].AllAttacks.Combine();
+                if(CurrentList.Count == 0) { PlatformMatrix[x, z].AttackVisualize.SetActive(false); continue; }
+
+                PlatformMatrix[x, z].AttackVisualize.SetActive(true);
+                PlatformMatrix[x, z].AttackVisualize.GetComponent<SpriteRenderer>().color = AttackPaints(CurrentList);
+            }
+            Color AttackPaints(List<Attack> attacks)
+            {
+                Color result = Color.black;
+                foreach (Attack attack in attacks)
+                {
+
+                }
+                return result;
+            }
+        }
     
     #endregion
 }

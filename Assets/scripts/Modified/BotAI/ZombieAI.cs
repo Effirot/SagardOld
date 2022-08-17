@@ -24,7 +24,7 @@ public class ZombieAI : CharacterCore
         {
             //if(Checkers.Distance(obj.nowPosition, nowPosition) > Checkers.Distance(obj.nowPosition, Target)  & Checkers.Distance(obj.nowPosition, nowPosition) < ViewDistance)
             if(obj.nowPosition == nowPosition) continue;
-            if(Checkers.Distance(obj.nowPosition, base.nowPosition) < Checkers.Distance(Target, base.nowPosition))
+            if(Checkers.Distance(obj.nowPosition, base.nowPosition) < Checkers.Distance(Target, base.nowPosition) & Checkers.Distance(obj.nowPosition, base.nowPosition) < ViewDistance)
                 Target = obj.nowPosition;
         }
 

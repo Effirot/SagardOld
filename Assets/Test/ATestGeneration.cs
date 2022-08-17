@@ -32,8 +32,6 @@ public class ATestGeneration : Generation
 
         GetComponent<MeshCollider>().sharedMesh = Map.Current.MapCollider;
         GetComponent<MeshFilter>().sharedMesh = Map.Current.MapMesh;
-        
-        LetsGenerate(Map.Current);
     }
 
 

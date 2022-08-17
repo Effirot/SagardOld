@@ -136,21 +136,23 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
 
                 private int SkillIndex { get; set; } = 0;
-                public Skill CurrentSkill { get { return SkillIndex == 0? Skill.Empty() : NowBalance.Skills[SkillIndex - 1]; } } 
+                public Action CurrentSkill { get { return SkillIndex == 0? Skill.Empty() : NowBalance.Skills[SkillIndex - 1]; } } 
 
                 protected virtual GameObject[] WalkBlackList { get => new GameObject[] { gameObject }; }
 
                 public void SetAttackTarget(Checkers position, int SkillIndex)
                 {
-                    if(CurrentSkill.NoWalking) {
+                    if(CurrentSkill.NoWalk) {
                         SetWayToTarget(this.position); }
 
                     if(CanAttack) { this.SkillIndex = SkillIndex; AttackTarget = position; }
-                    else { this.SkillIndex = 0; AttackTarget = this.position;  }
+                    else { this.SkillIndex = 0; AttackTarget = this.position; }
+
+                    CurrentSkill.Plan();
                 }
                 public async void SetWayToTarget(Checkers position)
                 {
-                    if(CurrentSkill.NoWalking) {AttackTarget = this.position; SkillIndex = 0; }
+                    if(CurrentSkill.NoWalk) {AttackTarget = this.position; SkillIndex = 0; }
                     
                     if(position != this.position.ToCheckers() & CanWalk) { 
                         WalkWay = await Checkers.PatchWay.WayTo(new Checkers(this.position), position, NowBalance.WalkDistance, 0.2f, WalkBlackList); 
@@ -289,7 +291,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 WillRest = false;
                 //await Task.Delay(Random.Range(900, 2700));
 
-                await CurrentSkill.Complete(MoveTarget, AttackTarget, this);
+                await CurrentSkill.Complete();
                 AttackTarget = MoveTarget;
                 SkillIndex = 0;
             }
