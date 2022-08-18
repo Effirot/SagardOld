@@ -132,11 +132,12 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
                 public virtual Checkers AttackTarget { get; protected set; }
                 public virtual Checkers MoveTarget { get; protected set; }
-                public virtual Checkers LateMoveTarget { get; protected set; }
+                public virtual Checkers DashTarget { get; protected set; }
+                public virtual Checkers LateDashTarget { get; protected set; }
                 public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
 
                 private int SkillIndex { get; set; } = 0;
-                public Action CurrentSkill { get { return SkillIndex == 0? Skill.Empty() : NowBalance.Skills[SkillIndex - 1]; } } 
+                public Actions CurrentSkill { get { return /*SkillIndex == 0? Skill.Empty() :*/ NowBalance.Skills[SkillIndex]; } } 
 
                 protected virtual GameObject[] WalkBlackList { get => new GameObject[] { gameObject }; }
 
@@ -145,14 +146,13 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                     if(CurrentSkill.NoWalk) {
                         SetWayToTarget(this.position); }
 
-                    if(CanAttack) { this.SkillIndex = SkillIndex; AttackTarget = position; }
-                    else { this.SkillIndex = 0; AttackTarget = this.position; }
-
-                    CurrentSkill.Plan();
+                     { this.SkillIndex = SkillIndex; AttackTarget = position; }
+    
+                    CurrentSkill.Plan(this);
                 }
                 public async void SetWayToTarget(Checkers position)
                 {
-                    if(CurrentSkill.NoWalk) {AttackTarget = this.position; SkillIndex = 0; }
+                    if(CurrentSkill.NoWalk) { AttackTarget = this.position; SkillIndex = 0; }
                     
                     if(position != this.position.ToCheckers() & CanWalk) { 
                         WalkWay = await Checkers.PatchWay.WayTo(new Checkers(this.position), position, NowBalance.WalkDistance, 0.2f, WalkBlackList); 
@@ -165,7 +165,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 }
                 public void SetLateWalking(params Checkers[] positions)
                 {
-                    LateMoveTarget = new Checkers(positions.Sum(a=>a.x) / positions.Length, positions.Sum(a=>a.z) / positions.Length);
+                    LateDashTarget = new Checkers(positions.Sum(a=>a.x) / positions.Length, positions.Sum(a=>a.z) / positions.Length);
                 }
 
                 public void AddDamage(params Attack[] attacks) {
@@ -264,7 +264,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             protected virtual async Task BotLogic() { await Task.Run(()=>{}); }
             async Task Walking()
             {
-                LateMoveTarget = MoveTarget;
+                LateDashTarget = MoveTarget;
                 if(WalkWay.Count == 0 | !CanWalk) return;
 
                 WillRest = false;
@@ -283,7 +283,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                     }
                     WalkWay.Clear();
                 }
-                LateMoveTarget = MoveTarget;
+                LateDashTarget = MoveTarget;
             }  
             async Task Action()
             {
@@ -304,18 +304,18 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             }
             async Task LateWalking()
             {
-                if(LateMoveTarget == new Checkers(position)) return;
+                if(LateDashTarget == new Checkers(position)) return;
                 
                 await LateTransport();
 
                 async Task LateTransport()
                 {
-                    while(position != LateMoveTarget.ToVector3())
+                    while(position != LateDashTarget.ToVector3())
                     {
-                        position = Vector3.MoveTowards(position, LateMoveTarget.ToVector3(), 0.3f);
+                        position = Vector3.MoveTowards(position, LateDashTarget.ToVector3(), 0.3f);
                         await new WaitForFixedUpdate();
                     }
-                    LateMoveTarget = position;
+                    LateDashTarget = position;
                 }
             }
             async Task DamageMath()
@@ -351,7 +351,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 UpdateStateBar(NowBalance.Stamina);
                 UpdateStateBar(NowBalance.Sanity);
                 if(NowBalance.AdditionState is not null && NowBalance.AdditionState.Count > 0) 
-                    foreach(var otherState in NowBalance.AdditionState) UpdateStateBar(otherState.Value);
+                    foreach(var otherState in NowBalance.AdditionState) UpdateStateBar(otherState);
 
                 Effects.RemoveAll(a=>a is OneUse);
 

@@ -66,12 +66,12 @@ using UnityEditor;
         CursorController.ChangePosOnMap.AddListener(async(a)=>
         { 
             if(MouseTest == 2) {
-                SetAttackTargetVisualized(a, SkillIndex); }
+                SetAttackTarget(a, SkillIndex); }
 
             if(MouseTest == 1) { 
                 await Task.Delay(2);
                 SetWayToTarget(a); 
-                SetAttackTargetVisualized(CursorController.position, SkillIndex);
+                SetAttackTarget(CursorController.position, SkillIndex);
 
                 MPlaner.LineRenderer.positionCount = WalkWay.Count;
                 MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
@@ -83,7 +83,7 @@ using UnityEditor;
             if(this.MouseTest == 2) {
                 
                 this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 12), 0, NowBalance.Skills.Count);
-                SetAttackTargetVisualized(CursorController.position, SkillIndex);
+                SetAttackTarget(CursorController.position, SkillIndex);
             }
         });
     }
@@ -107,7 +107,7 @@ using UnityEditor;
     void AttackPlaningIn()
     {
         SkillIndex = 0;
-        SetAttackTargetVisualized(CursorController.position, SkillIndex);
+        SetAttackTarget(CursorController.position, SkillIndex);
         UnitUIController.UiEvent.Invoke("OpenForPlayer", MPlaner.Planer, this);
 
         //APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;

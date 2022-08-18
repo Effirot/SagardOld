@@ -40,19 +40,11 @@ public abstract class CharacterCoreVisualized : CharacterCore
     public void MapUpdate()
     {
         SetWayToTarget(MoveTarget);
-        SetAttackTargetVisualized(AttackTarget, SkillIndex);
+        SetAttackTarget(AttackTarget, SkillIndex);
 
         MPlaner.LineRenderer.positionCount = WalkWay.Count;
         MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
 
         MPlaner.Renderer.enabled = new Checkers(MPlaner.position) != new Checkers(this.position);
-    }
-
-    public void SetAttackTargetVisualized(Checkers position, int Index)
-    {
-        CurrentSkill.Plan();
-        if(CurrentSkill.NoWalk){
-            MPlaner.LineRenderer.positionCount = 0;
-            MPlaner.LineRenderer.enabled = false;}
     }
 }

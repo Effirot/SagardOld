@@ -8,16 +8,11 @@ using System.Threading.Tasks;
 using System;
 using Random = UnityEngine.Random;
 using UnityAsync;
-
-public abstract class Generation : MonoBehaviour
-{
-    public void StartStep(int repeats = 0)
-    {
-        Map.StartStepTasks(repeats);
-    }
-    
-}
-
+using System.Numerics;
+using Matrix4x4 = UnityEngine.Matrix4x4;
+using Vector3 = UnityEngine.Vector3;
+using Vector2 = UnityEngine.Vector2;
+using Quaternion = UnityEngine.Quaternion;
 
 [System.Serializable] public class Map
 {
@@ -154,26 +149,6 @@ public abstract class Generation : MonoBehaviour
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, uint Key)
         {
             key = Key;
-
-            PlatformMatrix = new MapCell[
-                2 * 9 + (((int)key / 23)%7), 
-                2 * 9 + (((int)key / 14)%7)];
-
-            MaterialsList = new List<Material>();
-            
-            MapMesh = new Mesh(); 
-            MapCollider = new Mesh(); 
-
-            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
-            
-            visibleMesh();
-            colliderMesh();
-
-            Current = this;
-        }
-        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor)
-        {
-            key = key = (uint)Random.Range(0, 99999999);
 
             PlatformMatrix = new MapCell[
                 2 * 9 + (((int)key / 23)%7), 
@@ -353,6 +328,7 @@ public abstract class Generation : MonoBehaviour
                 }
                 StepEnd.Invoke();
                 StepNumber++;
+                StepCycles--;
             }while(StepCycles > 0);
             
             MouseControlEvents.Controllable = true;
@@ -373,10 +349,6 @@ public abstract class Generation : MonoBehaviour
             foreach(MapCell cell in PlatformMatrix) { cell.AllAttacks.RemoveAll(a=>a.Sender==sender); }
             foreach(Attack attack in AttackZone) { try{ PlatformMatrix[attack.Position.x, attack.Position.z].AllAttacks.Add(attack); } catch { }  }
 
-            CheckAllGizmos();
-        }
-        private void CheckAllGizmos()
-        {
             for(int x = 0; x < PlatformMatrix.GetLength(0) - 1; x++)
             for(int z = 0; z < PlatformMatrix.GetLength(1) - 1; z++)
             {
@@ -384,16 +356,7 @@ public abstract class Generation : MonoBehaviour
                 if(CurrentList.Count == 0) { PlatformMatrix[x, z].AttackVisualize.SetActive(false); continue; }
 
                 PlatformMatrix[x, z].AttackVisualize.SetActive(true);
-                PlatformMatrix[x, z].AttackVisualize.GetComponent<SpriteRenderer>().color = AttackPaints(CurrentList);
-            }
-            Color AttackPaints(List<Attack> attacks)
-            {
-                Color result = Color.black;
-                foreach (Attack attack in attacks)
-                {
-
-                }
-                return result;
+                PlatformMatrix[x, z].AttackVisualize.GetComponent<SpriteRenderer>().color = PlatformMatrix[x, z].AllAttacks.CombinedColor();
             }
         }
     

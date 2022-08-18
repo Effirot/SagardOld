@@ -4,8 +4,14 @@ using UnityEngine;
 using SagardCL;
 using System.Reflection;
 
-public class ATestGeneration : Generation
-{   
+public class ATestGeneration : MonoBehaviour
+
+{
+    public void StartStep(int repeats = 0)
+    {
+        Map.StartStepTasks(repeats);
+    }
+
     [SerializeField] PlatformPreset[] PlatformPreset;
 
     public Checkers posForWay;
@@ -26,7 +32,7 @@ public class ATestGeneration : Generation
         (x, z, key) => 
         { return (x % 5 == 0 | z % 5 == 0)? 1 : 0; },
         
-        3);
+        1, 3);
 
         GetComponent<MeshRenderer>().sharedMaterials = Map.Current.MaterialsList.ToArray();
 
