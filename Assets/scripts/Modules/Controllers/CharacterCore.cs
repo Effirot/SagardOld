@@ -128,33 +128,37 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 public Checkers nowPosition { get => this.position.ToCheckers(); }
                 
                 [SerializeField] public bool CanWalk = true;
-                [SerializeField] public bool CanAttack = true;
+                [SerializeField] public bool CanActing = true;
 
                 public virtual Checkers AttackTarget { get; protected set; }
                 public virtual Checkers MoveTarget { get; protected set; }
                 public virtual Checkers DashTarget { get; protected set; }
                 public virtual Checkers LateDashTarget { get; protected set; }
                 public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
-
-                private int SkillIndex { get; set; } = 0;
-                public Actions CurrentSkill { get { return /*SkillIndex == 0? Skill.Empty() :*/ NowBalance.Skills[SkillIndex]; } } 
+                
+                public Actions ActionOnIndex(int index){ return index == 0? Actions.Empty() : NowBalance.Skills[index - 1]; } 
+                
+                Dictionary<string, Actions> PlanedAction = new Dictionary<string, Actions>();
 
                 protected virtual GameObject[] WalkBlackList { get => new GameObject[] { gameObject }; }
 
-                public void SetAttackTarget(Checkers position, int SkillIndex)
+                public void AddActionToPlan(Actions Action, string Sorting)
                 {
-                    if(CurrentSkill.NoWalk) {
-                        SetWayToTarget(this.position); }
-
-                     { this.SkillIndex = SkillIndex; AttackTarget = position; }
-    
-                    CurrentSkill.Plan(this);
+                    Action.Plan(this);
+                    if(PlanedAction.ContainsKey(Sorting)) PlanedAction[Sorting] = Action;
+                    else PlanedAction.Add(Sorting, Action);
                 }
+                public void RemovePlan(string Sorting)
+                {
+                    if(PlanedAction.ContainsKey(Sorting)) PlanedAction.Remove(Sorting);
+                }
+
                 public async void SetWayToTarget(Checkers position)
                 {
-                    if(CurrentSkill.NoWalk) { AttackTarget = this.position; SkillIndex = 0; }
+                    foreach(var Actions in PlanedAction)
+                        if(Actions.Value.NoWalk) PlanedAction.Remove(Actions.Key);
                     
-                    if(position != this.position.ToCheckers() & CanWalk) { 
+                    if(position != this.position.ToCheckers() & CanWalk) {
                         WalkWay = await Checkers.PatchWay.WayTo(new Checkers(this.position), position, NowBalance.WalkDistance, 0.2f, WalkBlackList); 
                         
                         WalkWay[0] = WalkWay[0].Up(0); 
@@ -287,14 +291,20 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             }  
             async Task Action()
             {
-                if(SkillIndex == 0 | !CanAttack) return;
+                if(!CanActing) return;
                 WillRest = false;
-                //await Task.Delay(Random.Range(900, 2700));
+                
+                await Task.Delay(Random.Range(300, 1600));
 
-                await CurrentSkill.Complete();
+                foreach(var target in PlanedAction)
+                    if(target.Value != null)
+                        target.Value.Complete(this);
+                
                 AttackTarget = MoveTarget;
-                SkillIndex = 0;
             }
+
+
+
             async Task EffectUpdate()
             {
                 await Task.Delay(10);                 

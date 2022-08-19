@@ -221,13 +221,11 @@ namespace SagardCL //Class library
             {
                 Color result = new Color();
                 foreach (Attack attacks in Combine())
-                {
                     result += attacks.Color();
-                    
-                }
-                result.r -= 1 / (float)Combine().Sum(a=>(float)a.Damage / 2);
-                result.g -= 1 / (float)Combine().Sum(a=>(float)a.Damage / 2);
-                result.b -= 1 / (float)Combine().Sum(a=>(float)a.Damage / 2);
+                
+                result.r -= 1 / (float)Combine().Sum(a=>(float)a.Damage / 3);
+                result.g -= 1 / (float)Combine().Sum(a=>(float)a.Damage / 3);
+                result.b -= 1 / (float)Combine().Sum(a=>(float)a.Damage / 3);
                 
                 return result;
             }

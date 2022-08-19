@@ -40,7 +40,7 @@ public abstract class CharacterCoreVisualized : CharacterCore
     public void MapUpdate()
     {
         SetWayToTarget(MoveTarget);
-        SetAttackTarget(AttackTarget, SkillIndex);
+        AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
 
         MPlaner.LineRenderer.positionCount = WalkWay.Count;
         MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 

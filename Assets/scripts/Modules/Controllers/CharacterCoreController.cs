@@ -54,24 +54,25 @@ using UnityEditor;
 
         MouseControlEvents.MouseController.AddListener((id, b) => 
         { 
-            if(id != MPlaner.Planer | !(IsAlive & CanWalk & CanAttack)) { MouseTest = 0; return; }
+            if(id != MPlaner.Planer | !(IsAlive & CanWalk & CanActing)) { MouseTest = 0; return; }
             MouseTest = b;
             switch(MouseTest)
             {
                 default: StandingIn(); return;
                 case 1: if(CanWalk) MovePlaningIn(); return;
-                case 2: if(CanAttack) AttackPlaningIn(); return;
+                case 2: if(CanActing) AttackPlaningIn(); return;
             }
         });
         CursorController.ChangePosOnMap.AddListener(async(a)=>
         { 
             if(MouseTest == 2) {
-                SetAttackTarget(a, SkillIndex); }
+                AttackTarget = a;
+                AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing"); }
 
             if(MouseTest == 1) { 
                 await Task.Delay(2);
                 SetWayToTarget(a); 
-                SetAttackTarget(CursorController.position, SkillIndex);
+                AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
 
                 MPlaner.LineRenderer.positionCount = WalkWay.Count;
                 MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
@@ -83,7 +84,8 @@ using UnityEditor;
             if(this.MouseTest == 2) {
                 
                 this.SkillIndex = Mathf.Clamp((int)Mathf.Round(SkillIndex + a * 12), 0, NowBalance.Skills.Count);
-                SetAttackTarget(CursorController.position, SkillIndex);
+                AttackTarget = CursorController.position;
+                AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
             }
         });
     }
@@ -107,7 +109,8 @@ using UnityEditor;
     void AttackPlaningIn()
     {
         SkillIndex = 0;
-        SetAttackTarget(CursorController.position, SkillIndex);
+        AttackTarget = CursorController.position;
+        AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
         UnitUIController.UiEvent.Invoke("OpenForPlayer", MPlaner.Planer, this);
 
         //APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;

@@ -22,14 +22,15 @@ public class ZombieAI : CharacterCore
 
         foreach(IObjectOnMap obj in Map.Current.ObjectRegister)
         {
-            //if(Checkers.Distance(obj.nowPosition, nowPosition) > Checkers.Distance(obj.nowPosition, Target)  & Checkers.Distance(obj.nowPosition, nowPosition) < ViewDistance)
-            if(obj.nowPosition == nowPosition) continue;
-            if(Checkers.Distance(obj.nowPosition, base.nowPosition) < Checkers.Distance(Target, base.nowPosition) & Checkers.Distance(obj.nowPosition, base.nowPosition) < ViewDistance)
+            if(Checkers.Distance(obj.nowPosition, nowPosition) < ViewDistance & obj.nowPosition != nowPosition){
                 Target = obj.nowPosition;
+                break;
+            }
+            else Target = nowPosition;
         }
 
-        
         SetWayToTarget(Target);
-        SetAttackTarget(position.ToCheckers() + new Checkers(0, 1), 1);
+        AttackTarget = position.ToCheckers() + new Checkers(0, 1);
+        AddActionToPlan(ActionOnIndex(1).Plan(this), "UnitActing");
     }
 }

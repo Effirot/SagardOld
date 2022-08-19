@@ -70,10 +70,10 @@ public class DebugConsole : MonoBehaviour
             case ("-setMovePlan"):
                 core.SetWayToTarget(new Checkers(splitt.coord));
                 break;
-            case ("-setAttackPlan"):
-                ;
-                core.SetAttackTarget(new Checkers(splitt.coord), splitt.skillNumber);
-                break;
+            // case ("-setAttackPlan"):
+            //     ;
+            //     core.AddActionToPlan(new Checkers(splitt.coord), splitt.skillNumber);
+            //     break;
             case ("-teleportTo"):
                 core.transform.position = new Checkers(splitt.coord);
                 break;

@@ -38,7 +38,7 @@ using System.Linq;
 
         public string FalseArgument;
 
-        public bool Check(CharacterCore target) 
+        public bool Check(CharacterCore target)
         {
             FalseArgument = "";
             foreach(ActionCheck check in ActionChecks) 
@@ -47,23 +47,17 @@ using System.Linq;
             
             return FalseArgument == "";
         }
-
-        Checkers PlanedTargetPoint;
         
-        public async Task Complete()
+        public void Complete(CharacterCore target)
         {
             foreach(Act act in Realizations)
-            {
-                act.Completing();
-                await Task.Delay(100);
-            }
+                act.Completing(target);
         }
-        public void Plan(CharacterCore target)
+        public Actions Plan(CharacterCore target)
         {
             foreach(Act act in Realizations)
-            {
                 act.Planing(target);
-            }
+            return this;
         }
 
         #region // Action Check
@@ -102,35 +96,33 @@ using System.Linq;
             public interface Act
             {
                 void Planing(CharacterCore action);
-                void Completing();
+                void Completing(CharacterCore action);
             }
             [Serializable]public struct PlaceAttacksOnMap : Act
             {
                 [SerializeReference, SubclassSelector] public List<AttacksPlacer> AttacksPlacers;
                 Checkers PlanedTargetPoint;
                 Checkers PlanedFromPoint;
-                CharacterCore Target;
 
                 public async void Planing(CharacterCore action) 
                 {
-                    Target = action;
                     PlanedTargetPoint = action.AttackTarget;
                     PlanedFromPoint = action.MoveTarget;
-                    Map.Current.DrawAttack(await GetAttacks(PlanedFromPoint, PlanedTargetPoint), Target);
+                    Map.Current.DrawAttack(await GetAttacks(PlanedFromPoint, PlanedTargetPoint, action), action);
                 }
 
-                public async void Completing()
+                public async void Completing(CharacterCore action)
                 {
-                    Map.AttackTransporter.Invoke(await GetAttacks(PlanedFromPoint, PlanedTargetPoint));
+                    Map.AttackTransporter.Invoke(await GetAttacks(PlanedFromPoint, PlanedTargetPoint, action));
                 }
 
-                public async Task<List<Attack>> GetAttacks(Checkers from, Checkers to)
+                public async Task<List<Attack>> GetAttacks(Checkers from, Checkers to, CharacterCore target)
                 {
                     List<Attack> attackList = new List<Attack>();
                     List<Checkers> Overrides = new List<Checkers>();
 
                     foreach(AttacksPlacer HitZone in AttacksPlacers) 
-                        await foreach(Attack attack in HitZone.GetAttackList(from, to, Target)){ 
+                        await foreach(Attack attack in HitZone.GetAttackList(from, to, target)){ 
                             if(!Overrides.Exists(a=>a==attack.Position)) {
                                 attackList.Add(attack); 
                                 
@@ -140,7 +132,28 @@ using System.Linq;
                     return attackList;
                 }
             }
+            [Serializable]public struct DrainBaseParameter : Act
+            {
+                enum BaseParameterName
+                {
+                    Health,
+                    Stamina,
+                    Sanity,
+                }
+                [SerializeField] BaseParameterName baseParameterName;
+                [SerializeField, Range(0, 20)] int HowMuch;
 
+                public void Planing(CharacterCore action){
+                }
+                public void Completing(CharacterCore action){
+                    switch(baseParameterName)
+                    {
+                        case BaseParameterName.Health: action.BaseBalance.Health.Value -= HowMuch; break;
+                        case BaseParameterName.Sanity: action.BaseBalance.Sanity.Value -= HowMuch; break;
+                        case BaseParameterName.Stamina: action.BaseBalance.Stamina.Value -= HowMuch; break;
+                    }
+                }
+            }
 
         #endregion
 
@@ -155,7 +168,8 @@ using System.Linq;
 
                 bool Override { get; }
 
-                protected static Checkers PointTargeting(Checkers from, Checkers to, TargetPointGuidanceType PointType, int MaxDistance, int MinDistance = 0) { switch (PointType)
+                protected static Checkers PointTargeting(Checkers from, Checkers to, TargetPointGuidanceType PointType, int MaxDistance, int MinDistance = 0) { 
+                    switch (PointType)
                     {
                         default: return from;
 
