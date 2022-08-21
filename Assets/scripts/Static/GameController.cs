@@ -14,9 +14,11 @@ using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 
+
+
 [System.Serializable] public class Map
 {
-    public List<IObjectOnMap> ObjectRegister = new List<IObjectOnMap>();
+    public Dictionary<string, IObjectOnMap> ObjectRegister = new Dictionary<string, IObjectOnMap>();
     public static Map Current;
     public static int StepNumber = 0;
 
@@ -24,7 +26,7 @@ using Quaternion = UnityEngine.Quaternion;
 
     #region // Saving
 
-        uint key;
+        public uint key { get; private set; }
 
         public Mesh MapMesh;
         public Mesh MapCollider;
@@ -111,6 +113,26 @@ using Quaternion = UnityEngine.Quaternion;
         public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, int PlayerNum)
         {
             key = (uint)Random.Range(0, 99999999);
+
+            PlatformMatrix = new MapCell[
+                PlayerNum * 15 + (((int)key / 23)%7), 
+                PlayerNum * 15 + (((int)key / 14)%7)];
+            
+            MaterialsList = new List<Material>();
+            
+            MapMesh = new Mesh(); 
+            MapCollider = new Mesh(); 
+            
+            PlatformMatrix = GenerateRelief(formulaUp, formulaMod, formulaLet);
+            
+            visibleMesh();
+            colliderMesh();
+
+            Current = this;
+        }
+        public Map(FormulaUp formulaUp, FormulaMod formulaMod, FormulaLet formulaLet, int floor, int PlayerNum, uint Key)
+        {
+            key = Key;
 
             PlatformMatrix = new MapCell[
                 PlayerNum * 15 + (((int)key / 23)%7), 
@@ -289,7 +311,7 @@ using Quaternion = UnityEngine.Quaternion;
 
     #endregion
 
-    #region // Static Map Methods
+    #region // Static Step System
 
         internal static List<StepAction> StepSystem = new List<StepAction>();
         public delegate Task StepAction(string StepStage);
@@ -324,7 +346,8 @@ using Quaternion = UnityEngine.Quaternion;
                     Step step = (Step)i;
 
                     foreach(StepAction summon in StepSystem) { task.Add(summon(step.ToString())); }
-                    try{ await Task.WhenAll(task.ToArray()); } catch(Exception e) { Debug.LogError(e); }
+                    
+                    await Task.WhenAll(task.ToArray());
                 }
                 StepEnd.Invoke();
                 StepNumber++;
@@ -339,28 +362,26 @@ using Quaternion = UnityEngine.Quaternion;
         public static UnityEvent<List<Attack>> AttackTransporter = new UnityEvent<List<Attack>>();
     
     #endregion
-    #region // Controller Static methods
+    #region // Controller
         
         public static UnityEvent MapUpdate = new UnityEvent();
         public static UnityEvent<bool> UsingControllers = new UnityEvent<bool>();
 
         public void DrawAttack(List<Attack> AttackZone, CharacterCore sender)
         {
-            foreach(MapCell cell in PlatformMatrix) { cell.AllAttacks.RemoveAll(a=>a.Sender==sender); }
-            foreach(Attack attack in AttackZone) { try{ PlatformMatrix[attack.Position.x, attack.Position.z].AllAttacks.Add(attack); } catch { }  }
+            foreach(MapCell cell in PlatformMatrix) { 
+                cell.AllAttacks.RemoveAll(a=>a.Sender==sender); 
 
-            for(int x = 0; x < PlatformMatrix.GetLength(0) - 1; x++)
-            for(int z = 0; z < PlatformMatrix.GetLength(1) - 1; z++)
-            {
-                List<Attack> CurrentList = PlatformMatrix[x, z].AllAttacks.Combine();
-                if(CurrentList.Count == 0) { PlatformMatrix[x, z].AttackVisualize.SetActive(false); continue; }
+                cell.AllAttacks.Add(AttackZone.FindAll(a=>a.position == cell.position).ToArray());
+                if(!cell.AllAttacks.Contains) { cell.AttackVisualize.SetActive(false); continue; }
 
-                PlatformMatrix[x, z].AttackVisualize.SetActive(true);
-                PlatformMatrix[x, z].AttackVisualize.GetComponent<SpriteRenderer>().color = PlatformMatrix[x, z].AllAttacks.CombinedColor();
-            }
+                cell.AttackVisualize.SetActive(true);
+                cell.AttackVisualize.GetComponent<SpriteRenderer>().color = cell.AllAttacks.CombinedColor(); }
         }
     
     #endregion
+
+
 }
 
 [System.Serializable]public struct PlatformPreset

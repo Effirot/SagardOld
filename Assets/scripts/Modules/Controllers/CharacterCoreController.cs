@@ -19,7 +19,6 @@ using UnityEditor;
 
     #region // ============================================================ Useful Stuff ==================================================================================================
 
-
         protected override string IdAddition { get => base.IdAddition + "Controllable"; } 
 
         bool CheckPosition(Checkers position, bool Other = true)
@@ -88,6 +87,7 @@ using UnityEditor;
                 AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
             }
         });
+        Map.StepEnd.AddListener(()=>SkillIndex = 0);
     }
     
     private int MouseTest = 0;

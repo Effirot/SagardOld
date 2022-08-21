@@ -321,6 +321,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c80335e3a8ec26459f05797da32df4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <Tag>k__BackingField: []
   <Race>k__BackingField: 0
   <IsAlive>k__BackingField: 1
   <NowBalance>k__BackingField:
@@ -352,15 +353,17 @@ MonoBehaviour:
       rid: 1478814742484616110
     AdditionState: []
     Skills:
-    - Name: 
+    - Name: pew
       Description: 
       BigDescription: 
       image: {fileID: 0}
       NoWalk: 0
       Realizations:
-      - rid: 1478814968756568611
-      ActionChecks: []
-      FalseArgument: 
+      - rid: 1688285175879041293
+      - rid: 1688285175879041294
+      ActionChecks:
+      - rid: 1688285175879041297
+      Exception: 
     <Strength>k__BackingField: 5
     <Accuracy>k__BackingField: 5
     <RezoOverclocking>k__BackingField: 5
@@ -372,7 +375,7 @@ MonoBehaviour:
   _Inventory: []
   InventorySize: 1
   CanWalk: 1
-  CanAttack: 1
+  CanActing: 1
   SkillIndex: 0
   <MPlaner>k__BackingField:
     Planer: {fileID: 8182480761862019246}
@@ -426,13 +429,18 @@ MonoBehaviour:
         <Value>k__BackingField: 10
         <Max>k__BackingField: 10
         <SanityShield>k__BackingField: 1
-    - rid: 1478814968756568611
-      type: {class: Actions/PlaceAttacksOnMap, ns: , asm: Assembly-CSharp}
+    - rid: 1688285175879041293
+      type: {class: Skill/PlaceAttacksOnMap, ns: , asm: Assembly-CSharp}
       data:
         AttacksPlacers:
-        - rid: 1478814968756568612
-    - rid: 1478814968756568612
-      type: {class: Actions/Line, ns: , asm: Assembly-CSharp}
+        - rid: 1688285175879041296
+    - rid: 1688285175879041294
+      type: {class: Skill/DrainBaseParameter, ns: , asm: Assembly-CSharp}
+      data:
+        baseParameterName: 1
+        HowMuch: 2
+    - rid: 1688285175879041296
+      type: {class: Skill/Line, ns: , asm: Assembly-CSharp}
       data:
         StartDistance: 1
         Distance: 10
@@ -443,6 +451,11 @@ MonoBehaviour:
         <DamageType>k__BackingField: 0
         <Effects>k__BackingField: []
         <Override>k__BackingField: 0
+    - rid: 1688285175879041297
+      type: {class: Skill/LowBaseParameter, ns: , asm: Assembly-CSharp}
+      data:
+        baseParameterName: 1
+        WasteCount: 2
 --- !u!33 &8576715605070142110
 MeshFilter:
   m_ObjectHideFlags: 0

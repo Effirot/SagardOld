@@ -15,22 +15,24 @@ public class ZombieAI : CharacterCore
     [Header(" ==== Controller settings ==== ")]
     [Range(1, 20)]public int ViewDistance;
 
+    CharacterCore Target;
+
     protected override async Task BotLogic()
     {
         await Task.Delay(0);
-        Checkers Target = Map.Current.ObjectRegister[0].nowPosition;
 
-        foreach(IObjectOnMap obj in Map.Current.ObjectRegister)
-        {
-            if(Checkers.Distance(obj.nowPosition, nowPosition) < ViewDistance & obj.nowPosition != nowPosition){
-                Target = obj.nowPosition;
-                break;
-            }
-            else Target = nowPosition;
-        }
+        if(Target != null && Checkers.Distance(Target.nowPosition, nowPosition) > ViewDistance)
+            Target = null;
 
-        SetWayToTarget(Target);
+        if(Target == null)
+            foreach(var obj in Map.Current.ObjectRegister)
+                if(Checkers.Distance(obj.Value.nowPosition, nowPosition) < ViewDistance & obj.Value.nowPosition != nowPosition)
+                    Target = obj.Value.Core;
+
+        
+
+        SetWayToTarget(Target?.nowPosition ?? nowPosition);
         AttackTarget = position.ToCheckers() + new Checkers(0, 1);
-        AddActionToPlan(ActionOnIndex(1).Plan(this), "UnitActing");
+        AddActionToPlan(ActionOnIndex(Target == null?0:1).Plan(this), "UnitActing");
     }
 }

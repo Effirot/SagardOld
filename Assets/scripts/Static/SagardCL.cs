@@ -84,7 +84,7 @@ namespace SagardCL //Class library
         #region // Constructor parameters
 
             public CharacterCore Sender;
-            public Checkers Position;
+            public Checkers position;
             public int Damage;
             public DamageType DamageType;
             public Effect[] Effects;
@@ -96,7 +96,7 @@ namespace SagardCL //Class library
             public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, params Effect[] effects)
             {
                 Sender = Who;
-                Position = where;
+                position = where;
                 Damage = Mathf.Clamp(Dam, 0, 10000);
 
                 DamageType = Type;
@@ -106,7 +106,7 @@ namespace SagardCL //Class library
             public Attack(CharacterCore Who, Checkers where, int Dam, DamageType Type, MapEffect[] mapEffects, params Effect[] effects)
             {
                 Sender = Who;
-                Position = where;
+                position = where;
                 Damage = Mathf.Clamp(Dam, 0, 10000);
 
                 DamageType = Type;
@@ -116,7 +116,7 @@ namespace SagardCL //Class library
             public Attack(int Dam, DamageType Type, params Effect[] effects)
             {
                 Sender = null;
-                Position = new Checkers();
+                position = new Checkers();
                 Damage = Mathf.Clamp(Dam, 0, 10000);
 
                 DamageType = Type;
@@ -144,7 +144,7 @@ namespace SagardCL //Class library
             public Dictionary<DamageType, List<Attack>> Sorter = new Dictionary<DamageType, List<Attack>>();
             public HashSet<CharacterCore> Senders = new HashSet<CharacterCore>();
             
-            public bool Checked { get; private set; }
+            public bool Contains => Sorter.Count != 0;
 
             public static AttackCombiner Empty() {
                 Dictionary<DamageType, List<Attack>> Sorter = new Dictionary<DamageType, List<Attack>>();
@@ -153,23 +153,20 @@ namespace SagardCL //Class library
                 return new AttackCombiner(){
                     Sorter = Sorter,
                     Senders = new HashSet<CharacterCore>(),
-                    Checked = false
                 };
             }
 
             public AttackCombiner(params Attack[] attacks) 
             {
-                Checked = attacks.Sum(a=>a.Damage) > 0;
-
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) { Sorter.Add(type, new List<Attack>()); }
                 foreach(Attack attack in attacks) { Add(attack); } 
             }
 
-            public AttackCombiner Add(Attack attack){
-                if(attack.Sender is not null) Senders.Add(attack.Sender);
-                Sorter[attack.DamageType].Add(attack);
-
-                if(attack.Damage > 0) Checked = true;
+            public AttackCombiner Add(params Attack[] attacks){
+                
+                foreach(Attack attack in attacks){
+                    if(attack.Sender is not null) Senders.Add(attack.Sender);
+                    Sorter[attack.DamageType].Add(attack);}
 
                 return this;
             }
@@ -190,8 +187,6 @@ namespace SagardCL //Class library
 
                 foreach(DamageType type in Enum.GetValues(typeof(DamageType))) 
                     { Sorter.Add(type, new List<Attack>()); }
-
-                Checked = false;
             }
 
             public List<Attack> Combine()
@@ -401,17 +396,16 @@ namespace SagardCL //Class library
                     return result;
                 }
 
-                static async IAsyncEnumerable<PatchNode> AllWays(Checkers from, Checkers to, int MaxSteps, params GameObject[] BlackListObjects)
+                static async IAsyncEnumerable<PatchNode> AllWays(Checkers from, Checkers to, float MaxSteps, params GameObject[] BlackListObjects)
                 {
                     List<PatchNode> UnChecked = new List<PatchNode>() ;
                     List<PatchNode> Checked = new List<PatchNode>() { new PatchNode(from) }; 
 
                     Fill(Checked[0]);
-                    float DistanceWalking = MaxSteps;
 
-                    while(UnChecked.Count > 0 & DistanceWalking > 0){
+                    while(UnChecked.Count > 0 & MaxSteps > 0){
                         PatchNode node = UnChecked[0];
-                        UnChecked.ForEach(x => { if(Checkers.Distance(x.position, to, CheckersDistMode.Height) < Checkers.Distance(node.position, to, CheckersDistMode.Height)) node = x; } );
+                        UnChecked.ForEach(x => { if(Checkers.Distance(x.position, to) < Checkers.Distance(node.position, to)) node = x; } );
 
                         UnChecked.Remove(node);
                         Checked.Add(node);
@@ -419,7 +413,7 @@ namespace SagardCL //Class library
                         Fill(node);
 
                         yield return node;
-                        DistanceWalking -= node.DistanceToFrom;
+                        MaxSteps -= node.DistanceToFrom;
                     }
                     await Task.Delay(0);
 
@@ -437,9 +431,6 @@ namespace SagardCL //Class library
                         }
                     }
                 }
-
-
-
             }
         #endregion // =============================== Math 
     }
@@ -479,7 +470,7 @@ namespace SagardCL //Class library
             [SerializeReference, SubclassSelector] public List<ICustomBar> AdditionState;
             public List<Type> Resists;
             [Space]
-            public List<Actions> Skills;
+            public List<Skill> Skills;
 
             [field: SerializeField] public int Strength { get; set; }
             [field: SerializeField] public int Accuracy { get; set; }
@@ -546,7 +537,7 @@ namespace SagardCL //Class library
 
                     AdditionState = new List<ICustomBar>(),
                     Resists = new List<Type>(),
-                    Skills = new List<Actions>() { },
+                    Skills = new List<Skill>() { },
 
                     Strength = 0,
                     Accuracy = 0,
@@ -575,7 +566,7 @@ namespace SagardCL //Class library
             [SerializeReference, SubclassSelector]public List<ICustomBar> AdditionState;
             public List<Type> Resists;
             [Space]
-            public List<Actions> Skills;
+            public List<Skill> Skills;
 
             [field: SerializeField] public int Strength { get; set; }
             [field: SerializeField] public int Accuracy { get; set; }
@@ -652,7 +643,7 @@ namespace SagardCL //Class library
 
                     AdditionState = new List<ICustomBar>(),
                     Resists = new List<Type>(),
-                    Skills = new List<Actions>() { },
+                    Skills = new List<Skill>() { },
 
                     Strength = 0,
                     Accuracy = 0,
@@ -835,10 +826,20 @@ namespace SagardCL //Class library
             
             public interface IObjectOnMap
             {
+                Race Race { get; }
+
+                List<string> Tag { get; }
+
+                Attack.AttackCombiner TakeDamageList { get; set; }
+
                 Checkers nowPosition { get; }
 
                 Balancer BaseBalance { get; }
                 Balancer NowBalance { get; }
+
+                CharacterCore Core { get; }
+
+                
 
                 protected static IObjectOnMap objectClassTo<T>(IObjectOnMap classObject) where T : IObjectOnMap
                 {
@@ -848,24 +849,12 @@ namespace SagardCL //Class library
                         else return (IObjectOnMap)classObject; 
                     }
                 }
-
-                public Attack.AttackCombiner TakeDamageList { get; set; }
                 
-                public bool IsAlive { get; }
+                bool IsAlive { get; } 
 
-                public void AddDamage(params Attack[] attack);
-                public void AddSanity(int damage);
-                public void AddStamina(int damage);
-
-                public void AddEffect(params Effect[] Effect);
-                public void RemoveEffect(params Effect[] Effect);
-                public void RemoveEffect(Predicate<Effect> predicate);
-            }
-            public interface ICharacterOnMap : HaveID, IObjectOnMap
-            {
-                Race Race { get; }
-
-                List<string> Tag { get; }
+                void AddEffect(params Effect[] Effect);
+                void RemoveEffect(params Effect[] Effect);
+                void RemoveEffect(Predicate<Effect> predicate);            
             }
 
             public interface HaveID : IObjectOnMap
@@ -951,5 +940,6 @@ namespace SagardCL //Class library
             }
             return result;
         }
+
     }
 }

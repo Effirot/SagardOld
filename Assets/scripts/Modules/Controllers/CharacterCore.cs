@@ -71,13 +71,15 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
     public static readonly Checkers BufferLocation = new Checkers(3324, 5981);
     #region // =========================================================== All parameters =================================================================================================
         protected virtual string IdAddition{ get => ""; }
+        public CharacterCore Core => this; 
         void SetRegister()
         {
             transform.parent.name = HaveID.GetName() + " " + IdAddition;
             name += $"({transform.parent.name})";
 
-            Map.Current.ObjectRegister.Add(this);
+            Map.Current.ObjectRegister.Add(transform.parent.name, this);
         }
+        
         protected virtual async void Start()
         {
             TakeDamageList.Clear();
@@ -85,7 +87,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             Map.StepSystem.Add(FindStepStage);
             Map.AttackTransporter.AddListener((a) => 
             { 
-                foreach(Attack attack in a.FindAll((a) => a.Position == new Checkers(position))) { 
+                foreach(Attack attack in a.FindAll((a) => a.position == nowPosition)) { 
                     TakeDamageList.Add(attack); }
             });
             Map.StepEnd.AddListener(EveryStepEnd);
@@ -101,6 +103,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
         }
 
         #region // =============================== Parameters
+            [field : SerializeField] public List<string> Tag { get; set; } = new List<string>();
 
             public RacePassiveEffect RaceEffect { get; private set; } 
 
@@ -132,17 +135,17 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
                 public virtual Checkers AttackTarget { get; protected set; }
                 public virtual Checkers MoveTarget { get; protected set; }
-                public virtual Checkers DashTarget { get; protected set; }
-                public virtual Checkers LateDashTarget { get; protected set; }
+                public virtual Checkers DashTarget { get; set; }
+                public virtual Checkers LateDashTarget { get; set; }
                 public List<Checkers> WalkWay { get; set; } = new List<Checkers>();
+                Dictionary<string, Skill> PlanedAction = new Dictionary<string, Skill>();
                 
-                public Actions ActionOnIndex(int index){ return index == 0? Actions.Empty() : NowBalance.Skills[index - 1]; } 
+                public Skill ActionOnIndex(int index){ return index == 0? Skill.Empty() : NowBalance.Skills[index - 1]; } 
                 
-                Dictionary<string, Actions> PlanedAction = new Dictionary<string, Actions>();
-
                 protected virtual GameObject[] WalkBlackList { get => new GameObject[] { gameObject }; }
 
-                public void AddActionToPlan(Actions Action, string Sorting)
+
+                public void AddActionToPlan(Skill Action, string Sorting)
                 {
                     Action.Plan(this);
                     if(PlanedAction.ContainsKey(Sorting)) PlanedAction[Sorting] = Action;
@@ -152,7 +155,6 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 {
                     if(PlanedAction.ContainsKey(Sorting)) PlanedAction.Remove(Sorting);
                 }
-
                 public async void SetWayToTarget(Checkers position)
                 {
                     foreach(var Actions in PlanedAction)
@@ -216,12 +218,15 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 }
 
             #endregion
+        
         #endregion
 
         #region // =============================== Update methods
 
             public void LostHealth()
             {
+                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Map.Current.ObjectRegister.Remove(transform.parent.name); Destroy(transform.parent.gameObject); }
+
                 IsAlive = false;
                 
                 Effects.RemoveAll(a=>a is OneUse | !a.Workable());
@@ -231,7 +236,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
                 this.BaseBalance.Health.Value = this.BaseBalance.Health.Max + this.BaseBalance.Health.Value;
                 
-                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Map.Current.ObjectRegister.Remove(this); Destroy(transform.parent.gameObject); }
+                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Map.Current.ObjectRegister.Remove(transform.parent.name); Destroy(transform.parent.gameObject); }
             }
             void AfterInventoryUpdate()
             {
@@ -260,12 +265,18 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                 MethodInfo Method = typeof(CharacterCore).GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
                 if(Method == null) return Empty();
-                return (Task)Method?.Invoke((this), parameters: null);
+                return Find(Method);
 
                 async Task Empty() { await Task.Delay(0); }
+                async Task Find(MethodInfo task) 
+                {
+                    try { await (Task)Method?.Invoke((this), parameters: null); }
+                    catch (Exception a) { Debug.LogError($"{transform.parent.name}\n{a}"); }
+                }
             }   
 
             protected virtual async Task BotLogic() { await Task.Run(()=>{}); }
+            
             async Task Walking()
             {
                 LateDashTarget = MoveTarget;
@@ -300,17 +311,14 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
                     if(target.Value != null)
                         target.Value.Complete(this);
                 
-                AttackTarget = MoveTarget;
+                AttackTarget = nowPosition;
             }
-
-
-
             async Task EffectUpdate()
             {
                 await Task.Delay(10);                 
                 
                 InvokeEffects("Update");
-                if(TakeDamageList.Checked) InvokeEffects("DamageReaction");
+                if(TakeDamageList.Contains) InvokeEffects("DamageReaction");
             }
             async Task LateWalking()
             {

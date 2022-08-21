@@ -12,10 +12,10 @@ using System.Linq;
 
 #region // Actions
 
-    [Serializable] public class Actions
+    [Serializable] public class Skill
     {
-        public static Actions Empty(){
-            return new Actions()
+        public static Skill Empty(){
+            return new Skill()
             {
                 Name = "Empty",
                 Description = "Empty Skill Description",
@@ -36,16 +36,16 @@ using System.Linq;
         [SerializeReference, SubclassSelector] List<Act> Realizations;
         [SerializeReference, SubclassSelector] List<ActionCheck> ActionChecks;
 
-        public string FalseArgument;
+        public string Exception;
 
         public bool Check(CharacterCore target)
         {
-            FalseArgument = "";
+            Exception = "";
             foreach(ActionCheck check in ActionChecks) 
                 if(!check.Check(target))
-                    FalseArgument+=$" - {check.CheckFalseReasons}\n";
+                    Exception+=$" - {check.CheckFalseReasons}\n";
             
-            return FalseArgument == "";
+            return Exception == "";
         }
         
         public void Complete(CharacterCore target)
@@ -53,7 +53,7 @@ using System.Linq;
             foreach(Act act in Realizations)
                 act.Completing(target);
         }
-        public Actions Plan(CharacterCore target)
+        public Skill Plan(CharacterCore target)
         {
             foreach(Act act in Realizations)
                 act.Planing(target);
@@ -98,22 +98,27 @@ using System.Linq;
                 void Planing(CharacterCore action);
                 void Completing(CharacterCore action);
             }
-            [Serializable]public struct PlaceAttacksOnMap : Act
+            [Serializable]public class PlaceAttacksOnMap : Act
             {
                 [SerializeReference, SubclassSelector] public List<AttacksPlacer> AttacksPlacers;
                 Checkers PlanedTargetPoint;
                 Checkers PlanedFromPoint;
 
+                List<Attack> PlannedHitBox = new List<Attack>();
+
                 public async void Planing(CharacterCore action) 
                 {
                     PlanedTargetPoint = action.AttackTarget;
                     PlanedFromPoint = action.MoveTarget;
-                    Map.Current.DrawAttack(await GetAttacks(PlanedFromPoint, PlanedTargetPoint, action), action);
+
+                    Map.Current.DrawAttack(PlannedHitBox = await GetAttacks(PlanedFromPoint, PlanedTargetPoint, action), action);
                 }
 
-                public async void Completing(CharacterCore action)
+                public void Completing(CharacterCore action)
                 {
-                    Map.AttackTransporter.Invoke(await GetAttacks(PlanedFromPoint, PlanedTargetPoint, action));
+                    Map.AttackTransporter.Invoke(PlannedHitBox);
+                    PlannedHitBox.Clear();
+                    Map.Current.DrawAttack(PlannedHitBox, action);
                 }
 
                 public async Task<List<Attack>> GetAttacks(Checkers from, Checkers to, CharacterCore target)
@@ -123,16 +128,16 @@ using System.Linq;
 
                     foreach(AttacksPlacer HitZone in AttacksPlacers) 
                         await foreach(Attack attack in HitZone.GetAttackList(from, to, target)){ 
-                            if(!Overrides.Exists(a=>a==attack.Position)) {
+                            if(!Overrides.Exists(a=>a==attack.position)) {
                                 attackList.Add(attack); 
                                 
                                 if(HitZone.Override) 
-                                    Overrides.Add(attack.Position); } }
+                                    Overrides.Add(attack.position); } }
 
                     return attackList;
                 }
             }
-            [Serializable]public struct DrainBaseParameter : Act
+            [Serializable]public class DrainBaseParameter : Act
             {
                 enum BaseParameterName
                 {
