@@ -226,48 +226,69 @@ namespace SagardCL //Class library
             }
         }
     }
-    [Serializable] public struct Checkers
+    [Serializable] public struct Checkers : IEquatable<Checkers>
     {
-        [SerializeField] int X, Z;
-        [SerializeField] float UP;
+        [field: SerializeField] public int x { get; private set; }
+        [field: SerializeField] public int z { get; private set; }
+        [field: SerializeField] private float UP { get; set; }
+        [field: SerializeField] public byte layer { get; private set; }
 
-        public int x => X;
-        public int z => Z;
-        public float up => this.UP + YUpPos(LayerMask.GetMask("Map"));
+        public LayerMask CurrentLayer => LayerMask.GetMask("Map" + layer.ToString());
+
+        public float up => this.UP + YUpPos();
         public float clearUp => UP;
 
-        float YUpPos(LayerMask layer)
+        float YUpPos()
         {
-            if (Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, layer))
+            if (Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, CurrentLayer))
                 return hit.point.y;
             return 0;
         }
 
         #region // =============================== Realizations
 
-            public Checkers(float x, float z, float UPadd = 0) { X = (int)Mathf.Round(x); Z = (int)Mathf.Round(z); UP = UPadd; }
-            public Checkers(Vector3 Vector, float UPadd = 0) { X = (int)Mathf.Round(Vector.x); Z = (int)Mathf.Round(Vector.z); UP = UPadd; }
-            public Checkers(Vector2 Vector, float UPadd = 0) { X = (int)Mathf.Round(Vector.x); Z = (int)Mathf.Round(Vector.y); UP = UPadd; }
+            public Checkers(float x, float z, float UPadd = 0) { 
+                this.x = (int)Mathf.Round(x); 
+                this.z = (int)Mathf.Round(z); 
+                this.UP = UPadd; 
+                layer = 0; }
+            public Checkers(float x, float z, byte Layer, float UPadd = 0) { 
+                this.x = (int)Mathf.Round(x); 
+                this.z = (int)Mathf.Round(z); 
+                this.UP = UPadd; 
+                layer = Layer; }
+            public Checkers(Vector3 Vector, float UPadd = 0) { 
+                this.x = (int)Mathf.Round(Vector.x); 
+                this.z = (int)Mathf.Round(Vector.z); 
+                this.UP = UPadd; 
+                layer = 0; }
+            public Checkers(Vector3 Vector, byte Layer, float UPadd = 0) { 
+                this.x = (int)Mathf.Round(Vector.x); 
+                this.z = (int)Mathf.Round(Vector.z); 
+                this.UP = UPadd; 
+                layer = Layer; }
 
             public static implicit operator Vector3(Checkers a) { return new Vector3(a.x, a.up, a.z); }
             public static implicit operator Checkers(Vector3 a) { return new Checkers(a.x, a.z); }
 
-            public static Checkers operator +(Checkers a, Checkers b) { return new Checkers(a.x + b.x, a.z + b.z, a.up); }
-            public static Checkers operator -(Checkers a, Checkers b) { return new Checkers(a.x - b.x, a.z - b.z, a.up); }
-            public static Checkers operator *(Checkers a, float b) { return new Checkers(a.x * b, a.z * b, a.up); }
-            public static Checkers operator *(float b, Checkers a) { return new Checkers(a.x * b, a.z * b, a.up); }
+            public static Checkers operator +(Checkers a, Checkers b) { return new Checkers(a.x + b.x, a.z + b.z, a.layer, a.up); }
+            public static Checkers operator -(Checkers a, Checkers b) { return new Checkers(a.x - b.x, a.z - b.z, a.layer, a.up); }
+            public static Checkers operator *(Checkers a, float b) { return new Checkers(a.x * b, a.z * b, a.layer, a.up); }
+            public static Checkers operator *(float b, Checkers a) { return new Checkers(a.x * b, a.z * b, a.layer, a.up); }
             public static bool operator ==(Checkers a, Checkers b) { return a.x == b.x & a.z == b.z; }
             public static bool operator !=(Checkers a, Checkers b) { return !(a.x == b.x & a.z == b.z); }
+            public bool Equals(Checkers other) { return this == other; }
             
             public override int GetHashCode() { return 0; }  
             public override bool Equals(object o) { return true; } 
 
-            public Checkers Up(float a){ return new Checkers(this, a); }
+            public Checkers Up(float a) => new Checkers(x, z, layer, a); 
+            public Checkers Layer(byte a) => new Checkers(x, z, a, UP); 
 
         #endregion // =============================== Realizations
         #region // =============================== Math
 
-            public override string ToString() { return $"{x}:{z}"; }
+            public override string ToString() { return $"{x}:{z}-{layer} {up.ToString()}"; }
 
             public enum CheckersDistMode{ NoHeight, Height, OnlyHeight, }
             public static float Distance(Checkers a, Checkers b, CheckersDistMode Mode = CheckersDistMode.NoHeight)
@@ -283,33 +304,26 @@ namespace SagardCL //Class library
             }
 
             public Vector3 ToVector3(bool UseClearUp = false){ return new Vector3(x, UseClearUp? clearUp : up, z); }
-            public static List<Vector3> ToVector3List(List<Checkers> checkers) 
+            public static List<Vector3> ToVector3List(params Checkers[] checkers) 
             { 
                 List<Vector3> list = new List<Vector3>();
                 foreach(Checkers checker in checkers){ list.Add(checker.ToVector3()); }
                 return list;        
             }
-            public static List<Checkers> ToCheckersList(List<Vector3> vector3, float up = 0) 
+            public static List<Checkers> ToCheckersList(float up = 0, params Vector3[] vector3) 
             { 
                 List<Checkers> list = new List<Checkers>();
                 foreach(Checkers vector in vector3){ list.Add(new Checkers(vector, up)); }
                 return list;        
             }
 
-            public static bool CheckCoords(Checkers Coordinates, params GameObject[] BlackList) 
+            public bool CheckCoords(params GameObject[] BlackList) 
             {
-                bool result = Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Object"));
+                bool result = Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("FactualObject", "PlanedObject"));
                 if(BlackList != null && result)BlackList.ToList().ForEach(a=> { if(a == hit.collider.gameObject) result = false;});
                 return !result;
             }
-            public static bool CheckCoords(int x, int z)
-            {
-                return Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"));
-            }
-            public static bool CheckFloor(Checkers Coordinates) 
-            {
-                return Physics.Raycast(new Vector3(Coordinates.x, 1000, Coordinates.z), -Vector3.up, Mathf.Infinity, LayerMask.GetMask("Map"));
-            }
+            public bool CheckFloor() => Physics.Raycast(new Vector3(x, 1000, z), -Vector3.up, Mathf.Infinity, CurrentLayer);
 
             public static Checkers Lerp(Checkers pos1, Checkers pos2, float StepSize)
             {
@@ -322,7 +336,11 @@ namespace SagardCL //Class library
             {
                 return Checkers.Lerp(pos1, pos2, Distance(pos1, pos2) / StepSize);
             }
-
+            public Checkers Normalize() 
+            { 
+                float distance = Mathf.Sqrt(x * x + z * z);
+                return new Checkers(x / distance, z / distance); 
+            }
             public static List<Checkers> Line(Checkers pos1, Checkers pos2) {
                 List<Checkers> result = new List<Checkers>();
                 
@@ -344,12 +362,12 @@ namespace SagardCL //Class library
                     if(error2 > -deltaZ) 
                     {
                         error -= deltaZ;
-                        pos1.X += signX;
+                        pos1.x += signX;
                     }
                     if(error2 < deltaX) 
                     {
                         error += deltaX;
-                        pos1.Z += signZ;
+                        pos1.z += signZ;
                     }
                     result.Add(pos1);
                 }
@@ -421,8 +439,8 @@ namespace SagardCL //Class library
                     {
                         for (int x = -1; x <= 1; x++)
                         for (int z = -1; z <= 1; z++) {
-                            if(Checkers.CheckCoords(target.position + new Checkers(x, z), BlackListObjects))
-                            if(Checkers.CheckFloor(target.position + new Checkers(x, z)))
+                            if((target.position + new Checkers(x, z)).CheckCoords(BlackListObjects))
+                            if((target.position + new Checkers(x, z)).CheckFloor())
                             if(Checkers.Distance(target.position + new Checkers(x, z), target.position, CheckersDistMode.OnlyHeight) < 1.3f)
                             
                             if(!UnChecked.Exists(a=>a.position == target.position + new Checkers(x, z)))
@@ -829,18 +847,8 @@ namespace SagardCL //Class library
                 Race Race { get; }
 
                 List<string> Tag { get; }
-
-                Attack.AttackCombiner TakeDamageList { get; set; }
-
                 Checkers nowPosition { get; }
-
-                Balancer BaseBalance { get; }
-                Balancer NowBalance { get; }
-
-                CharacterCore Core { get; }
-
                 
-
                 protected static IObjectOnMap objectClassTo<T>(IObjectOnMap classObject) where T : IObjectOnMap
                 {
                     lock(classObject)
@@ -849,9 +857,7 @@ namespace SagardCL //Class library
                         else return (IObjectOnMap)classObject; 
                     }
                 }
-                
-                bool IsAlive { get; } 
-
+        
                 void AddEffect(params Effect[] Effect);
                 void RemoveEffect(params Effect[] Effect);
                 void RemoveEffect(Predicate<Effect> predicate);            
@@ -940,6 +946,5 @@ namespace SagardCL //Class library
             }
             return result;
         }
-
     }
 }

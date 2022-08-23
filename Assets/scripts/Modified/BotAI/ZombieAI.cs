@@ -25,9 +25,9 @@ public class ZombieAI : CharacterCore
             Target = null;
 
         if(Target == null)
-            foreach(var obj in Map.Current.ObjectRegister)
+            foreach(var obj in Session.CharacterRegister)
                 if(Checkers.Distance(obj.Value.nowPosition, nowPosition) < ViewDistance & obj.Value.nowPosition != nowPosition)
-                    Target = obj.Value.Core;
+                    Target = obj.Value;
 
         
 

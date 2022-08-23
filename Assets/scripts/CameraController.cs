@@ -15,7 +15,7 @@ public class CameraController : MonoBehaviour
     void FixedUpdate()
     {
         TranslatePos += (Input.GetAxis("Horizontal") * transform.right * cameraSpd / 100) + (Input.GetAxis("Vertical") * transform.forward * cameraSpd / 100);
-        transform.position = TranslatePos + new Vector3(0, Mathf.Lerp(transform.position.y, new Checkers(transform.position).up, 0.04f), 0);
+        transform.position = TranslatePos + new Vector3(0, Mathf.Lerp(transform.position.y, new Checkers(transform.position).Layer(CursorController.CurrentPlayerShowLayer).up, 0.04f), 0);
 
         Vector3 rot = new Vector3(0, Input.GetAxis("Camera rot"), 0);
         transform.eulerAngles -= rot * (rotSpd / 10);

@@ -6135,7 +6135,7 @@ GameObject:
   - component: {fileID: 1521680032}
   - component: {fileID: 1521680026}
   - component: {fileID: 1521680028}
-  m_Layer: 7
+  m_Layer: 8
   m_Name: -------Map------
   m_TagString: GameController
   m_Icon: {fileID: 0}
@@ -6171,10 +6171,6 @@ MonoBehaviour:
     MaterialVariants:
     - {fileID: 2100000, guid: 57899e4d82376b545b3e84cff05c1d5e, type: 2}
     DeformProtection: 0
-  posForWay:
-    X: 0
-    Z: 0
-    UP: 0
 --- !u!4 &1521680027
 Transform:
   m_ObjectHideFlags: 0
@@ -6199,7 +6195,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1521680025}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d2beab83d5891d419463562dbd7cd5b, type: 3}
+  m_Script: {fileID: 11500000, guid: 50f40429b39e11c47ab43318789f4a0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   StepEndPanelLink: {fileID: 2112842907}
@@ -6576,11 +6572,11 @@ MonoBehaviour:
     WalkDistance: 2
     Visible: 0
     Health:
-      rid: -2
+      rid: 1478814968756568860
     Stamina:
-      rid: -2
+      rid: 1478814968756568861
     Sanity:
-      rid: -2
+      rid: 1478814968756568862
     AdditionState: []
     Skills:
     - Name: 
@@ -6589,7 +6585,7 @@ MonoBehaviour:
       image: {fileID: 0}
       NoWalk: 0
       Realizations:
-      - rid: -2
+      - rid: 1478814968756568863
       ActionChecks: []
       Exception: 
     <Strength>k__BackingField: 5
@@ -6610,6 +6606,43 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 1478814968756568860
+      type: {class: Health, ns: , asm: Assembly-CSharp}
+      data:
+        <Value>k__BackingField: 11
+        <Max>k__BackingField: 11
+        <ArmorMelee>k__BackingField: 1
+        <ArmorRange>k__BackingField: 1
+        <Immunity>k__BackingField: 0
+    - rid: 1478814968756568861
+      type: {class: Stamina, ns: , asm: Assembly-CSharp}
+      data:
+        <Value>k__BackingField: 0
+        <Max>k__BackingField: 0
+        <RestEffectivity>k__BackingField: 0
+        <WalkUseStamina>k__BackingField: 0
+    - rid: 1478814968756568862
+      type: {class: Insanity, ns: , asm: Assembly-CSharp}
+    - rid: 1478814968756568863
+      type: {class: Skill/PlaceAttacksOnMap, ns: , asm: Assembly-CSharp}
+      data:
+        AttacksPlacers:
+        - rid: 1478814968756568864
+    - rid: 1478814968756568864
+      type: {class: Skill/Sphere, ns: , asm: Assembly-CSharp}
+      data:
+        StartDistance: 0
+        AdditionDistance: 0
+        TargetingType: 4
+        <DamagePercent>k__BackingField: 1
+        <Scaling>k__BackingField: 0
+        ScalingPower: 0
+        <DamageType>k__BackingField: 0
+        StartRadius: 1
+        PlusRadius: 1
+        WallPiercing: 0
+        <Effects>k__BackingField: []
+        <Override>k__BackingField: 0
 --- !u!64 &1995883554
 MeshCollider:
   m_ObjectHideFlags: 0

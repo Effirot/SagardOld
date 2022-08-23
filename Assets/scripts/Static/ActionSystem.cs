@@ -111,14 +111,14 @@ using System.Linq;
                     PlanedTargetPoint = action.AttackTarget;
                     PlanedFromPoint = action.MoveTarget;
 
-                    Map.Current.DrawAttack(PlannedHitBox = await GetAttacks(PlanedFromPoint, PlanedTargetPoint, action), action);
+                    Session.Current.DrawAttack(PlannedHitBox = await GetAttacks(PlanedFromPoint, PlanedTargetPoint, action), action.nowPosition.layer, action);
                 }
 
                 public void Completing(CharacterCore action)
                 {
-                    Map.AttackTransporter.Invoke(PlannedHitBox);
+                    Session.AttackTransporter.Invoke(action.nowPosition.layer, PlannedHitBox);
                     PlannedHitBox.Clear();
-                    Map.Current.DrawAttack(PlannedHitBox, action);
+                    Session.Current.DrawAttack(PlannedHitBox, action.nowPosition.layer, action);
                 }
 
                 public async Task<List<Attack>> GetAttacks(Checkers from, Checkers to, CharacterCore target)

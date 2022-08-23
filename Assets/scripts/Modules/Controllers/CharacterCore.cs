@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using Random = UnityEngine.Random;
 using UnityAsync;
+using System.Threading;
 
 public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
     
@@ -70,36 +71,40 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
     
     public static readonly Checkers BufferLocation = new Checkers(3324, 5981);
     #region // =========================================================== All parameters =================================================================================================
+        
         protected virtual string IdAddition{ get => ""; }
-        public CharacterCore Core => this; 
         void SetRegister()
         {
             transform.parent.name = HaveID.GetName() + " " + IdAddition;
             name += $"({transform.parent.name})";
 
-            Map.Current.ObjectRegister.Add(transform.parent.name, this);
+            Session.CharacterRegister.Add(transform.parent.name, this);
+            Session.ObjectRegister.Add(transform.parent.name, this);
         }
-        
+
         protected virtual async void Start()
         {
             TakeDamageList.Clear();
 
-            Map.StepSystem.Add(FindStepStage);
-            Map.AttackTransporter.AddListener((a) => 
+            Session.StepSystem.Add(FindStepStage);
+            Session.AttackTransporter.AddListener((layer, a) => 
             { 
-                foreach(Attack attack in a.FindAll((a) => a.position == nowPosition)) { 
+                foreach(Attack attack in a.FindAll((a) => a.position == nowPosition & a.position.layer == nowPosition.layer)) { 
                     TakeDamageList.Add(attack); }
             });
-            Map.StepEnd.AddListener(EveryStepEnd);
+            Session.StepEnd.AddListener(EveryStepEnd);
             
             AfterInventoryUpdate();
 
             await Task.Delay(5);
-            position = new Checkers(position);
-            MoveTarget = new Checkers(position);
-            AttackTarget = new Checkers(position);
+            AttackTarget = MoveTarget = position = new Checkers(position);
 
             SetRegister();
+        }
+        protected virtual void OnDestroy() {
+            Session.CharacterRegister.Remove(transform.parent.name);
+            Session.ObjectRegister.Remove(transform.parent.name);
+            Session.StepSystem.Remove(FindStepStage);
         }
 
         #region // =============================== Parameters
@@ -225,7 +230,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
             public void LostHealth()
             {
-                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Map.Current.ObjectRegister.Remove(transform.parent.name); Destroy(transform.parent.gameObject); }
+                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Session.ObjectRegister.Remove(transform.parent.name); Destroy(transform.parent.gameObject); }
 
                 IsAlive = false;
                 
@@ -236,7 +241,7 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
 
                 this.BaseBalance.Health.Value = this.BaseBalance.Health.Max + this.BaseBalance.Health.Value;
                 
-                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Map.Current.ObjectRegister.Remove(transform.parent.name); Destroy(transform.parent.gameObject); }
+                if(!IsAlive & this.NowBalance.Health.Value <= 0) { Session.ObjectRegister.Remove(transform.parent.name); Destroy(transform.parent.gameObject); }
             }
             void AfterInventoryUpdate()
             {
@@ -264,14 +269,16 @@ public abstract class CharacterCore : MonoBehaviour, IObjectOnMap, HaveID {
             Task FindStepStage(string id){
                 MethodInfo Method = typeof(CharacterCore).GetMethod(id, BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-                if(Method == null) return Empty();
-                return Find(Method);
+                return Method != null? Find(Method) : null;
 
-                async Task Empty() { await Task.Delay(0); }
                 async Task Find(MethodInfo task) 
                 {
-                    try { await (Task)Method?.Invoke((this), parameters: null); }
-                    catch (Exception a) { Debug.LogError($"{transform.parent.name}\n{a}"); }
+                    CancellationTokenSource Block = new CancellationTokenSource();
+
+                    try { Block.CancelAfter(3500); await (Task)Method?.Invoke((this), parameters: null); }
+                    
+                    catch (OperationCanceledException){ return; }
+                    catch (Exception a) { Debug.LogError($"{transform.parent.name}\n{a}"); return;  }
                 }
             }   
 

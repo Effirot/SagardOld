@@ -35,7 +35,7 @@ public abstract class CharacterCoreVisualized : CharacterCore
     {
         base.Start();
 
-        Map.MapUpdate.AddListener(MapUpdate);
+        Session.MapUpdate.AddListener(MapUpdate);
     }
     public void MapUpdate()
     {
@@ -43,7 +43,7 @@ public abstract class CharacterCoreVisualized : CharacterCore
         AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
 
         MPlaner.LineRenderer.positionCount = WalkWay.Count;
-        MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
+        MPlaner.LineRenderer.SetPositions(WalkWay.ConvertAll(new Converter<Checkers, Vector3>(a=>a.ToVector3())).ToArray()); 
 
         MPlaner.Renderer.enabled = new Checkers(MPlaner.position) != new Checkers(this.position);
     }

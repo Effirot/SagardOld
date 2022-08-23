@@ -74,7 +74,7 @@ using UnityEditor;
                 AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
 
                 MPlaner.LineRenderer.positionCount = WalkWay.Count;
-                MPlaner.LineRenderer.SetPositions(Checkers.ToVector3List(WalkWay).ToArray()); 
+                MPlaner.LineRenderer.SetPositions(WalkWay.ConvertAll(new Converter<Checkers, Vector3>(a=>a.ToVector3())).ToArray()); 
 
                 MPlaner.Renderer.enabled = a != new Checkers(this.position);
         } });
@@ -87,7 +87,14 @@ using UnityEditor;
                 AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
             }
         });
-        Map.StepEnd.AddListener(()=>SkillIndex = 0);
+        Session.StepEnd.AddListener(()=>SkillIndex = 0);
+    
+        //Session.thisPlayerFigures.Add(transform.parent.name, this);
+    }
+    protected override void OnDestroy()
+    {
+        Session.thisPlayerFigures.Remove(transform.parent.name);
+        base.OnDestroy();
     }
     
     private int MouseTest = 0;
@@ -96,22 +103,22 @@ using UnityEditor;
         //Attack planner
         //if(!SkillRealizer.Check()) APlaner.position = MPlaner.position;
 
-        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
         
-        Map.MapUpdate.Invoke();
+        Session.MapUpdate.Invoke();
         MapUpdate();
 
         MPlaner.Collider.enabled = true;
     }
     void MovePlaningIn() {
-        UnitUIController.UiEvent.Invoke("CloseForPlayer", gameObject, this);
+        Session.MapUpdate.Invoke();
     }
     void AttackPlaningIn()
     {
         SkillIndex = 0;
         AttackTarget = CursorController.position;
         AddActionToPlan(ActionOnIndex(SkillIndex), "UnitActing");
-        UnitUIController.UiEvent.Invoke("OpenForPlayer", MPlaner.Planer, this);
+        
+        Session.MapUpdate.Invoke();
 
         //APlaner.Renderer.material.color = (!SkillRealizer.Check())? Color.green : Color.red;
         //await AttackPlannerUpdate();

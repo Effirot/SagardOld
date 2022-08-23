@@ -36,16 +36,15 @@ public class CursorController : MonoBehaviour
 
             _MouseWheel = value;
         }
-    } 
+    }  
 
-
-
+    public static byte CurrentPlayerShowLayer = 0;
 
 
     void Update()
     {
         transform.position = position;
-        if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map"))) position = new Checkers(hit.point);
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit, Mathf.Infinity, LayerMask.GetMask("Map" + CurrentPlayerShowLayer))) position = new Checkers(hit.point, CurrentPlayerShowLayer);
 
         float Distance = Vector3.Distance(transform.position, position) / 10;
         position = Vector3.MoveTowards(transform.position, new Checkers(position, Input.GetMouseButton(0) | Input.GetMouseButton(1)? 0.1f : 0.4f), 0.001f + Distance * 9.0f);
@@ -53,7 +52,7 @@ public class CursorController : MonoBehaviour
         MouseWheel += Input.GetAxis("Mouse ScrollWheel");
     }
     
-    void OnTriggerEnter(Collider collider) { if(collider.gameObject.layer == LayerMask.NameToLayer("Object")) ObjectOnMap = collider.gameObject; }
+    void OnTriggerEnter(Collider collider) { if(collider.gameObject.layer == LayerMask.NameToLayer("PlanedObject")) ObjectOnMap = collider.gameObject; }
     void OnTriggerExit(Collider collider) { ObjectOnMap = null; }
 
 }

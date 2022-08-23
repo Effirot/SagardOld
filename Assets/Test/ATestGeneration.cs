@@ -9,7 +9,7 @@ public class ATestGeneration : MonoBehaviour
 {
     public void StartStep(int repeats = 0)
     {
-        Map.StartStepTasks(repeats);
+        Session.StartStepTasks(repeats);
     }
 
     [SerializeField] PlatformPreset[] PlatformPreset;
@@ -18,29 +18,16 @@ public class ATestGeneration : MonoBehaviour
 
     void Start()
     {
-        Regenerate();
+        new Session(40, 40, 2,
+
+            (x, z, layer, key) => 
+            { return Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 1.1f; },
+
+            (x, z, layer, key) => 
+            { return PlatformPreset[layer % (PlatformPreset.Length - 1)]; },
+
+            (x, z, layer, key) => 
+            { return (x % 5 == 0 | z % 5 == 0)? 1 : 0; }
+        );
     }
-    public void Regenerate()
-    {
-        new Map(
-        (x, z, key) => 
-        { return Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 1.1f; },
-
-        (x, z, key) => 
-        { return PlatformPreset[(int)Mathf.Round(Mathf.PerlinNoise(x * 0.3f + key / 100, z * 0.3f + key / 100) * 3f) % 3]; },
-
-        (x, z, key) => 
-        { return (x % 5 == 0 | z % 5 == 0)? 1 : 0; },
-        
-        1, 3);
-
-        GetComponent<MeshRenderer>().sharedMaterials = Map.Current.MaterialsList.ToArray();
-
-        GetComponent<MeshCollider>().sharedMesh = Map.Current.MapCollider;
-        GetComponent<MeshFilter>().sharedMesh = Map.Current.MapMesh;
-    }
-
-
-
-
 }
