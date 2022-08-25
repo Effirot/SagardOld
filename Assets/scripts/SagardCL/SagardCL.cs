@@ -8,8 +8,9 @@ using SagardCL.MapObjectInfo;
 using System.Reflection;
 using System.Linq;
 using System.Threading.Tasks;
-using Random = UnityEngine.Random;
 using UnityAsync;
+using SagardCL.Actions;
+using Action = SagardCL.Actions.Action;
 
 namespace SagardCL //Class library
 {
@@ -473,212 +474,214 @@ namespace SagardCL //Class library
 
 
 
-    #region // Balancers
 
-        [Serializable] public class Balancer
-        {
-            public int WalkDistance;
-
-            public int Visible;
-
-            [SerializeReference, SubclassSelector] public IHealthBar Health;
-            [SerializeReference, SubclassSelector] public IStaminaBar Stamina;
-            [SerializeReference, SubclassSelector] public ISanityBar Sanity;
-
-            [SerializeReference, SubclassSelector] public List<ICustomBar> AdditionState;
-            public List<Type> Resists;
-            [Space]
-            public List<Skill> Skills;
-
-            [field: SerializeField] public int Strength { get; set; }
-            [field: SerializeField] public int Accuracy { get; set; }
-            [field: SerializeField] public int RezoOverclocking { get; set; }
-            [field: SerializeField] public int Healing { get; set; }
-            [field: SerializeField] public int Repairing { get; set; }
-
-            [field: SerializeField] public int DamagePure { get; set; }
-            [field: SerializeField] public int DamageRange { get; set; }
-            
-            public static Balancer operator +(Balancer Current, ReBalancer Incoming)
-            {
-                Balancer Result = Current.MemberwiseClone() as Balancer;
-                
-                if(Incoming.ReplaceHealth) Result.Health = Incoming.Health + Current.Health;
-                else Result.Health = Current.Health + Incoming.Health;
-                Result.Health.Value = Current.Health.Value + Incoming.Health.Max;
-
-                if(Incoming.ReplaceSanity) Result.Sanity = Incoming.Sanity + Current.Sanity;
-                else Result.Sanity = Current.Sanity + Incoming.Sanity;
-                Result.Sanity.Value = Current.Sanity.Value + Incoming.Sanity.Max;
-
-                if(Incoming.ReplaceStamina) Result.Stamina = Incoming.Stamina + Current.Stamina;
-                else Result.Stamina = Current.Stamina + Incoming.Stamina;
-                Result.Stamina.Value = Current.Stamina.Value + Incoming.Stamina.Max;
-
-                Result.Visible = Current.Visible + Incoming.Visible;
-                Result.WalkDistance = Current.WalkDistance + Incoming.WalkDistance;
-
-                Result.Strength = Current.Strength + Incoming.Strength;
-                Result.Accuracy = Current.Accuracy + Incoming.Accuracy;
-                Result.RezoOverclocking = Current.RezoOverclocking + Incoming.RezoOverclocking;
-                Result.Healing = Current.Healing + Incoming.Healing;
-                Result.Repairing = Current.Repairing + Incoming.Repairing;
-                Result.DamagePure = Current.DamagePure + Incoming.DamagePure;
-                Result.DamageRange = Current.DamageRange + Incoming.DamageRange;
-
-                if(Incoming.Resists is not null & Incoming.Resists.Count > 0) { 
-                    Result.Resists.AddRange(Incoming.Resists); 
-                    Result.Resists = Current.Resists.Distinct().ToList(); 
-                    Result.Resists.Sort(); }
-
-                // if(Incoming.AdditionState is not null) foreach(ICustomBar IncomingState in Incoming.AdditionState) {
-                //     if(Result.AdditionState.Exists(a=>a.GetType() == IncomingState.GetType())) 
-                //         Checking.AddDuplicate(IncomingState.Value);
-                //     else
-                //         Result.AdditionState.Add(IncomingState.Key, IncomingState.Value); }
-
-                if(Incoming.Skills is not null) 
-                    Result.Skills.AddRange(Incoming.Skills);
-
-                return Result;
-            }
-
-            public static Balancer Empty() {
-                return new Balancer()
-                {
-                    WalkDistance = 0,
-                    Visible = 0,
-
-                    Health = new Health() { Max = 0 },
-                    Stamina = new Stamina() { Max = 0 },
-                    Sanity = new Sanity() { Max = 0 },
-
-                    AdditionState = new List<ICustomBar>(),
-                    Resists = new List<Type>(),
-                    Skills = new List<Skill>() { },
-
-                    Strength = 0,
-                    Accuracy = 0,
-                    RezoOverclocking = 0,
-                    Healing = 0,
-                    Repairing = 0,
-
-                    DamagePure = 0,
-                    DamageRange = 0,
-                };
-            }
-        }
-        [Serializable] public struct ReBalancer
-        {
-            public int WalkDistance;
-
-            public int Visible;
-
-            [SerializeReference, SubclassSelector]public IHealthBar Health;
-            public bool ReplaceHealth;
-            [SerializeReference, SubclassSelector]public IStaminaBar Stamina;
-            public bool ReplaceStamina;
-            [SerializeReference, SubclassSelector]public ISanityBar Sanity;
-            public bool ReplaceSanity;
-
-            [SerializeReference, SubclassSelector]public List<ICustomBar> AdditionState;
-            public List<Type> Resists;
-            [Space]
-            public List<Skill> Skills;
-
-            [field: SerializeField] public int Strength { get; set; }
-            [field: SerializeField] public int Accuracy { get; set; }
-            [field: SerializeField] public int RezoOverclocking { get; set; }
-            [field: SerializeField] public int Healing { get; set; }
-            [field: SerializeField] public int Repairing { get; set; }
-
-            [field: SerializeField] public int DamagePure { get; set; }
-            [field: SerializeField] public int DamageRange { get; set; }
-
-            public static ReBalancer operator +(ReBalancer left, ReBalancer Incoming)
-            {
-                if(Incoming.ReplaceHealth) {
-                    left.ReplaceHealth = true;
-                    
-                    left.Health = Incoming.Health + left.Health;
-                }
-                else left.Health += Incoming.Health;
-                if(Incoming.ReplaceSanity) {
-                    left.ReplaceSanity = true;
-
-                    left.Sanity = Incoming.Sanity + left.Sanity;
-                }
-                else left.Sanity += Incoming.Sanity;
-                if(Incoming.ReplaceStamina) {
-                    left.ReplaceStamina = true;
-                    
-                    left.Stamina = Incoming.Stamina + left.Stamina;
-                }
-                else left.Stamina += Incoming.Stamina;
-
-                left.Visible += Incoming.Visible;
-                left.WalkDistance += Incoming.WalkDistance;
-
-                left.Strength += Incoming.Strength;
-                left.Accuracy += Incoming.Accuracy;
-                left.RezoOverclocking += Incoming.RezoOverclocking;
-                left.Healing += Incoming.Healing;
-                left.Repairing += Incoming.Repairing;
-                left.DamagePure += Incoming.DamagePure;
-                left.DamageRange += Incoming.DamageRange;
-
-                if(Incoming.Resists is not null) { 
-                    left.Resists.AddRange(Incoming.Resists); 
-                    left.Resists = left.Resists.Distinct().ToList(); 
-                    left.Resists.Sort(); }
-
-                // if(Incoming.AdditionState is not null) foreach(var otherState in Incoming.AdditionState) {
-                //     if(left.AdditionState.TryGetValue(otherState.Key, out ICustomBar Checking)) 
-                //         Checking.AddDuplicate(otherState.Value);
-                //     else
-                //         left.AdditionState.Add(otherState.Key, otherState.Value); }
-
-                if(Incoming.Skills is not null) 
-                    left.Skills.AddRange(Incoming.Skills);
-
-                return left;
-            }
-
-            public static ReBalancer Empty() {
-                return new ReBalancer()
-                {
-                    WalkDistance = 0,
-                    Visible = 0,
-
-                    Health = new Health() { Max = 0 },
-                    ReplaceHealth = false,
-
-                    Stamina = new Stamina() { Max = 0 },
-                    ReplaceStamina = false,
-
-                    Sanity = new Sanity() { Max = 0 },
-                    ReplaceSanity = false,
-
-                    AdditionState = new List<ICustomBar>(),
-                    Resists = new List<Type>(),
-                    Skills = new List<Skill>() { },
-
-                    Strength = 0,
-                    Accuracy = 0,
-                    RezoOverclocking = 0,
-                    Healing = 0,
-                    Repairing = 0,
-
-                    DamagePure = 0,
-                    DamageRange = 0,
-                };
-            }
-        }
-
-    #endregion
     
     namespace MapObjectInfo
     {        
+        #region // Balancers
+
+            [Serializable] public class Balancer
+            {
+                public int WalkDistance;
+
+                public int Visible;
+
+                [SerializeReference, SubclassSelector] public IHealthBar Health;
+                [SerializeReference, SubclassSelector] public IStaminaBar Stamina;
+                [SerializeReference, SubclassSelector] public ISanityBar Sanity;
+
+                [SerializeReference, SubclassSelector] public List<ICustomBar> AdditionState;
+                public List<Type> Resists;
+                [Space]
+                public List<Action> Skills;
+
+                [field: SerializeField] public int Strength { get; set; }
+                [field: SerializeField] public int Accuracy { get; set; }
+                [field: SerializeField] public int RezoOverclocking { get; set; }
+                [field: SerializeField] public int Healing { get; set; }
+                [field: SerializeField] public int Repairing { get; set; }
+
+                [field: SerializeField] public int DamagePure { get; set; }
+                [field: SerializeField] public int DamageRange { get; set; }
+                
+                public static Balancer operator +(Balancer Current, ReBalancer Incoming)
+                {
+                    Balancer Result = Current.MemberwiseClone() as Balancer;
+                    
+                    if(Incoming.ReplaceHealth) Result.Health = Incoming.Health + Current.Health;
+                    else Result.Health = Current.Health + Incoming.Health;
+                    Result.Health.Value = Current.Health.Value + Incoming.Health.Max;
+
+                    if(Incoming.ReplaceSanity) Result.Sanity = Incoming.Sanity + Current.Sanity;
+                    else Result.Sanity = Current.Sanity + Incoming.Sanity;
+                    Result.Sanity.Value = Current.Sanity.Value + Incoming.Sanity.Max;
+
+                    if(Incoming.ReplaceStamina) Result.Stamina = Incoming.Stamina + Current.Stamina;
+                    else Result.Stamina = Current.Stamina + Incoming.Stamina;
+                    Result.Stamina.Value = Current.Stamina.Value + Incoming.Stamina.Max;
+
+                    Result.Visible = Current.Visible + Incoming.Visible;
+                    Result.WalkDistance = Current.WalkDistance + Incoming.WalkDistance;
+
+                    Result.Strength = Current.Strength + Incoming.Strength;
+                    Result.Accuracy = Current.Accuracy + Incoming.Accuracy;
+                    Result.RezoOverclocking = Current.RezoOverclocking + Incoming.RezoOverclocking;
+                    Result.Healing = Current.Healing + Incoming.Healing;
+                    Result.Repairing = Current.Repairing + Incoming.Repairing;
+                    Result.DamagePure = Current.DamagePure + Incoming.DamagePure;
+                    Result.DamageRange = Current.DamageRange + Incoming.DamageRange;
+
+                    if(Incoming.Resists is not null & Incoming.Resists.Count > 0) { 
+                        Result.Resists.AddRange(Incoming.Resists); 
+                        Result.Resists = Current.Resists.Distinct().ToList(); 
+                        Result.Resists.Sort(); }
+
+                    // if(Incoming.AdditionState is not null) foreach(ICustomBar IncomingState in Incoming.AdditionState) {
+                    //     if(Result.AdditionState.Exists(a=>a.GetType() == IncomingState.GetType())) 
+                    //         Checking.AddDuplicate(IncomingState.Value);
+                    //     else
+                    //         Result.AdditionState.Add(IncomingState.Key, IncomingState.Value); }
+
+                    if(Incoming.Skills is not null) 
+                        Result.Skills.AddRange(Incoming.Skills);
+
+                    return Result;
+                }
+
+                public static Balancer Empty() {
+                    return new Balancer()
+                    {
+                        WalkDistance = 0,
+                        Visible = 0,
+
+                        Health = new Health() { Max = 0 },
+                        Stamina = new Stamina() { Max = 0 },
+                        Sanity = new Sanity() { Max = 0 },
+
+                        AdditionState = new List<ICustomBar>(),
+                        Resists = new List<Type>(),
+                        Skills = new List<Action>() { },
+
+                        Strength = 0,
+                        Accuracy = 0,
+                        RezoOverclocking = 0,
+                        Healing = 0,
+                        Repairing = 0,
+
+                        DamagePure = 0,
+                        DamageRange = 0,
+                    };
+                }
+            }
+            [Serializable] public struct ReBalancer
+            {
+                public int WalkDistance;
+
+                public int Visible;
+
+                [SerializeReference, SubclassSelector]public IHealthBar Health;
+                public bool ReplaceHealth;
+                [SerializeReference, SubclassSelector]public IStaminaBar Stamina;
+                public bool ReplaceStamina;
+                [SerializeReference, SubclassSelector]public ISanityBar Sanity;
+                public bool ReplaceSanity;
+
+                [SerializeReference, SubclassSelector]public List<ICustomBar> AdditionState;
+                public List<Type> Resists;
+                [Space]
+                public List<Action> Skills;
+
+                [field: SerializeField] public int Strength { get; set; }
+                [field: SerializeField] public int Accuracy { get; set; }
+                [field: SerializeField] public int RezoOverclocking { get; set; }
+                [field: SerializeField] public int Healing { get; set; }
+                [field: SerializeField] public int Repairing { get; set; }
+
+                [field: SerializeField] public int DamagePure { get; set; }
+                [field: SerializeField] public int DamageRange { get; set; }
+
+                public static ReBalancer operator +(ReBalancer left, ReBalancer Incoming)
+                {
+                    if(Incoming.ReplaceHealth) {
+                        left.ReplaceHealth = true;
+                        
+                        left.Health = Incoming.Health + left.Health;
+                    }
+                    else left.Health += Incoming.Health;
+                    if(Incoming.ReplaceSanity) {
+                        left.ReplaceSanity = true;
+
+                        left.Sanity = Incoming.Sanity + left.Sanity;
+                    }
+                    else left.Sanity += Incoming.Sanity;
+                    if(Incoming.ReplaceStamina) {
+                        left.ReplaceStamina = true;
+                        
+                        left.Stamina = Incoming.Stamina + left.Stamina;
+                    }
+                    else left.Stamina += Incoming.Stamina;
+
+                    left.Visible += Incoming.Visible;
+                    left.WalkDistance += Incoming.WalkDistance;
+
+                    left.Strength += Incoming.Strength;
+                    left.Accuracy += Incoming.Accuracy;
+                    left.RezoOverclocking += Incoming.RezoOverclocking;
+                    left.Healing += Incoming.Healing;
+                    left.Repairing += Incoming.Repairing;
+                    left.DamagePure += Incoming.DamagePure;
+                    left.DamageRange += Incoming.DamageRange;
+
+                    if(Incoming.Resists is not null) { 
+                        left.Resists.AddRange(Incoming.Resists); 
+                        left.Resists = left.Resists.Distinct().ToList(); 
+                        left.Resists.Sort(); }
+
+                    // if(Incoming.AdditionState is not null) foreach(var otherState in Incoming.AdditionState) {
+                    //     if(left.AdditionState.TryGetValue(otherState.Key, out ICustomBar Checking)) 
+                    //         Checking.AddDuplicate(otherState.Value);
+                    //     else
+                    //         left.AdditionState.Add(otherState.Key, otherState.Value); }
+
+                    if(Incoming.Skills is not null) 
+                        left.Skills.AddRange(Incoming.Skills);
+
+                    return left;
+                }
+
+                public static ReBalancer Empty() {
+                    return new ReBalancer()
+                    {
+                        WalkDistance = 0,
+                        Visible = 0,
+
+                        Health = new Health() { Max = 0 },
+                        ReplaceHealth = false,
+
+                        Stamina = new Stamina() { Max = 0 },
+                        ReplaceStamina = false,
+
+                        Sanity = new Sanity() { Max = 0 },
+                        ReplaceSanity = false,
+
+                        AdditionState = new List<ICustomBar>(),
+                        Resists = new List<Type>(),
+                        Skills = new List<Action>() { },
+
+                        Strength = 0,
+                        Accuracy = 0,
+                        RezoOverclocking = 0,
+                        Healing = 0,
+                        Repairing = 0,
+
+                        DamagePure = 0,
+                        DamageRange = 0,
+                    };
+                }
+            }
+
+        #endregion
+
         #region // State management
             
             public interface IStateBar

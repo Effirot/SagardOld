@@ -9,13 +9,12 @@ using System.ComponentModel;
 using System;
 using System.Linq;
 
+namespace SagardCL.Actions{
 
-#region // Actions
-
-    [Serializable] public class Skill
+    [Serializable] public class Action
     {
-        public static Skill Empty(){
-            return new Skill()
+        public static Action Empty(){
+            return new Action()
             {
                 Name = "Empty",
                 Description = "Empty Skill Description",
@@ -53,7 +52,7 @@ using System.Linq;
             foreach(Act act in Realizations)
                 act.Completing(target);
         }
-        public Skill Plan(CharacterCore target)
+        public Action Plan(CharacterCore target)
         {
             foreach(Act act in Realizations)
                 act.Planing(target);
@@ -323,5 +322,4 @@ using System.Linq;
 
         #endregion
     }
-
-#endregion
+}
